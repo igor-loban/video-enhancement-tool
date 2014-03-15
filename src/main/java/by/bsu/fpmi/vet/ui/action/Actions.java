@@ -3,18 +3,17 @@ package by.bsu.fpmi.vet.ui.action;
 import javax.swing.Action;
 
 public enum Actions implements ActionSource {
-    FILE {
-        private final Action action = new FileAction();
+    FILE(new FileAction()),
+    OPEN(new OpenAction()),
+    EXIT(new ExitAction());
 
-        @Override public Action get() {
-            return action;
-        }
-    },
-    EXIT {
-        private final Action action = new ExitAction();
+    private final Action action;
 
-        @Override public Action get() {
-            return action;
-        }
+    private Actions(Action action) {
+        this.action = action;
+    }
+
+    public Action get() {
+        return action;
     }
 }

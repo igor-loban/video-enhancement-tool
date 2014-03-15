@@ -2,6 +2,7 @@ package by.bsu.fpmi.vet.ui.frame;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
 import by.bsu.fpmi.vet.ui.action.Actions;
+import by.bsu.fpmi.vet.ui.component.VideoPlayer;
 import by.bsu.fpmi.vet.util.MessageUtils;
 
 import javax.swing.JFrame;
@@ -13,6 +14,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 public final class MainFrame extends JFrame {
+    private final VideoPlayer videoPlayer = new VideoPlayer();
+
     /**
      * {@link ApplicationContext} can be used inside this method.
      */
@@ -22,6 +25,10 @@ public final class MainFrame extends JFrame {
         setupMainMenu();
         arrangeComponents();
         setupSizeAndLocation();
+    }
+
+    public VideoPlayer getVideoPlayer() {
+        return videoPlayer;
     }
 
     private void setActionOnClose() {
@@ -37,6 +44,7 @@ public final class MainFrame extends JFrame {
         JMenuBar mainMenu = new JMenuBar();
 
         JMenu fileMenu = new JMenu(Actions.FILE.get());
+        fileMenu.add(Actions.OPEN.get());
         fileMenu.addSeparator();
         fileMenu.add(Actions.EXIT.get());
         mainMenu.add(fileMenu);
@@ -46,6 +54,7 @@ public final class MainFrame extends JFrame {
 
     private void arrangeComponents() {
         // TODO: add components
+        add(videoPlayer);
     }
 
     private void setupSizeAndLocation() {

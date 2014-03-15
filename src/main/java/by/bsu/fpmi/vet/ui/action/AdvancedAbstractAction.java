@@ -19,23 +19,45 @@ abstract class AdvancedAbstractAction extends AbstractAction {
     private static final String ACCELERATOR_SUFFIX = ".accelerator";
 
     protected AdvancedAbstractAction() {
+        addName();
+        addMnemonic();
+        addAccelerator();
+    }
+
+    private void addName() {
         putValue(Action.NAME, getName());
-        putValue(Action.MNEMONIC_KEY, getMnemonic());
-        putValue(Action.ACCELERATOR_KEY, getAccelerator());
     }
 
     private String getName() {
         return MessageUtils.getMessage(getBaseKey() + NAME_SUFFIX);
     }
 
+    private void addMnemonic() {
+        addValue(Action.MNEMONIC_KEY, getMnemonic());
+    }
+
+    private void addValue(String key, Object value) {
+        if (value != null) {
+            putValue(key, value);
+        }
+    }
+
+    private void addAccelerator() {
+        addValue(Action.ACCELERATOR_KEY, getAccelerator());
+    }
+
     private Integer getMnemonic() {
-        String mnemonicValue = MessageUtils.getMessage(getBaseKey() + MNEMONIC_CHAR_SUFFIX);
+        String key = getBaseKey() + MNEMONIC_CHAR_SUFFIX;
+        if (!MessageUtils.contains(key)) {
+            return null;
+        }
+        String mnemonicValue = MessageUtils.getMessage(key);
         return KeyEvent.getExtendedKeyCodeForChar(mnemonicValue.charAt(0));
     }
 
     private KeyStroke getAccelerator() {
-        String keyStrokeValue = MessageUtils.getMessage(getBaseKey() + ACCELERATOR_SUFFIX);
-        return KeyStroke.getKeyStroke(keyStrokeValue);
+        String key = getBaseKey() + ACCELERATOR_SUFFIX;
+        return MessageUtils.contains(key) ? KeyStroke.getKeyStroke(MessageUtils.getMessage(key)) : null;
     }
 
     private String getBaseKey() {

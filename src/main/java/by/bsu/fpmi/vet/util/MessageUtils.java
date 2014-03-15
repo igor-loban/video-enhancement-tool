@@ -13,6 +13,15 @@ public final class MessageUtils {
         throwInstantiationError(this.getClass());
     }
 
+    public static boolean contains(String key) {
+        return contains(key, Locale.getDefault());
+    }
+
+    public static boolean contains(String key, Locale locale) {
+        ResourceBundle bundle = ResourceBundle.getBundle(BASE_NAME, locale);
+        return bundle.containsKey(key);
+    }
+
     public static String format(String template, Object... params) {
         return format(template, Locale.getDefault(), params);
     }
