@@ -1,5 +1,6 @@
 package by.bsu.fpmi.vet.ui.action;
 
+import by.bsu.fpmi.vet.application.ApplicationContext;
 import org.slf4j.Logger;
 
 import java.awt.event.ActionEvent;
@@ -11,7 +12,6 @@ final class GenerateReportAction extends AdvancedAbstractAction {
 
     @Override public void actionPerformed(ActionEvent e) {
         // TODO: implement
-        LOGGER.debug("application would be closed");
-        System.exit(0);
+        ApplicationContext.getInstance().getReportGenerator().generate();
     }
 }

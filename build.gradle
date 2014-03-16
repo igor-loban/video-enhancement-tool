@@ -10,7 +10,26 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.1'
     compile group: 'com.google.guava', name: 'guava', version: '16.0.1'
+
+    compile group: 'org.docx4j', name: 'docx4j', version: '3.0.1'
+    compile group: 'com.itextpdf', name: 'itextpdf', version: '5.5.0'
+
+    compile files('lib/ffmpeg-20130915-git-7ac6c63-windows-x86.jar',
+            'lib/ffmpeg-20130915-git-7ac6c63-windows-x86_64.jar',
+            'lib/javacpp.jar',
+            'lib/javacv.jar',
+            'lib/javacv-windows-x86.jar',
+            'lib/javacv-windows-x86_64.jar',
+            'lib/opencv-2.4.6.0-windows-x86.jar',
+            'lib/opencv-2.4.6.0-windows-x86_64.jar')
+
     testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+configurations {
+    // Exclude commons-logging and slf4j-log4j bridge from everywhere.
+    all*.exclude group: "org.slf4j", module: "slf4j-log4j12"
+    all*.exclude group: "log4j", module: "log4j"
 }
 
 jar {

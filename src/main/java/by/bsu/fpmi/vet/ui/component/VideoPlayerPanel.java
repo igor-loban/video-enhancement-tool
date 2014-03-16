@@ -1,5 +1,7 @@
 package by.bsu.fpmi.vet.ui.component;
 
+import by.bsu.fpmi.vet.application.ApplicationContext;
+import by.bsu.fpmi.vet.report.Snapshot;
 import org.slf4j.Logger;
 
 import javax.swing.JButton;
@@ -11,6 +13,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 
 import static by.bsu.fpmi.vet.util.MessageUtils.getMessage;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -48,6 +51,8 @@ public final class VideoPlayerPanel extends JPanel {
         playButton.addActionListener(new PlayAction());
         pauseButton.addActionListener(new PauseAction());
         stopButton.addActionListener(new StopAction());
+
+        captureFrameButton.addActionListener(new CaptureFrameAction());
     }
 
     private void arrangeControlPanel() {
@@ -101,6 +106,14 @@ public final class VideoPlayerPanel extends JPanel {
         @Override public void actionPerformed(ActionEvent e) {
             LOGGER.debug("stop video");
             videoPlayer.stop();
+        }
+    }
+
+    private final class CaptureFrameAction implements ActionListener {
+        @Override public void actionPerformed(ActionEvent e) {
+            LOGGER.debug("capture frame");
+            BufferedImage image = videoPlayer.captureFrame();
+            ApplicationContext.getInstance().getReportGenerator().addSnapshot(new Snapshot(image));
         }
     }
 }

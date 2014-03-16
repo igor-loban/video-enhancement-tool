@@ -1,6 +1,7 @@
 package by.bsu.fpmi.vet.launcher;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
+import by.bsu.fpmi.vet.report.ReportGenerator;
 import by.bsu.fpmi.vet.ui.frame.MainFrame;
 import org.slf4j.Logger;
 
@@ -24,7 +25,10 @@ public final class Launcher {
             @Override
             public void run() {
                 MainFrame mainFrame = new MainFrame();
-                ApplicationContext.getInstance().setMainFrame(mainFrame);
+                ReportGenerator reportGenerator = new ReportGenerator();
+                ApplicationContext context = ApplicationContext.getInstance();
+                context.setMainFrame(mainFrame);
+                context.setReportGenerator(reportGenerator);
                 LOGGER.debug("ApplicationContext initialized");
                 mainFrame.init();
                 LOGGER.debug("MainFrame initialized");

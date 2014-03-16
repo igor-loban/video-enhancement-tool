@@ -18,9 +18,9 @@ import javax.swing.JComponent;
 import javax.swing.Timer;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.Buffer;
@@ -44,7 +44,7 @@ public final class VideoPlayer extends JComponent {
 
     private int imageWidth;
     private int imageHeight;
-    private Image image; // Sync???
+    private BufferedImage image; // Sync???
 
     public VideoPlayer() {
         setDoubleBuffered(true);
@@ -82,6 +82,15 @@ public final class VideoPlayer extends JComponent {
     public void stop() {
         state = State.STOP;
         // reinit
+    }
+
+    public BufferedImage captureFrame() {
+        // TODO: provide more secure implementation
+        BufferedImage snapshot = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics g = snapshot.getGraphics();
+        g.drawImage(image, 0, 0, null);
+        g.dispose();
+        return snapshot;
     }
 
     public void setVideoFile(File videoFile) {
