@@ -30,6 +30,5 @@ final class OpenAction extends AdvancedAbstractAction {
     private void setVideoFileAndPlay(File videoFile) {
         VideoPlayer videoPlayer = ApplicationContext.getInstance().getMainFrame().getVideoPlayer();
         videoPlayer.setVideoFile(videoFile);
-        videoPlayer.play();
     }
 }
