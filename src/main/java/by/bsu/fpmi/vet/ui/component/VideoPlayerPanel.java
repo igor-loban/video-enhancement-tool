@@ -2,7 +2,6 @@ package by.bsu.fpmi.vet.ui.component;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
 import by.bsu.fpmi.vet.report.Snapshot;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 
 import javax.swing.JButton;
@@ -14,7 +13,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 
 import static by.bsu.fpmi.vet.util.MessageUtils.getMessage;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -113,10 +111,10 @@ public final class VideoPlayerPanel extends JPanel {
     private final class CaptureFrameAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
             LOGGER.debug("capture frame");
-            BufferedImage image = videoPlayer.captureFrame();
-            Snapshot snapshot = new Snapshot(image);
-            snapshot.setDateTime(DateTime.now());
-            ApplicationContext.getInstance().getReportGenerator().addSnapshot(snapshot);
+            ApplicationContext context = ApplicationContext.getInstance();
+            Snapshot snapshot = videoPlayer.captureFrame();
+            context.getReportGenerator().addSnapshot(snapshot);
+            context.getMainFrame().setFocusToNotes();
         }
     }
 }

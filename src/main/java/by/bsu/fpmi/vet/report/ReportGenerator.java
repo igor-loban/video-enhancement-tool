@@ -46,12 +46,24 @@ public final class ReportGenerator {
     public ReportGenerator() {
     }
 
-    public void addSnapshot(Snapshot snapshot) {
-        snapshots.add(snapshot);
+    public List<Snapshot> getSnapshots() {
+        return new ArrayList<>(snapshots);
     }
 
     public Snapshot getLastSnapshot() {
         return snapshots.isEmpty() ? null : snapshots.get(snapshots.size() - 1);
+    }
+
+    public void addSnapshot(Snapshot snapshot) {
+        snapshots.add(snapshot);
+    }
+
+    public void remove(Snapshot snapshot) {
+        snapshots.remove(snapshot);
+    }
+
+    public void removeAllSnapshots() {
+        snapshots.clear();
     }
 
     public void generate() {
@@ -59,19 +71,6 @@ public final class ReportGenerator {
         Thread pdfReportGeneratorThread = new Thread(new PdfReportGenerator());
         docxReportGeneratorThread.start();
         pdfReportGeneratorThread.start();
-    }
-
-    private byte[] convertImageToByteArray(BufferedImage image) {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(image, "png", baos);
-            baos.flush();
-            byte[] result = baos.toByteArray();
-            baos.close();
-            return result;
-        } catch (IOException e) {
-            throw new ReportGenerationException(e);
-        }
     }
 
     private final class DocxReportGenerator implements Runnable {
@@ -87,7 +86,7 @@ public final class ReportGenerator {
                     Snapshot snapshot = iterator.next();
 
                     mainDocumentPart.addParagraphOfText("Frame Grab: " + frameGrabNumber++);
-                    mainDocumentPart.addParagraphOfText("Time Index: " + snapshot.getDateTime());
+                    mainDocumentPart.addParagraphOfText("Time Index: " + snapshot.getTime());
                     mainDocumentPart.addParagraphOfText(notesTitle);
                     mainDocumentPart.addParagraphOfText(snapshot.getNotes());
                     byte[] imageAsBytes = convertImageToByteArray(snapshot.getImage());
@@ -148,6 +147,10 @@ public final class ReportGenerator {
     private final class PdfReportGenerator implements Runnable {
         @Override public void run() {
             try {
+                if (snapshots.isEmpty()) {
+                    return;
+                }
+
                 Document pdfDocument = new Document(PageSize.A4.rotate());
                 PdfWriter.getInstance(pdfDocument, new FileOutputStream("report.pdf"));
                 pdfDocument.open();
@@ -159,7 +162,7 @@ public final class ReportGenerator {
                     byte[] imageAsBytes = convertImageToByteArray(snapshot.getImage());
 
                     pdfDocument.add(new Paragraph("Frame Grab: " + frameGrabNumber++));
-                    pdfDocument.add(new Paragraph("Time Index: " + snapshot.getDateTime()));
+                    pdfDocument.add(new Paragraph("Time Index: " + snapshot.getTime()));
                     pdfDocument.add(new Paragraph(notesTitle));
                     pdfDocument.add(new Paragraph(snapshot.getNotes()));
                     pdfDocument.add(Image.getInstance(imageAsBytes));
@@ -174,6 +177,19 @@ public final class ReportGenerator {
                 LOGGER.debug("report generate error", e);
                 throw new ReportGenerationException(e);
             }
+        }
+    }
+
+    private byte[] convertImageToByteArray(BufferedImage image) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", baos);
+            baos.flush();
+            byte[] result = baos.toByteArray();
+            baos.close();
+            return result;
+        } catch (IOException e) {
+            throw new ReportGenerationException(e);
         }
     }
 }

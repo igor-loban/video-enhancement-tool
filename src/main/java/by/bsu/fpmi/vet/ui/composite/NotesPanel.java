@@ -2,6 +2,7 @@ package by.bsu.fpmi.vet.ui.composite;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
 import by.bsu.fpmi.vet.report.Snapshot;
+import by.bsu.fpmi.vet.ui.action.Actions;
 import by.bsu.fpmi.vet.ui.component.TitledPanel;
 import com.google.common.base.Strings;
 
@@ -21,7 +22,7 @@ public final class NotesPanel extends TitledPanel {
     private final JTextArea notesTextArea = new JTextArea(4, 1);
     private final JButton viewFramesCapturedButton = new JButton(getMessage("ui.panel.notes.button.viewFrameCaptured"));
     private final JButton generateReportButton = new JButton(getMessage("ui.panel.notes.button.generateReport"));
-    private final JButton saveFrameButton = new JButton(getMessage("ui.panel.notes.button.saveFrame"));
+    private final JButton saveNotesButton = new JButton(getMessage("ui.panel.notes.button.saveNotes"));
 
     public NotesPanel() {
         super(getMessage("ui.panel.notes.title"));
@@ -49,7 +50,7 @@ public final class NotesPanel extends TitledPanel {
         gbc.weightx = 0.33;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
-        content.add(viewFramesCapturedButton, gbc);
+        content.add(saveNotesButton, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 1;
@@ -65,14 +66,16 @@ public final class NotesPanel extends TitledPanel {
         gbc.weightx = 0.33;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
-        content.add(saveFrameButton, gbc);
+        content.add(viewFramesCapturedButton, gbc);
     }
 
     private void configureComponents() {
-        saveFrameButton.addActionListener(new SaveFrameAction());
+        saveNotesButton.addActionListener(new SaveNotesAction());
+        generateReportButton.addActionListener(Actions.GENERATE_REPORT.get());
+        viewFramesCapturedButton.addActionListener(Actions.VIEW_FRAMES_CAPTURED.get());
     }
 
-    private final class SaveFrameAction implements ActionListener {
+    private final class SaveNotesAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
             Snapshot snapshot = ApplicationContext.getInstance().getReportGenerator().getLastSnapshot();
             String notes = notesTextArea.getText();
@@ -81,5 +84,9 @@ public final class NotesPanel extends TitledPanel {
                 notesTextArea.setText("");
             }
         }
+    }
+
+    public JTextArea getNotesTextArea() {
+        return notesTextArea;
     }
 }

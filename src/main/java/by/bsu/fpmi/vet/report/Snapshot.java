@@ -1,23 +1,35 @@
 package by.bsu.fpmi.vet.report;
 
-import org.joda.time.DateTime;
+import by.bsu.fpmi.vet.util.MessageUtils;
+import org.joda.time.LocalTime;
 
 import java.awt.image.BufferedImage;
 
 public final class Snapshot {
-    public static final String NO_COMMENT = "No comment.";
+    public static final String NO_COMMENT = MessageUtils.getMessage("snapshot.noComment");
 
     private final BufferedImage image;
+    private final LocalTime time;
+    private final int frameNumber;
 
     private String notes = NO_COMMENT;
-    private DateTime dateTime;
 
-    public Snapshot(BufferedImage image) {
+    public Snapshot(BufferedImage image, int frameNumber, long millis) {
         this.image = image;
+        this.frameNumber = frameNumber;
+        this.time = LocalTime.fromMillisOfDay(millis);
     }
 
     public BufferedImage getImage() {
         return image;
+    }
+
+    public int getFrameNumber() {
+        return frameNumber;
+    }
+
+    public String getTime() {
+        return time.toString("HH:mm:ss");
     }
 
     public String getNotes() {
@@ -26,13 +38,5 @@ public final class Snapshot {
 
     public void setNotes(String notes) {
         this.notes = notes;
-    }
-
-    public DateTime getDateTime() {
-        return dateTime;
-    }
-
-    public void setDateTime(DateTime dateTime) {
-        this.dateTime = dateTime;
     }
 }

@@ -1,6 +1,7 @@
 package by.bsu.fpmi.vet.ui.component;
 
 import by.bsu.fpmi.vet.exception.VideoProcessingException;
+import by.bsu.fpmi.vet.report.Snapshot;
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacv.FFmpegFrameGrabber;
@@ -68,6 +69,9 @@ public final class VideoPlayer extends JComponent {
     }
 
     public void pause() {
+        if (state == State.PAUSE) {
+            return;
+        }
         try {
             state = State.PAUSE;
             timer.stop();
@@ -84,14 +88,14 @@ public final class VideoPlayer extends JComponent {
         // reinit
     }
 
-    public BufferedImage captureFrame() {
+    public Snapshot captureFrame() {
         // TODO: provide more secure implementation
         pause();
         BufferedImage imageCopy = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics g = imageCopy.getGraphics();
         g.drawImage(image, 0, 0, null);
         g.dispose();
-        return imageCopy;
+        return new Snapshot(imageCopy, pausedFrameNumber, getFrameMillis(pausedFrameNumber));
     }
 
     public void setVideoFile(File videoFile) {
@@ -142,6 +146,30 @@ public final class VideoPlayer extends JComponent {
         int x = (size.width - imageWidth) / 2;
         int y = (size.height - imageHeight) / 2;
         g.drawImage(image, x, y, this);
+    }
+
+    private long getFrameMillis(int frameNumber) {
+        return (long) (frameNumber / frameRate * 1000.0);
+    }
+
+    public void goToFrameInVideo(int frameNumber) {
+        try {
+            state = State.NO_FILE;
+            Frame frame;
+            grabber.start();
+            grabber.setFrameNumber(frameNumber);
+            while ((frame = grabber.grabFrame()) != null) {
+                if (frame.image != null) {
+                    pausedFrameNumber = grabber.getFrameNumber();
+                    image = frame.image.getBufferedImage();
+                    repaint();
+                    break;
+                }
+            }
+            pause();
+        } catch (FrameGrabber.Exception e) {
+            LOGGER.debug("go to frame in video error", e);
+        }
     }
 
     private final class GrabbingAction implements ActionListener {

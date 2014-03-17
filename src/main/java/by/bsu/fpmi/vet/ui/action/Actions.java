@@ -12,7 +12,9 @@ public enum Actions implements ActionSource {
     MOTION_DETECTION_OPTIONS(new MotionDetectionOptionsAction()),
 
     REPORT(new ReportAction()),
+    VIEW_FRAMES_CAPTURED(new ViewFramesCapturedAction()),
     GENERATE_REPORT(new GenerateReportAction()),
+    REPORT_OPTIONS(new ReportOptionsAction()),
     SHOW_LOG(new ShowLogAction()),
 
     HELP(new HelpAction()),

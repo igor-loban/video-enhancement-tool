@@ -64,7 +64,10 @@ public final class MainFrame extends JFrame {
         mainMenu.add(analyzeMenu);
 
         JMenu reportMenu = new JMenu(Actions.REPORT.get());
+        reportMenu.add(Actions.VIEW_FRAMES_CAPTURED.get());
         reportMenu.add(Actions.GENERATE_REPORT.get());
+        reportMenu.add(Actions.REPORT_OPTIONS.get());
+        reportMenu.addSeparator();
         reportMenu.add(Actions.SHOW_LOG.get());
         mainMenu.add(reportMenu);
 
@@ -77,7 +80,6 @@ public final class MainFrame extends JFrame {
     }
 
     private void arrangeComponents() {
-        // TODO: add components
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -129,5 +131,13 @@ public final class MainFrame extends JFrame {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setLocation((screenSize.width - size.width) / 2, (screenSize.height - size.height) / 2);
         setMinimumSize(size);
+    }
+
+    public void setFocusToNotes() {
+        notesPanel.getNotesTextArea().grabFocus();
+    }
+
+    public void goToFrameInVideo(int frameNumber) {
+        videoPlayer.goToFrameInVideo(frameNumber);
     }
 }
