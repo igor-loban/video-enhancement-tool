@@ -86,11 +86,12 @@ public final class VideoPlayer extends JComponent {
 
     public BufferedImage captureFrame() {
         // TODO: provide more secure implementation
-        BufferedImage snapshot = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        Graphics g = snapshot.getGraphics();
+        pause();
+        BufferedImage imageCopy = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics g = imageCopy.getGraphics();
         g.drawImage(image, 0, 0, null);
         g.dispose();
-        return snapshot;
+        return imageCopy;
     }
 
     public void setVideoFile(File videoFile) {

@@ -6,12 +6,12 @@ import by.bsu.fpmi.vet.ui.component.StatusPanel;
 import by.bsu.fpmi.vet.ui.component.TitledPanel;
 import by.bsu.fpmi.vet.ui.component.VideoPlayer;
 import by.bsu.fpmi.vet.ui.component.VideoPlayerPanel;
+import by.bsu.fpmi.vet.ui.composite.NotesPanel;
 import by.bsu.fpmi.vet.util.MessageUtils;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JPanel;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -23,6 +23,7 @@ import java.awt.event.WindowEvent;
 public final class MainFrame extends JFrame {
     private final VideoPlayer videoPlayer = new VideoPlayer();
     private final VideoPlayerPanel videoPlayerPanel = new VideoPlayerPanel(videoPlayer);
+    private final NotesPanel notesPanel = new NotesPanel();
 
     /**
      * {@link ApplicationContext} can be used inside this method.
@@ -103,7 +104,7 @@ public final class MainFrame extends JFrame {
         gbc.weightx = 0.33;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
-        add(new TitledPanel(MessageUtils.getMessage("ui.panel.controls.title"), new JPanel()), gbc);
+        add(new TitledPanel(MessageUtils.getMessage("ui.panel.controls.title")), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 2;
@@ -111,7 +112,7 @@ public final class MainFrame extends JFrame {
         gbc.weightx = 0.33;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
-        add(new TitledPanel(MessageUtils.getMessage("ui.panel.videoDetails.title"), new JPanel()), gbc);
+        add(new TitledPanel(MessageUtils.getMessage("ui.panel.videoDetails.title")), gbc);
 
         gbc.gridx = 2;
         gbc.gridy = 2;
@@ -119,7 +120,7 @@ public final class MainFrame extends JFrame {
         gbc.weightx = 0.33;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
-        add(new TitledPanel(MessageUtils.getMessage("ui.panel.notes.title"), new JPanel()), gbc);
+        add(notesPanel, gbc);
     }
 
     private void setupSizeAndLocation() {

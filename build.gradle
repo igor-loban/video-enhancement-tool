@@ -10,6 +10,7 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.1'
     compile group: 'com.google.guava', name: 'guava', version: '16.0.1'
+    compile group: 'joda-time', name: 'joda-time', version: '2.3'
 
     compile group: 'org.docx4j', name: 'docx4j', version: '3.0.1'
     compile group: 'com.itextpdf', name: 'itextpdf', version: '5.5.0'

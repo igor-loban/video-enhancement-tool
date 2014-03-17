@@ -2,6 +2,7 @@ package by.bsu.fpmi.vet.ui.component;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
 import by.bsu.fpmi.vet.report.Snapshot;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 
 import javax.swing.JButton;
@@ -113,7 +114,9 @@ public final class VideoPlayerPanel extends JPanel {
         @Override public void actionPerformed(ActionEvent e) {
             LOGGER.debug("capture frame");
             BufferedImage image = videoPlayer.captureFrame();
-            ApplicationContext.getInstance().getReportGenerator().addSnapshot(new Snapshot(image));
+            Snapshot snapshot = new Snapshot(image);
+            snapshot.setDateTime(DateTime.now());
+            ApplicationContext.getInstance().getReportGenerator().addSnapshot(snapshot);
         }
     }
 }
