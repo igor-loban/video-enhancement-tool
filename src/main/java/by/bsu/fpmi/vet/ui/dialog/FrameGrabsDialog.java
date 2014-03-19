@@ -3,6 +3,7 @@ package by.bsu.fpmi.vet.ui.dialog;
 import by.bsu.fpmi.vet.application.ApplicationContext;
 import by.bsu.fpmi.vet.ui.action.Actions;
 import by.bsu.fpmi.vet.ui.composite.SnapshotListPanel;
+import by.bsu.fpmi.vet.ui.util.WindowUtils;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -11,7 +12,6 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -43,11 +43,7 @@ public final class FrameGrabsDialog extends JDialog {
 
         deleteAllFramesButton.addActionListener(new DeleteAllFramesAction());
         generateReportButton.addActionListener(Actions.GENERATE_REPORT.get());
-        closeButton.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) {
-                close();
-            }
-        });
+        closeButton.addActionListener(new CloseAction());
     }
 
     private void arrangeComponents() {
@@ -106,13 +102,7 @@ public final class FrameGrabsDialog extends JDialog {
     private void setupSizeAndLocation() {
         pack();
         setMinimumSize(new Dimension(getWidth(), MINIMUM_HEIGHT));
-        Dimension size = getSize();
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        if ((double) screenSize.height / size.height < 1.33) {
-            size.height = (int) (screenSize.height * 0.66);
-            setSize(size);
-        }
-        setLocation((screenSize.width - size.width) / 2, (screenSize.height - size.height - 20) / 2);
+        WindowUtils.setLocationToCenter(this);
     }
 
     public void close() {
@@ -123,6 +113,12 @@ public final class FrameGrabsDialog extends JDialog {
     private final class DeleteAllFramesAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
             snapshotListPanel.removeAllSnapshots();
+        }
+    }
+
+    private final class CloseAction implements ActionListener {
+        @Override public void actionPerformed(ActionEvent e) {
+            close();
         }
     }
 }
