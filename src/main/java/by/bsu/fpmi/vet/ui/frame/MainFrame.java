@@ -7,6 +7,7 @@ import by.bsu.fpmi.vet.ui.component.TitledPanel;
 import by.bsu.fpmi.vet.ui.component.VideoPlayer;
 import by.bsu.fpmi.vet.ui.component.VideoPlayerPanel;
 import by.bsu.fpmi.vet.ui.composite.NotesPanel;
+import by.bsu.fpmi.vet.ui.composite.VideoDetailsPanel;
 import by.bsu.fpmi.vet.util.MessageUtils;
 
 import javax.swing.JFrame;
@@ -24,6 +25,7 @@ public final class MainFrame extends JFrame {
     private final VideoPlayer videoPlayer = new VideoPlayer();
     private final VideoPlayerPanel videoPlayerPanel = new VideoPlayerPanel(videoPlayer);
     private final NotesPanel notesPanel = new NotesPanel();
+    private final VideoDetailsPanel videoDetailsPanel = new VideoDetailsPanel();
 
     /**
      * {@link ApplicationContext} can be used inside this method.
@@ -114,7 +116,7 @@ public final class MainFrame extends JFrame {
         gbc.weightx = 0.33;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
-        add(new TitledPanel(MessageUtils.getMessage("ui.panel.videoDetails.title")), gbc);
+        add(videoDetailsPanel, gbc);
 
         gbc.gridx = 2;
         gbc.gridy = 2;

@@ -9,7 +9,6 @@ import com.googlecode.javacv.Frame;
 import com.googlecode.javacv.FrameGrabber;
 import org.slf4j.Logger;
 
-import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
@@ -17,13 +16,14 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.swing.JComponent;
 import javax.swing.Timer;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
@@ -45,15 +45,10 @@ public final class VideoPlayer extends JComponent {
 
     private int imageWidth;
     private int imageHeight;
-    private BufferedImage image; // Sync???
+    private BufferedImage image;
 
     public VideoPlayer() {
         setDoubleBuffered(true);
-        try {
-            image = ImageIO.read(getClass().getResource("/by/bsu/fpmi/vet/resources/images/test.png"));
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     public void play() {
@@ -85,7 +80,7 @@ public final class VideoPlayer extends JComponent {
 
     public void stop() {
         state = State.STOP;
-        // reinit
+        // TODO: reinit
     }
 
     public Snapshot captureFrame() {
@@ -143,9 +138,27 @@ public final class VideoPlayer extends JComponent {
 
     @Override protected void paintComponent(Graphics g) {
         Dimension size = getSize();
-        int x = (size.width - imageWidth) / 2;
-        int y = (size.height - imageHeight) / 2;
-        g.drawImage(image, x, y, this);
+        double heightCoeff = (double) size.height / imageHeight;
+        double widthCoeff = (double) size.width / imageWidth;
+
+        int width;
+        int height;
+        if (heightCoeff > widthCoeff) {
+            width = size.width;
+            height = (int) (widthCoeff * imageHeight);
+        } else {
+            width = (int) (heightCoeff * imageWidth);
+            height = size.height;
+        }
+
+        int x = (size.width - width) / 2;
+        int y = (size.height - height) / 2;
+
+        // TODO: Add smooth and security
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setBackground(Color.BLACK);
+        g2d.clearRect(0, 0, size.width, size.height);
+        g2d.drawImage(image, x, y, width, height, this);
     }
 
     private long getFrameMillis(int frameNumber) {

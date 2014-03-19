@@ -1,0 +1,37 @@
+Ответ клиента по поводу "Help" и "Log"
+
+The help will just be a screen with an amount of writing on (basic help details and contact detail etc), along with an attached PDF (guide/instructions to help the user).
+
+The log will show anything which the user or application does from times of button pushes, processes, video scans etc. this should be exportable to a simple text (as part of the report and as just a text file if necessary).
+
+
+я пропустил еще одно требование заказчика
+Allow users to export select parts of the video into a new video
+Это легко делает JavaCV причем с хорошим качеством аудио. Я потом поделюсь кодом
+
+
+
+Overview 
+We are looking for a JAVA developer to create an video player application, which is able to: 
+•  Playback all common formats of digital video files (including audio) 
+•  Show where there is motion/movement, or sound in the digital video file on a colour coded bar 
+representing the whole media file (or something similar upon agreement), so that the user can quickly 
+move to areas with movement or audio 
+•  Allow users to export select parts of the video into a new video 
+•  Allow users to export a still frame from the video, along with some entered text, into a custom formatted 
+Word document, and PDF 
+•  Run via a simple GUI, (design ready, and will be sent to shortlisted candidates)
+
+Technical Specifications 
+-  Must work on all versions of Windows (XP+), Mac and Linux 
+-  Be developed in Java 
+-  Must perform efficiently, and with a good accuracy (including multithreading) 
+-  All parts of this development must be free for commercial usage 
+-  A simple usage guide, along with a selection of test data must be supplied to the project owner 
+-  Able to work with all common and HDR video file formats (inclusive but not limited to including avi, 
+mpeg, mp4, wmv, mov and HDR etc) including attached audio 
+-  Ability to disregard part of screen from affecting the motion detection (i.e. if the video contains a 
+time/date stamp imprinted onto the video etc) 
+-  All parts of this project must comply with applicable UK law (i.e. no stealing copyrighted source code 
+etc.) 
+-  There maybe minor changes on the GUI needed due to project changes
