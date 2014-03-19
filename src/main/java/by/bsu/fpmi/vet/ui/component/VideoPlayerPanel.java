@@ -23,6 +23,8 @@ public final class VideoPlayerPanel extends JPanel {
     private static final Logger LOGGER = getLogger(VideoPlayerPanel.class);
 
     private final VideoPlayer videoPlayer;
+    private final JLabel currentPositionLabel = new JLabel(getMessage("ui.panel.videoPlayer.label.currentPosition"));
+
     private final JPanel controlPanel = new JPanel();
 
     private final JButton rewindButton = new JButton(getMessage("ui.panel.videoPlayer.button.rewind"));
@@ -64,13 +66,20 @@ public final class VideoPlayerPanel extends JPanel {
         pauseButton.addActionListener(new PauseAction());
         stopButton.addActionListener(new StopAction());
 
+        // TODO: implement
+        rewindButton.setEnabled(false);
+        forwardButton.setEnabled(false);
+        speedPlusButton.setEnabled(false);
+        speedMinusButton.setEnabled(false);
+        volumeSlider.setEnabled(false);
+        muteSoundCheckBox.setEnabled(false);
+
         captureFrameButton.addActionListener(new CaptureFrameAction());
     }
 
     private void arrangeControlPanel() {
         controlPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(2, 5, 2, 5);
 
         JPanel playButtonPanel = new JPanel();
         playButtonPanel.add(rewindButton);
@@ -81,6 +90,7 @@ public final class VideoPlayerPanel extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(2, 0, 2, 5);
         controlPanel.add(playButtonPanel, gbc);
 
         JPanel speedControlPanel = new JPanel();
@@ -90,6 +100,7 @@ public final class VideoPlayerPanel extends JPanel {
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(2, 5, 2, 5);
         controlPanel.add(speedControlPanel, gbc);
 
         JPanel soundControlPanel = new JPanel();
@@ -106,6 +117,7 @@ public final class VideoPlayerPanel extends JPanel {
         gbc.gridx = 3;
         gbc.weightx = 0;
         gbc.anchor = GridBagConstraints.EAST;
+        gbc.insets = new Insets(2, 5, 2, 0);
         controlPanel.add(captureButtonPanel, gbc);
     }
 

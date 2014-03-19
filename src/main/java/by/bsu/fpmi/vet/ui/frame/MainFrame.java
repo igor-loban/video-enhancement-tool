@@ -133,6 +133,7 @@ public final class MainFrame extends JFrame {
         Dimension size = getSize();
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setLocation((screenSize.width - size.width) / 2, (screenSize.height - size.height) / 2);
+        // TODO: setMinimum of player size to 320 x 240
         setMinimumSize(size);
     }
 

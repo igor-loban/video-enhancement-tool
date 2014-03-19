@@ -34,7 +34,6 @@ public final class NotesPanel extends TitledPanel {
         JPanel content = getContent();
         content.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -42,6 +41,7 @@ public final class NotesPanel extends TitledPanel {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 5, 5, 5);
         content.add(new JScrollPane(notesTextArea), gbc);
 
         gbc.gridx = 0;
@@ -50,6 +50,7 @@ public final class NotesPanel extends TitledPanel {
         gbc.weightx = 0.33;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(0, 5, 5, 2);
         content.add(saveNotesButton, gbc);
 
         gbc.gridx = 1;
@@ -58,6 +59,7 @@ public final class NotesPanel extends TitledPanel {
         gbc.weightx = 0.33;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(0, 2, 5, 2);
         content.add(generateReportButton, gbc);
 
         gbc.gridx = 2;
@@ -66,6 +68,7 @@ public final class NotesPanel extends TitledPanel {
         gbc.weightx = 0.33;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(0, 2, 5, 5);
         content.add(viewFramesCapturedButton, gbc);
     }
 

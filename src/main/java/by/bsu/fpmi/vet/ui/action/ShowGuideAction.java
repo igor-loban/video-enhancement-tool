@@ -9,6 +9,11 @@ import static org.slf4j.LoggerFactory.getLogger;
 final class ShowGuideAction extends AdvancedAbstractAction {
     private static final Logger LOGGER = getLogger(ShowGuideAction.class);
 
+    public ShowGuideAction() {
+        // TODO: implement
+        setEnabled(false);
+    }
+
     @Override public void actionPerformed(ActionEvent e) {
         // TODO: implement
         LOGGER.debug("application would be closed");

@@ -56,38 +56,40 @@ public final class SnapshotPanel extends JPanel {
         gbc.gridheight = 5;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
-        gbc.fill = GridBagConstraints.BOTH;
         add(pictureLabel, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
         gbc.gridheight = 1;
-        gbc.weightx = 0.5;
+        gbc.weightx = 0;
         gbc.weighty = 0;
-        gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(5, 5, 2, 5);
         add(orderNumberLabel, gbc);
 
         gbc.gridx = 2;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
-        gbc.weightx = 0.5;
+        gbc.weightx = 1.0;
         gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(5, 5, 2, 5);
         add(orderNumberValueLabel, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 1;
         gbc.gridwidth = 1;
-        gbc.weightx = 0.5;
+        gbc.weightx = 0;
         gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(2, 5, 2, 5);
         add(timeIndexLabel, gbc);
 
         gbc.gridx = 2;
         gbc.gridy = 1;
         gbc.gridwidth = 2;
-        gbc.weightx = 0.5;
+        gbc.weightx = 1.0;
         gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(2, 5, 2, 5);
         add(timeIndexValueLabel, gbc);
 
         gbc.gridx = 1;
@@ -95,6 +97,7 @@ public final class SnapshotPanel extends JPanel {
         gbc.gridwidth = 3;
         gbc.weightx = 1.0;
         gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(2, 5, 2, 5);
         add(notesLabel, gbc);
 
         gbc.gridx = 1;
@@ -104,30 +107,34 @@ public final class SnapshotPanel extends JPanel {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(2, 5, 2, 5);
         add(new JScrollPane(notesTextArea), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 4;
         gbc.gridwidth = 1;
-        gbc.weightx = 0.33;
+        gbc.weightx = 0;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(2, 5, 5, 2);
         add(saveNotesButton, gbc);
 
         gbc.gridx = 2;
         gbc.gridy = 4;
         gbc.gridwidth = 1;
-        gbc.weightx = 0.33;
+        gbc.weightx = 0.6;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(2, 2, 5, 2);
         add(goToFrameInVideoButton, gbc);
 
         gbc.gridx = 3;
         gbc.gridy = 4;
         gbc.gridwidth = 1;
-        gbc.weightx = 0.33;
+        gbc.weightx = 0.4;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(2, 2, 5, 5);
         add(deleteFrameGrabButton, gbc);
     }
 

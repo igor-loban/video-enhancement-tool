@@ -19,11 +19,14 @@ public final class ControlPanel extends TitledPanel {
 
     public ControlPanel() {
         super(getMessage("ui.panel.control.title"));
+        configureComponents();
         arrangeComponents();
     }
 
     private void configureComponents() {
-
+        enhancementButton.setEnabled(false);
+        playMovementButton.setEnabled(false);
+        playSoundButton.setEnabled(false);
     }
 
     private void arrangeComponents() {
