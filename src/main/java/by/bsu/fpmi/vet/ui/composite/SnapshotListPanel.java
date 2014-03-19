@@ -4,7 +4,6 @@ import by.bsu.fpmi.vet.application.ApplicationContext;
 import by.bsu.fpmi.vet.report.Snapshot;
 
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -29,7 +28,7 @@ public final class SnapshotListPanel extends JPanel {
         List<Snapshot> snapshots = ApplicationContext.getInstance().getReportGenerator().getSnapshots();
         for (int i = 0; i < snapshots.size(); i++) {
             gbc.gridy = i;
-            add(new JScrollPane(new SnapshotPanel(i + 1, snapshots.get(i), this)), gbc);
+            add(new SnapshotPanel(i + 1, snapshots.get(i), this), gbc);
         }
 
         updateUI();

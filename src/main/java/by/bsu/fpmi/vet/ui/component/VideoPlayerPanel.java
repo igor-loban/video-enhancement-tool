@@ -5,8 +5,10 @@ import by.bsu.fpmi.vet.report.Snapshot;
 import org.slf4j.Logger;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -33,17 +35,28 @@ public final class VideoPlayerPanel extends JPanel {
     private final JButton speedPlusButton = new JButton(getMessage("ui.panel.videoPlayer.button.speedPlus"));
     private final JLabel speedLabel = new JLabel("1x");
 
+    private final JLabel volumeLabel = new JLabel(getMessage("ui.panel.videoPlayer.label.volume"));
+    private final JCheckBox muteSoundCheckBox = new JCheckBox(getMessage("ui.panel.videoPlayer.button.muteSound"));
+    private final JSlider volumeSlider = new JSlider(0, 100, 50);
+
     private final JButton captureFrameButton = new JButton(getMessage("ui.panel.videoPlayer.button.captureFrame"));
 
     public VideoPlayerPanel(VideoPlayer videoPlayer) {
         this.videoPlayer = videoPlayer;
 
+        configureComponents();
         setupControlActions();
         arrangeControlPanel();
 
         setLayout(new BorderLayout());
         add(videoPlayer, BorderLayout.CENTER);
         add(controlPanel, BorderLayout.SOUTH);
+    }
+
+    private void configureComponents() {
+        volumeSlider.setPaintTicks(true);
+        volumeSlider.setMajorTickSpacing(10);
+        volumeSlider.setMinorTickSpacing(5);
     }
 
     private void setupControlActions() {
@@ -79,9 +92,18 @@ public final class VideoPlayerPanel extends JPanel {
         gbc.anchor = GridBagConstraints.CENTER;
         controlPanel.add(speedControlPanel, gbc);
 
+        JPanel soundControlPanel = new JPanel();
+        soundControlPanel.add(volumeLabel);
+        soundControlPanel.add(volumeSlider);
+        soundControlPanel.add(muteSoundCheckBox);
+        gbc.gridx = 2;
+        gbc.weightx = 0.5;
+        gbc.anchor = GridBagConstraints.CENTER;
+        controlPanel.add(soundControlPanel, gbc);
+
         JPanel captureButtonPanel = new JPanel();
         captureButtonPanel.add(captureFrameButton);
-        gbc.gridx = 2;
+        gbc.gridx = 3;
         gbc.weightx = 0;
         gbc.anchor = GridBagConstraints.EAST;
         controlPanel.add(captureButtonPanel, gbc);

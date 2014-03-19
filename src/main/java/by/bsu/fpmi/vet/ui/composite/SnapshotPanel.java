@@ -4,6 +4,7 @@ import by.bsu.fpmi.vet.application.ApplicationContext;
 import by.bsu.fpmi.vet.report.Snapshot;
 import com.google.common.base.Strings;
 
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -131,6 +132,8 @@ public final class SnapshotPanel extends JPanel {
     }
 
     private void configureComponents() {
+        setBorder(BorderFactory.createEtchedBorder());
+
         pictureLabel.setIcon(getScaledIcon(snapshot.getImage()));
         orderNumberValueLabel.setText(String.valueOf(orderNumber));
         timeIndexValueLabel.setText(String.valueOf(snapshot.getTime()));

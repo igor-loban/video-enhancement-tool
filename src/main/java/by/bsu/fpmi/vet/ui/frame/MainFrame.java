@@ -3,9 +3,9 @@ package by.bsu.fpmi.vet.ui.frame;
 import by.bsu.fpmi.vet.application.ApplicationContext;
 import by.bsu.fpmi.vet.ui.action.Actions;
 import by.bsu.fpmi.vet.ui.component.StatusPanel;
-import by.bsu.fpmi.vet.ui.component.TitledPanel;
 import by.bsu.fpmi.vet.ui.component.VideoPlayer;
 import by.bsu.fpmi.vet.ui.component.VideoPlayerPanel;
+import by.bsu.fpmi.vet.ui.composite.ControlPanel;
 import by.bsu.fpmi.vet.ui.composite.NotesPanel;
 import by.bsu.fpmi.vet.ui.composite.VideoDetailsPanel;
 import by.bsu.fpmi.vet.util.MessageUtils;
@@ -24,8 +24,9 @@ import java.awt.event.WindowEvent;
 public final class MainFrame extends JFrame {
     private final VideoPlayer videoPlayer = new VideoPlayer();
     private final VideoPlayerPanel videoPlayerPanel = new VideoPlayerPanel(videoPlayer);
-    private final NotesPanel notesPanel = new NotesPanel();
+    private final ControlPanel controlPanel = new ControlPanel();
     private final VideoDetailsPanel videoDetailsPanel = new VideoDetailsPanel();
+    private final NotesPanel notesPanel = new NotesPanel();
 
     /**
      * {@link ApplicationContext} can be used inside this method.
@@ -105,15 +106,15 @@ public final class MainFrame extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 1;
-        gbc.weightx = 0.33;
+        gbc.weightx = 0;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
-        add(new TitledPanel(MessageUtils.getMessage("ui.panel.controls.title")), gbc);
+        add(controlPanel, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 2;
         gbc.gridwidth = 1;
-        gbc.weightx = 0.33;
+        gbc.weightx = 0.5;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
         add(videoDetailsPanel, gbc);
@@ -121,7 +122,7 @@ public final class MainFrame extends JFrame {
         gbc.gridx = 2;
         gbc.gridy = 2;
         gbc.gridwidth = 1;
-        gbc.weightx = 0.33;
+        gbc.weightx = 0.5;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
         add(notesPanel, gbc);
