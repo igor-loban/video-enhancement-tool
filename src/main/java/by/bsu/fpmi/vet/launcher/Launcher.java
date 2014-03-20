@@ -1,7 +1,7 @@
 package by.bsu.fpmi.vet.launcher;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
-import by.bsu.fpmi.vet.motion.MotionDetector;
+import by.bsu.fpmi.vet.video.MotionDetector;
 import by.bsu.fpmi.vet.report.ReportGenerator;
 import by.bsu.fpmi.vet.ui.frame.MainFrame;
 import org.slf4j.Logger;

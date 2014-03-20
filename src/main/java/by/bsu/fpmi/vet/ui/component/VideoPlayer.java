@@ -1,7 +1,9 @@
 package by.bsu.fpmi.vet.ui.component;
 
+import by.bsu.fpmi.vet.application.ApplicationContext;
 import by.bsu.fpmi.vet.exception.VideoProcessingException;
 import by.bsu.fpmi.vet.report.Snapshot;
+import by.bsu.fpmi.vet.video.VideoDetails;
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacv.FFmpegFrameGrabber;
@@ -23,7 +25,6 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
@@ -35,12 +36,9 @@ public final class VideoPlayer extends JComponent {
     private Timer timer;
     private FFmpegFrameGrabber grabber;
     private SourceDataLine soundLine;
+    private VideoDetails videoDetails;
     private State state = State.NO_FILE;
     private int pausedFrameNumber;
-
-    private File videoFile;
-    private double frameRate;
-    private int totalFrameCount;
     private int delay;
 
     private int imageWidth;
@@ -51,10 +49,15 @@ public final class VideoPlayer extends JComponent {
         setDoubleBuffered(true);
     }
 
+    public void loadVideo() {
+        init(); // TODO: implement as reinit
+        stop();
+    }
+
     public void play() {
         try {
             state = State.PLAY;
-            grabber.start();
+            grabber.restart();
             grabber.setFrameNumber(pausedFrameNumber);
             soundLine.start();
             timer.start();
@@ -79,8 +82,15 @@ public final class VideoPlayer extends JComponent {
     }
 
     public void stop() {
-        state = State.STOP;
-        // TODO: reinit
+        try {
+            state = State.STOP;
+            timer.stop();
+            grabber.stop();
+            soundLine.stop();
+            pausedFrameNumber = 1;
+        } catch (FrameGrabber.Exception e) {
+            throw new VideoProcessingException(e);
+        }
     }
 
     public Snapshot captureFrame() {
@@ -93,21 +103,15 @@ public final class VideoPlayer extends JComponent {
         return new Snapshot(imageCopy, pausedFrameNumber, getFrameMillis(pausedFrameNumber));
     }
 
-    public void setVideoFile(File videoFile) {
-        this.videoFile = videoFile;
-        init(); // TODO: implement as reinit
-        stop();
-    }
-
     private void init() {
         try {
-            grabber = new FFmpegFrameGrabber(videoFile);
-            grabber.start();
-            totalFrameCount = grabber.getLengthInFrames();
-            frameRate = grabber.getFrameRate();
-            delay = (int) (1000 / frameRate);
-            imageWidth = grabber.getImageWidth();
-            imageHeight = grabber.getImageHeight();
+            videoDetails = ApplicationContext.getInstance().getVideoDetails();
+            grabber = videoDetails.getGrabber();
+            delay = (int) (1000 / videoDetails.getFrameRate());
+            imageWidth = videoDetails.getWidth();
+            imageHeight = videoDetails.getHeight();
+
+            grabber.restart();
 
             // TODO: setup audio settings
             AudioFormat audioFormat =
@@ -116,7 +120,6 @@ public final class VideoPlayer extends JComponent {
             DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
             soundLine = (SourceDataLine) AudioSystem.getLine(info);
             soundLine.open(audioFormat);
-            //            soundLine.start();
 
             Frame frame;
             while ((frame = grabber.grabFrame()) != null) {
@@ -162,14 +165,14 @@ public final class VideoPlayer extends JComponent {
     }
 
     private long getFrameMillis(int frameNumber) {
-        return (long) (frameNumber / frameRate * 1000.0);
+        return (long) (frameNumber / videoDetails.getFrameRate() * 1000.0);
     }
 
     public void goToFrameInVideo(int frameNumber) {
         try {
             state = State.NO_FILE;
             Frame frame;
-            grabber.start();
+            grabber.restart();
             grabber.setFrameNumber(frameNumber);
             while ((frame = grabber.grabFrame()) != null) {
                 if (frame.image != null) {

@@ -1,9 +1,12 @@
 package by.bsu.fpmi.vet.application;
 
-import by.bsu.fpmi.vet.motion.MotionDetector;
 import by.bsu.fpmi.vet.report.ReportGenerator;
 import by.bsu.fpmi.vet.ui.dialog.FrameGrabsDialog;
 import by.bsu.fpmi.vet.ui.frame.MainFrame;
+import by.bsu.fpmi.vet.video.MotionDetector;
+import by.bsu.fpmi.vet.video.VideoDetails;
+
+import javax.swing.SwingUtilities;
 
 public final class ApplicationContext {
     private static final ApplicationContext INSTANCE = new ApplicationContext();
@@ -14,7 +17,24 @@ public final class ApplicationContext {
     private ReportGenerator reportGenerator;
     private MotionDetector motionDetector;
 
+    private VideoDetails videoDetails;
+
     private ApplicationContext() {
+    }
+
+    public void updateAfterMotionDetection() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override public void run() {
+                mainFrame.getVideoPlayerPanel().initColoredSlider();
+            }
+        });
+    }
+
+    public void goToFrameInVideo(int frameNumber) {
+        mainFrame.goToFrameInVideo(frameNumber);
+        if (frameGrabsDialog != null) {
+            frameGrabsDialog.close();
+        }
     }
 
     public static ApplicationContext getInstance() {
@@ -53,10 +73,11 @@ public final class ApplicationContext {
         this.motionDetector = motionDetector;
     }
 
-    public void goToFrameInVideo(int frameNumber) {
-        mainFrame.goToFrameInVideo(frameNumber);
-        if (frameGrabsDialog != null) {
-            frameGrabsDialog.close();
-        }
+    public VideoDetails getVideoDetails() {
+        return videoDetails;
+    }
+
+    public void setVideoDetails(VideoDetails videoDetails) {
+        this.videoDetails = videoDetails;
     }
 }

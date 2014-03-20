@@ -2,6 +2,7 @@ package by.bsu.fpmi.vet.ui.component;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
 import by.bsu.fpmi.vet.report.Snapshot;
+import by.bsu.fpmi.vet.video.VideoDetails;
 import org.slf4j.Logger;
 
 import javax.swing.JButton;
@@ -16,6 +17,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import static by.bsu.fpmi.vet.util.MessageUtils.format;
 import static by.bsu.fpmi.vet.util.MessageUtils.getMessage;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -23,9 +25,11 @@ public final class VideoPlayerPanel extends JPanel {
     private static final Logger LOGGER = getLogger(VideoPlayerPanel.class);
 
     private final VideoPlayer videoPlayer;
-    private final JLabel currentPositionLabel = new JLabel(getMessage("ui.panel.videoPlayer.label.currentPosition"));
 
     private final JPanel controlPanel = new JPanel();
+    private final JLabel currentPositionLabel =
+            new JLabel(format("ui.panel.videoPlayer.label.currentPosition", "00:00:00", "00:00:00"));
+    private final JSlider currentPositionSlider = new JSlider(1, 100, 1);
 
     private final JButton rewindButton = new JButton(getMessage("ui.panel.videoPlayer.button.rewind"));
     private final JButton playButton = new JButton(getMessage("ui.panel.videoPlayer.button.play"));
@@ -67,6 +71,7 @@ public final class VideoPlayerPanel extends JPanel {
         stopButton.addActionListener(new StopAction());
 
         // TODO: implement
+        currentPositionSlider.setEnabled(false);
         rewindButton.setEnabled(false);
         forwardButton.setEnabled(false);
         speedPlusButton.setEnabled(false);
@@ -81,6 +86,19 @@ public final class VideoPlayerPanel extends JPanel {
         controlPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 4;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
+        controlPanel.add(currentPositionSlider, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 4;
+        gbc.fill = GridBagConstraints.NONE;
+        controlPanel.add(currentPositionLabel, gbc);
+
         JPanel playButtonPanel = new JPanel();
         playButtonPanel.add(rewindButton);
         playButtonPanel.add(playButton);
@@ -88,7 +106,9 @@ public final class VideoPlayerPanel extends JPanel {
         playButtonPanel.add(stopButton);
         playButtonPanel.add(forwardButton);
         gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(2, 0, 2, 5);
         controlPanel.add(playButtonPanel, gbc);
@@ -119,6 +139,13 @@ public final class VideoPlayerPanel extends JPanel {
         gbc.anchor = GridBagConstraints.EAST;
         gbc.insets = new Insets(2, 5, 2, 0);
         controlPanel.add(captureButtonPanel, gbc);
+    }
+
+    public void initColoredSlider() {
+        VideoDetails videoDetails = ApplicationContext.getInstance().getVideoDetails();
+        currentPositionSlider.setMaximum(videoDetails.getTotalFrameCount());
+        currentPositionSlider.setValue(1);
+        currentPositionSlider.setUI(new ColoredSliderUI(currentPositionSlider, videoDetails.getMetaInfo()));
     }
 
     private final class PlayAction implements ActionListener {

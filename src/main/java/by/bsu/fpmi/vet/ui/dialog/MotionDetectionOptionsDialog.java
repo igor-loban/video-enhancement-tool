@@ -1,7 +1,7 @@
 package by.bsu.fpmi.vet.ui.dialog;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
-import by.bsu.fpmi.vet.motion.MotionDetectionOptions;
+import by.bsu.fpmi.vet.video.MotionDetectionOptions;
 import by.bsu.fpmi.vet.ui.util.WindowUtils;
 
 import javax.swing.ButtonGroup;

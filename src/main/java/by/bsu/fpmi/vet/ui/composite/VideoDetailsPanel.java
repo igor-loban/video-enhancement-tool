@@ -38,9 +38,7 @@ public final class VideoDetailsPanel extends TitledPanel {
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-//        gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.anchor = GridBagConstraints.WEST;
+        gbc.anchor = GridBagConstraints.EAST;
         content.add(fileNameLabel, gbc);
 
         gbc.gridy = 1;
@@ -61,6 +59,7 @@ public final class VideoDetailsPanel extends TitledPanel {
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 1.0;
+        gbc.anchor = GridBagConstraints.WEST;
         content.add(fileNameValueLabel, gbc);
 
         gbc.gridy = 1;

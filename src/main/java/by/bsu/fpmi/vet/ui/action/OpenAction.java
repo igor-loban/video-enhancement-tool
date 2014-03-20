@@ -1,7 +1,7 @@
 package by.bsu.fpmi.vet.ui.action;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
-import by.bsu.fpmi.vet.ui.component.VideoPlayer;
+import by.bsu.fpmi.vet.video.VideoLoader;
 import org.slf4j.Logger;
 
 import javax.swing.JFileChooser;
@@ -21,6 +21,7 @@ final class OpenAction extends AdvancedAbstractAction {
         } catch (URISyntaxException e) {
             LOGGER.debug("open file error", e);
         }
+        // TODO: implement
 //        JFileChooser fileChooser = FileChooserUtils.getVideoFileChooser();
 //        int option = showOpenDialog(fileChooser);
 //        if (option == JFileChooser.APPROVE_OPTION) {
@@ -33,7 +34,6 @@ final class OpenAction extends AdvancedAbstractAction {
     }
 
     private void setVideoFileAndPlay(File videoFile) {
-        VideoPlayer videoPlayer = ApplicationContext.getInstance().getMainFrame().getVideoPlayer();
-        videoPlayer.setVideoFile(videoFile);
+        VideoLoader.load(videoFile);
     }
 }

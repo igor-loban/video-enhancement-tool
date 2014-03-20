@@ -1,4 +1,4 @@
-package by.bsu.fpmi.vet.motion;
+package by.bsu.fpmi.vet.video;
 
 public final class MotionDetectionOptions {
     private final int frameGap;
