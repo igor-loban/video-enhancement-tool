@@ -94,7 +94,6 @@ public final class MotionDetector {
                 grabber.setFrameNumber(1);
 
                 totalFrameCount = grabber.getLengthInFrames() - options.getFrameGap();
-                LOGGER.debug("totalFrameCount = {}", totalFrameCount);
 
                 // Process And UpdateUI
                 while (true) {
@@ -104,13 +103,11 @@ public final class MotionDetector {
                     ApplicationContext.getInstance()
                             .setStatus(Status.ANALYZE, (int) (100 * (double) frameNumber / totalFrameCount));
 
-                    LOGGER.debug("frameNumber = {}", frameNumber);
-                    LOGGER.debug("frame == null is {}", frame == null);
                     if (frameNumber >= totalFrameCount || frame == null) {
                         break;
                     }
 
-                    if (frameNumber % options.getFrameGap() != 0 || frame.image == null) {
+                    if (frameNumber % options.getFrameGap() != 0) {
                         continue;
                     }
 
