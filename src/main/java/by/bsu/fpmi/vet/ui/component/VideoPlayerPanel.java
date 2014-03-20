@@ -47,6 +47,8 @@ public final class VideoPlayerPanel extends JPanel {
 
     private final JButton captureFrameButton = new JButton(getMessage("ui.panel.videoPlayer.button.captureFrame"));
 
+    private VideoDetails videoDetails;
+
     public VideoPlayerPanel(VideoPlayer videoPlayer) {
         this.videoPlayer = videoPlayer;
 
@@ -141,11 +143,18 @@ public final class VideoPlayerPanel extends JPanel {
         controlPanel.add(captureButtonPanel, gbc);
     }
 
-    public void initColoredSlider() {
-        VideoDetails videoDetails = ApplicationContext.getInstance().getVideoDetails();
+    public void initTimeline(VideoDetails videoDetails) {
+        this.videoDetails = videoDetails;
         currentPositionSlider.setMaximum(videoDetails.getTotalFrameCount());
         currentPositionSlider.setValue(1);
+    }
+
+    public void initColoredSlider() {
         currentPositionSlider.setUI(new ColoredSliderUI(currentPositionSlider, videoDetails.getMetaInfo()));
+    }
+
+    public void updateTimeline(int frameNumber) {
+        currentPositionSlider.setValue(frameNumber);
     }
 
     private final class PlayAction implements ActionListener {

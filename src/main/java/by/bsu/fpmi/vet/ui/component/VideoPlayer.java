@@ -4,8 +4,6 @@ import by.bsu.fpmi.vet.application.ApplicationContext;
 import by.bsu.fpmi.vet.exception.VideoProcessingException;
 import by.bsu.fpmi.vet.report.Snapshot;
 import by.bsu.fpmi.vet.video.VideoDetails;
-import com.googlecode.javacpp.BytePointer;
-import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacv.FFmpegFrameGrabber;
 import com.googlecode.javacv.Frame;
 import com.googlecode.javacv.FrameGrabber;
@@ -25,21 +23,19 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
 public final class VideoPlayer extends JComponent {
     private static final Logger LOGGER = getLogger(VideoPlayer.class);
 
+    private State state = State.NO_FILE;
+
     private Timer timer;
     private FFmpegFrameGrabber grabber;
     private SourceDataLine soundLine;
     private VideoDetails videoDetails;
-    private State state = State.NO_FILE;
     private int pausedFrameNumber;
-    private int delay;
 
     private int imageWidth;
     private int imageHeight;
@@ -56,11 +52,8 @@ public final class VideoPlayer extends JComponent {
 
     public void play() {
         try {
-            state = State.PLAY;
-            grabber.restart();
-            grabber.setFrameNumber(pausedFrameNumber);
-            soundLine.start();
-            timer.start();
+            setState(State.PLAY);
+            startPlaying();
         } catch (FrameGrabber.Exception e) {
             throw new VideoProcessingException(e);
         }
@@ -70,10 +63,11 @@ public final class VideoPlayer extends JComponent {
         if (state == State.PAUSE) {
             return;
         }
+
         try {
-            state = State.PAUSE;
-            timer.stop();
+            setState(State.PAUSE);
             pausedFrameNumber = grabber.getFrameNumber();
+            timer.stop();
             grabber.stop();
             soundLine.stop();
         } catch (FrameGrabber.Exception e) {
@@ -83,7 +77,7 @@ public final class VideoPlayer extends JComponent {
 
     public void stop() {
         try {
-            state = State.STOP;
+            setState(State.STOP);
             timer.stop();
             grabber.stop();
             soundLine.stop();
@@ -100,14 +94,15 @@ public final class VideoPlayer extends JComponent {
         Graphics g = imageCopy.getGraphics();
         g.drawImage(image, 0, 0, null);
         g.dispose();
-        return new Snapshot(imageCopy, pausedFrameNumber, getFrameMillis(pausedFrameNumber));
+        return new Snapshot(imageCopy, pausedFrameNumber, videoDetails.getFrameRate());
     }
 
     private void init() {
         try {
+            setState(State.INITIATED);
+
             videoDetails = ApplicationContext.getInstance().getVideoDetails();
             grabber = videoDetails.getGrabber();
-            delay = (int) (1000 / videoDetails.getFrameRate());
             imageWidth = videoDetails.getWidth();
             imageHeight = videoDetails.getHeight();
 
@@ -119,7 +114,7 @@ public final class VideoPlayer extends JComponent {
                             grabber.getSampleRate(), false);
             DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
             soundLine = (SourceDataLine) AudioSystem.getLine(info);
-            soundLine.open(audioFormat);
+            soundLine.open();
 
             Frame frame;
             while ((frame = grabber.grabFrame()) != null) {
@@ -131,9 +126,8 @@ public final class VideoPlayer extends JComponent {
                 }
             }
 
-            timer = new Timer(delay, new GrabbingAction());
-
-            state = State.INITIATED;
+            int delay = (int) (1000 / videoDetails.getFrameRate());
+            timer = new Timer(delay, new Grabber());
         } catch (FrameGrabber.Exception | LineUnavailableException e) {
             throw new VideoProcessingException(e);
         }
@@ -164,13 +158,10 @@ public final class VideoPlayer extends JComponent {
         g2d.drawImage(image, x, y, width, height, this);
     }
 
-    private long getFrameMillis(int frameNumber) {
-        return (long) (frameNumber / videoDetails.getFrameRate() * 1000.0);
-    }
-
     public void goToFrameInVideo(int frameNumber) {
         try {
-            state = State.NO_FILE;
+            setState(State.NO_FILE);
+
             Frame frame;
             grabber.restart();
             grabber.setFrameNumber(frameNumber);
@@ -188,40 +179,62 @@ public final class VideoPlayer extends JComponent {
         }
     }
 
-    private final class GrabbingAction implements ActionListener {
+    private final class Grabber implements ActionListener {
         @Override public void actionPerformed(ActionEvent event) {
+            //            playing.set(true);
+            //            while (state == State.PLAY) {
             try {
                 Frame frame;
                 while ((frame = grabber.grabFrame()) != null) {
                     pausedFrameNumber = grabber.getFrameNumber();
-                    //                    label1.setText(frameToTime(currentFrame));
-                    //                    progressBar.setValue((int) (currentFrame * 1000 / totalFrames));
+                    ApplicationContext.getInstance().updateTimeline(pausedFrameNumber);
+//                    if (frame.samples != null) {
+//                        for (Buffer sample : frame.samples) {
+//                            ByteBuffer bf = new Pointer(sample).asByteBuffer();
+//                            byte[] ba = new byte[bf.remaining()];
+//                            BytePointer bytePointer = new BytePointer(bf);
+//                            bytePointer.get(ba);
+//                            soundLine.write(ba, 0, ba.length);
+//                        }
+//                    }
                     if (frame.image != null) {
                         image = frame.image.getBufferedImage();
                         repaint();
                         break;
-                    } else {
-                        Buffer samples = frame.samples[0];
-                        ByteBuffer bf = new Pointer(samples).asByteBuffer();
-                        byte[] ba = new byte[bf.remaining()];
-                        BytePointer bytePointer = new BytePointer(bf);
-                        bytePointer.get(ba);
-                        soundLine.write(ba, 0, ba.length);
-                        if (frame.samples.length > 1) {
-                            samples = frame.samples[1];
-                            bf = new Pointer(samples).asByteBuffer();
-                            ba = new byte[bf.remaining()];
-                            bytePointer = new BytePointer(bf);
-                            bytePointer.get(ba);
-                            soundLine.write(ba, 0, ba.length);
-                        }
                     }
                 }
             } catch (FrameGrabber.Exception ex) {
                 LOGGER.debug("error while grabbing", ex);
             }
+            //            }
+            //            playing.set(false);
         }
     }
+
+    private void startPlaying() throws FrameGrabber.Exception {
+        //        Thread grabberThread = new Thread(new Grabber());
+        grabber.restart();
+        grabber.setFrameNumber(pausedFrameNumber);
+        soundLine.start();
+        timer.start();
+        //        grabberThread.start();
+    }
+
+    private void setState(State newState) {
+        state = newState;
+        //        if (newState != State.PLAY) {
+        //            waitPlayingEnd();
+        //        }
+    }
+
+    //    private void waitPlayingEnd() {
+    //        while (playing.get()) {
+    //            try {
+    //                Thread.sleep(10);
+    //            } catch (InterruptedException ignored) {
+    //            }
+    //        }
+    //    }
 
     private static enum State {
         NO_FILE, INITIATED, PLAY, PAUSE, STOP

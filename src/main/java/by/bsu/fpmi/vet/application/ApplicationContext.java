@@ -22,6 +22,16 @@ public final class ApplicationContext {
     private ApplicationContext() {
     }
 
+    public void initTimeline(VideoDetails videoDetails) {
+        setVideoDetails(videoDetails);
+        mainFrame.getVideoPlayerPanel().initTimeline(videoDetails);
+        mainFrame.getVideoPlayer().loadVideo();
+    }
+
+    public void updateTimeline(int frameNumber) {
+        mainFrame.getVideoPlayerPanel().updateTimeline(frameNumber);
+    }
+
     public void updateAfterMotionDetection() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {

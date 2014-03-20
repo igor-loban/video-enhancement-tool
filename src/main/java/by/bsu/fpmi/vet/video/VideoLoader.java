@@ -40,9 +40,7 @@ public final class VideoLoader implements Runnable {
 
             grabber.stop();
 
-            ApplicationContext context = ApplicationContext.getInstance();
-            context.setVideoDetails(videoDetails);
-            context.getMainFrame().getVideoPlayer().loadVideo();
+            ApplicationContext.getInstance().initTimeline(videoDetails);
 
             SwingUtilities.invokeLater(new Runnable() {
                 @Override public void run() {

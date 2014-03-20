@@ -1,6 +1,7 @@
 package by.bsu.fpmi.vet.report;
 
 import by.bsu.fpmi.vet.util.MessageUtils;
+import by.bsu.fpmi.vet.video.VideoUtils;
 import org.joda.time.LocalTime;
 
 import java.awt.image.BufferedImage;
@@ -14,9 +15,10 @@ public final class Snapshot {
 
     private String notes = NO_COMMENT;
 
-    public Snapshot(BufferedImage image, int frameNumber, long millis) {
+    public Snapshot(BufferedImage image, int frameNumber, double frameRate) {
         this.image = image;
         this.frameNumber = frameNumber;
+        long millis = VideoUtils.getFrameMillis(frameNumber, frameRate);
         this.time = LocalTime.fromMillisOfDay(millis);
     }
 
