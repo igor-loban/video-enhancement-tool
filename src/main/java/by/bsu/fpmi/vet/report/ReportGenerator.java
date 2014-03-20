@@ -19,9 +19,12 @@ import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
 import org.docx4j.wml.STBrType;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -30,6 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import static by.bsu.fpmi.vet.util.MessageUtils.getMessage;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -69,7 +73,7 @@ public final class ReportGenerator {
     public void generate() {
         Thread docxReportGeneratorThread = new Thread(new DocxReportGenerator());
         Thread pdfReportGeneratorThread = new Thread(new PdfReportGenerator());
-        docxReportGeneratorThread.start();
+//        docxReportGeneratorThread.start();
         pdfReportGeneratorThread.start();
     }
 
@@ -99,9 +103,16 @@ public final class ReportGenerator {
                     }
                 }
 
-                wordMLPackage.save(new File("report.docx"));
+                wordMLPackage.save(new File("report_" + DateTime.now().toString("yyyy-MM-dd_HH-mm-ss") + ".docx"));
                 docxObjectFactory = null;
                 wordMLPackage = null;
+
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        JOptionPane.showMessageDialog(null, "Reports generated.", "Report",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    }
+                });
             } catch (Docx4JException e) {
                 LOGGER.debug("report generate error", e);
                 throw new ReportGenerationException(e);
@@ -132,16 +143,12 @@ public final class ReportGenerator {
         private Inline createInlineImage(byte[] bytes) {
             try {
                 BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordMLPackage, bytes);
-
-                int docPrId = 1;
-                int cNvPrId = 2;
-
-                return imagePart.createImageInline("Filename hint", "Alternative text", docPrId, cNvPrId, false);
+                Random random = new Random();
+                return imagePart.createImageInline("", "", random.nextInt(), random.nextInt(), false);
             } catch (Exception e) {
                 throw new ReportGenerationException(e);
             }
         }
-
     }
 
     private final class PdfReportGenerator implements Runnable {
@@ -152,7 +159,8 @@ public final class ReportGenerator {
                 }
 
                 Document pdfDocument = new Document(PageSize.A4.rotate());
-                PdfWriter.getInstance(pdfDocument, new FileOutputStream("report.pdf"));
+                PdfWriter.getInstance(pdfDocument,
+                        new FileOutputStream("report_" + DateTime.now().toString("yyyy-MM-dd_HH-mm-ss") + ".pdf"));
                 pdfDocument.open();
 
                 int frameGrabNumber = 1;
@@ -173,6 +181,13 @@ public final class ReportGenerator {
                 }
 
                 pdfDocument.close();
+
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        JOptionPane.showMessageDialog(null, "PDF report generated.", "Report",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    }
+                });
             } catch (IOException | DocumentException e) {
                 LOGGER.debug("report generate error", e);
                 throw new ReportGenerationException(e);

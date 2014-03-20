@@ -1,6 +1,7 @@
 package by.bsu.fpmi.vet.video;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
+import by.bsu.fpmi.vet.application.Status;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacv.FFmpegFrameGrabber;
 import com.googlecode.javacv.Frame;
@@ -8,8 +9,6 @@ import com.googlecode.javacv.FrameGrabber;
 import com.googlecode.javacv.cpp.opencv_core;
 import org.slf4j.Logger;
 
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,6 +47,8 @@ public final class MotionDetector {
         }
 
         analyzeComplete.set(false);
+        // TODO: Block UI
+        ApplicationContext.getInstance().blockUI();
         VideoDetails videoDetails = ApplicationContext.getInstance().getVideoDetails();
         Thread analyzeThread = new Thread(new MotionDetectionAnalyzer(videoDetails));
         analyzeThread.start();
@@ -73,7 +74,6 @@ public final class MotionDetector {
         }
 
         @Override public void run() {
-            // TODO: Block UI
             // Init
             IplImage image = null;
             IplImage prevImage = null;
@@ -97,7 +97,8 @@ public final class MotionDetector {
                     Frame frame = grabFrame();
                     int frameNumber = grabber.getFrameNumber();
 
-                    // TODO: Update Progress Bar
+                    ApplicationContext.getInstance()
+                            .setStatus(Status.ANALYZE, (int) (100 * (double) frameNumber / totalFrameCount));
 
                     if (frameNumber == totalFrameCount || frame == null) {
                         break;
@@ -165,7 +166,7 @@ public final class MotionDetector {
                 videoDetails.setMetaInfo(metaInfo);
                 ApplicationContext.getInstance().updateAfterMotionDetection();
 
-                SwingUtilities.invokeLater(new UIUpdater());
+                ApplicationContext.getInstance().setStatus(Status.ANALYZE, 100);
             } catch (FrameGrabber.Exception e) {
                 LOGGER.debug("grabber exception", e);
             } finally {
@@ -184,12 +185,6 @@ public final class MotionDetector {
             } catch (FrameGrabber.Exception e) {
                 return null;
             }
-        }
-    }
-
-    private static class UIUpdater implements Runnable {
-        @Override public void run() {
-            JOptionPane.showMessageDialog(null, "Motion Detection Complete");
         }
     }
 }

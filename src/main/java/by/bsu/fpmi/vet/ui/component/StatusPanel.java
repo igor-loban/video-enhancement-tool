@@ -7,6 +7,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.Color;
 
+import static by.bsu.fpmi.vet.util.MessageUtils.format;
 import static by.bsu.fpmi.vet.util.MessageUtils.getMessage;
 
 public final class StatusPanel extends JPanel {
@@ -20,9 +21,9 @@ public final class StatusPanel extends JPanel {
         add(statusLabel);
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(Status status, Object... params) {
         String key = status.toString().toLowerCase();
-        statusLabel.setText(getMessage(PREFIX + key));
+        statusLabel.setText(format(PREFIX + key, params));
         int rgb = Integer.parseInt(getMessage(PREFIX + key + ".color"), 16);
         setBackground(new Color(rgb));
         updateUI();

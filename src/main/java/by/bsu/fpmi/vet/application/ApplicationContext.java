@@ -22,8 +22,13 @@ public final class ApplicationContext {
     private ApplicationContext() {
     }
 
-    public void setStatus(Status newStatus) {
-        mainFrame.getStatusPanel().setStatus(newStatus);
+    public void blockUI() {
+        mainFrame.getVideoPlayer().pause();
+        // TODO: disable buttons
+    }
+
+    public void setStatus(Status newStatus, Object... params) {
+        mainFrame.getStatusPanel().setStatus(newStatus, params);
     }
 
     public void initTimeline(VideoDetails videoDetails) {

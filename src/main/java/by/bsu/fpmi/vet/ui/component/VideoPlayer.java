@@ -10,6 +10,7 @@ import com.googlecode.javacv.Frame;
 import com.googlecode.javacv.FrameGrabber;
 import org.slf4j.Logger;
 
+import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
@@ -24,6 +25,7 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -41,9 +43,15 @@ public final class VideoPlayer extends JComponent {
     private int imageWidth;
     private int imageHeight;
     private BufferedImage image;
+    private final BufferedImage demo;
 
     public VideoPlayer() {
-        setDoubleBuffered(true);
+        try {
+            setDoubleBuffered(true);
+            demo = ImageIO.read(getClass().getResource("/demo.png"));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public void loadVideo() {
@@ -98,6 +106,7 @@ public final class VideoPlayer extends JComponent {
         BufferedImage imageCopy = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics g = imageCopy.getGraphics();
         g.drawImage(image, 0, 0, null);
+        g.drawImage(demo, 0, 0, image.getWidth(), image.getHeight(), null);
         g.dispose();
         return new Snapshot(imageCopy, pausedFrameNumber, videoDetails.getFrameRate());
     }
@@ -161,6 +170,7 @@ public final class VideoPlayer extends JComponent {
         g2d.setBackground(Color.BLACK);
         g2d.clearRect(0, 0, size.width, size.height);
         g2d.drawImage(image, x, y, width, height, this);
+        g2d.drawImage(demo, x, y, width, height, this);
     }
 
     public void goToFrameInVideo(int frameNumber) {
