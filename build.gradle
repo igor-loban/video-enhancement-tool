@@ -17,6 +17,8 @@ dependencies {
     compile group: 'org.docx4j', name: 'docx4j', version: '3.0.1'
     compile group: 'com.itextpdf', name: 'itextpdf', version: '5.5.0'
 
+    compile group: 'uk.co.caprica', name: 'vlcj', version: '3.0.1'
+
     compile files('lib/ffmpeg-20130915-git-7ac6c63-windows-x86.jar',
             'lib/ffmpeg-20130915-git-7ac6c63-windows-x86_64.jar',
             'lib/javacpp.jar',

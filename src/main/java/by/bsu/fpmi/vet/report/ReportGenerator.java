@@ -73,7 +73,7 @@ public final class ReportGenerator {
     public void generate() {
         Thread docxReportGeneratorThread = new Thread(new DocxReportGenerator());
         Thread pdfReportGeneratorThread = new Thread(new PdfReportGenerator());
-//        docxReportGeneratorThread.start();
+        docxReportGeneratorThread.start();
         pdfReportGeneratorThread.start();
     }
 
@@ -109,7 +109,7 @@ public final class ReportGenerator {
 
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override public void run() {
-                        JOptionPane.showMessageDialog(null, "Reports generated.", "Report",
+                        JOptionPane.showMessageDialog(null, "DOCX report generated.", "Report",
                                 JOptionPane.INFORMATION_MESSAGE);
                     }
                 });

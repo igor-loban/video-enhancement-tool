@@ -68,6 +68,8 @@ public final class MotionDetector {
         private final VideoDetails videoDetails;
         private final FFmpegFrameGrabber grabber;
 
+        int totalFrameCount;
+
         private MotionDetectionAnalyzer(VideoDetails videoDetails) {
             this.videoDetails = videoDetails;
             this.grabber = videoDetails.getGrabber();
@@ -89,8 +91,10 @@ public final class MotionDetector {
 
             try {
                 grabber.restart();
+                grabber.setFrameNumber(1);
 
-                int totalFrameCount = grabber.getLengthInFrames();
+                totalFrameCount = grabber.getLengthInFrames() - options.getFrameGap();
+                LOGGER.debug("totalFrameCount = {}", totalFrameCount);
 
                 // Process And UpdateUI
                 while (true) {
@@ -100,8 +104,14 @@ public final class MotionDetector {
                     ApplicationContext.getInstance()
                             .setStatus(Status.ANALYZE, (int) (100 * (double) frameNumber / totalFrameCount));
 
-                    if (frameNumber == totalFrameCount || frame == null) {
+                    LOGGER.debug("frameNumber = {}", frameNumber);
+                    LOGGER.debug("frame == null is {}", frame == null);
+                    if (frameNumber >= totalFrameCount || frame == null) {
                         break;
+                    }
+
+                    if (frameNumber % options.getFrameGap() != 0 || frame.image == null) {
+                        continue;
                     }
 
                     cvSmooth(frame.image, frame.image, CV_GAUSSIAN, 9, 9, 2, 2);
@@ -178,10 +188,17 @@ public final class MotionDetector {
         private Frame grabFrame() {
             try {
                 Frame frame;
+                int frameNumber;
                 do {
                     frame = grabber.grabFrame();
-                } while (frame == null || frame.image == null);
-                return frame;
+                    frameNumber = grabber.getFrameNumber();
+                    if (frame != null && frame.image != null) {
+                        return frame;
+                    }
+                    if (frameNumber >= totalFrameCount) {
+                        return null;
+                    }
+                } while (true);
             } catch (FrameGrabber.Exception e) {
                 return null;
             }
