@@ -1,13 +1,12 @@
 package by.bsu.fpmi.vet.video;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
+import by.bsu.fpmi.vet.application.Status;
 import by.bsu.fpmi.vet.ui.component.VideoPlayer;
 import com.googlecode.javacv.FFmpegFrameGrabber;
 import com.googlecode.javacv.FrameGrabber;
 import org.slf4j.Logger;
 
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import java.io.File;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -22,6 +21,7 @@ public final class VideoLoader implements Runnable {
     }
 
     public static void load(File videoFile) {
+        ApplicationContext.getInstance().setStatus(Status.LOADING);
         Thread videoLoader = new Thread(new VideoLoader(videoFile));
         videoLoader.start();
     }
@@ -41,21 +41,8 @@ public final class VideoLoader implements Runnable {
             grabber.stop();
 
             ApplicationContext.getInstance().initTimeline(videoDetails);
-
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override public void run() {
-                    JOptionPane.showMessageDialog(null, "File loading complete.", "File Loader",
-                            JOptionPane.INFORMATION_MESSAGE);
-                }
-            });
         } catch (FrameGrabber.Exception e) {
             LOGGER.debug("video loading exception", e);
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override public void run() {
-                    JOptionPane
-                            .showMessageDialog(null, "File loading failed.", "File Loader", JOptionPane.ERROR_MESSAGE);
-                }
-            });
         }
     }
 }

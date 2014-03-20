@@ -1,6 +1,7 @@
 package by.bsu.fpmi.vet.ui.component;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
+import by.bsu.fpmi.vet.application.Status;
 import by.bsu.fpmi.vet.exception.VideoProcessingException;
 import by.bsu.fpmi.vet.report.Snapshot;
 import by.bsu.fpmi.vet.video.VideoDetails;
@@ -54,6 +55,7 @@ public final class VideoPlayer extends JComponent {
         try {
             setState(State.PLAY);
             startPlaying();
+            ApplicationContext.getInstance().setStatus(Status.PLAYING);
         } catch (FrameGrabber.Exception e) {
             throw new VideoProcessingException(e);
         }
@@ -70,6 +72,7 @@ public final class VideoPlayer extends JComponent {
             timer.stop();
             grabber.stop();
             soundLine.stop();
+            ApplicationContext.getInstance().setStatus(Status.PAUSED);
         } catch (FrameGrabber.Exception e) {
             throw new VideoProcessingException(e);
         }
@@ -78,10 +81,12 @@ public final class VideoPlayer extends JComponent {
     public void stop() {
         try {
             setState(State.STOP);
+            jumpToFrame(1);
             timer.stop();
             grabber.stop();
             soundLine.stop();
             pausedFrameNumber = 1;
+            ApplicationContext.getInstance().setStatus(Status.STOPPED);
         } catch (FrameGrabber.Exception e) {
             throw new VideoProcessingException(e);
         }
@@ -159,9 +164,12 @@ public final class VideoPlayer extends JComponent {
     }
 
     public void goToFrameInVideo(int frameNumber) {
-        try {
-            setState(State.NO_FILE);
+        jumpToFrame(frameNumber);
+        pause();
+    }
 
+    private void jumpToFrame(int frameNumber) {
+        try {
             Frame frame;
             grabber.restart();
             grabber.setFrameNumber(frameNumber);
@@ -173,7 +181,7 @@ public final class VideoPlayer extends JComponent {
                     break;
                 }
             }
-            pause();
+            ApplicationContext.getInstance().updateTimeline(pausedFrameNumber);
         } catch (FrameGrabber.Exception e) {
             LOGGER.debug("go to frame in video error", e);
         }
@@ -188,15 +196,15 @@ public final class VideoPlayer extends JComponent {
                 while ((frame = grabber.grabFrame()) != null) {
                     pausedFrameNumber = grabber.getFrameNumber();
                     ApplicationContext.getInstance().updateTimeline(pausedFrameNumber);
-//                    if (frame.samples != null) {
-//                        for (Buffer sample : frame.samples) {
-//                            ByteBuffer bf = new Pointer(sample).asByteBuffer();
-//                            byte[] ba = new byte[bf.remaining()];
-//                            BytePointer bytePointer = new BytePointer(bf);
-//                            bytePointer.get(ba);
-//                            soundLine.write(ba, 0, ba.length);
-//                        }
-//                    }
+                    //                    if (frame.samples != null) {
+                    //                        for (Buffer sample : frame.samples) {
+                    //                            ByteBuffer bf = new Pointer(sample).asByteBuffer();
+                    //                            byte[] ba = new byte[bf.remaining()];
+                    //                            BytePointer bytePointer = new BytePointer(bf);
+                    //                            bytePointer.get(ba);
+                    //                            soundLine.write(ba, 0, ba.length);
+                    //                        }
+                    //                    }
                     if (frame.image != null) {
                         image = frame.image.getBufferedImage();
                         repaint();

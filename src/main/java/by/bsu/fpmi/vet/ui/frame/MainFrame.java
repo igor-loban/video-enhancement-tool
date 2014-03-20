@@ -29,6 +29,7 @@ public final class MainFrame extends JFrame {
     private final ControlPanel controlPanel = new ControlPanel();
     private final VideoDetailsPanel videoDetailsPanel = new VideoDetailsPanel();
     private final NotesPanel notesPanel = new NotesPanel();
+    private final StatusPanel statusPanel = new StatusPanel();
 
     /**
      * {@link ApplicationContext} can be used inside this method.
@@ -107,7 +108,7 @@ public final class MainFrame extends JFrame {
         gbc.weightx = 1.0;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
-        add(new StatusPanel(), gbc);
+        add(statusPanel, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -146,5 +147,9 @@ public final class MainFrame extends JFrame {
 
     public void goToFrameInVideo(int frameNumber) {
         videoPlayer.goToFrameInVideo(frameNumber);
+    }
+
+    public StatusPanel getStatusPanel() {
+        return statusPanel;
     }
 }

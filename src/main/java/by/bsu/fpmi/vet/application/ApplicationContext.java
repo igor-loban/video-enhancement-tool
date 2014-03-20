@@ -22,6 +22,10 @@ public final class ApplicationContext {
     private ApplicationContext() {
     }
 
+    public void setStatus(Status newStatus) {
+        mainFrame.getStatusPanel().setStatus(newStatus);
+    }
+
     public void initTimeline(VideoDetails videoDetails) {
         setVideoDetails(videoDetails);
         mainFrame.getVideoPlayerPanel().initTimeline(videoDetails);
