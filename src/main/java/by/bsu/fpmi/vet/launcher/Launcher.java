@@ -52,8 +52,18 @@ public final class Launcher {
         try {
             LOGGER.debug("try to load VLC library");
             String vlcHomePath = System.getenv("VLC_HOME");
-            vlcHomePath = vlcHomePath.replace("\\", "\\\\");
-            NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), vlcHomePath);
+            if (vlcHomePath != null) {
+                vlcHomePath = vlcHomePath.replace("\\", "\\\\");
+                NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), vlcHomePath);
+            }
+            NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), "C:\\Program Files\\VideoLAN\\VLC");
+            NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), "C:\\Program Files (x86)\\VideoLAN\\VLC");
+            String userDir = System.getProperty("user.dir");
+            if (userDir != null) {
+                userDir += "\\VLC";
+                userDir = userDir.replace("\\", "\\\\");
+                NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), userDir);
+            }
             Native.loadLibrary(RuntimeUtil.getLibVlcLibraryName(), LibVlc.class);
             LOGGER.debug("VLC library loaded successfully");
             return true;
