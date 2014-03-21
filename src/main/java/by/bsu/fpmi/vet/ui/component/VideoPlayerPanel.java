@@ -1,7 +1,6 @@
 package by.bsu.fpmi.vet.ui.component;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
-import by.bsu.fpmi.vet.report.Snapshot;
 import by.bsu.fpmi.vet.video.MotionDescriptor;
 import by.bsu.fpmi.vet.video.VideoDetails;
 import com.google.common.base.Strings;
@@ -261,8 +260,7 @@ public final class VideoPlayerPanel extends JPanel {
         @Override public void actionPerformed(ActionEvent e) {
             LOGGER.debug("capture frame");
             ApplicationContext context = ApplicationContext.getInstance();
-            Snapshot snapshot = videoPlayer.captureFrame();
-            context.getReportGenerator().addSnapshot(snapshot);
+            videoPlayer.captureFrame();
             context.getMainFrame().setFocusToNotes();
         }
     }
@@ -289,6 +287,8 @@ public final class VideoPlayerPanel extends JPanel {
                 return;
             }
 
+            LOGGER.debug("rewind to previous block");
+
             int currentTime = videoPlayer.getTime();
             List<MotionDescriptor> descriptors = videoDetails.getMotionDescriptors();
             ListIterator<MotionDescriptor> iterator = descriptors.listIterator(descriptors.size());
@@ -307,6 +307,8 @@ public final class VideoPlayerPanel extends JPanel {
             if (videoDetails == null) {
                 return;
             }
+
+            LOGGER.debug("forward to next block");
 
             int currentTime = videoPlayer.getTime();
             for (MotionDescriptor descriptor : videoDetails.getMotionDescriptors()) {

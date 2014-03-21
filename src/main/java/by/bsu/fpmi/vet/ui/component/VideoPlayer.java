@@ -14,12 +14,16 @@ import javax.imageio.ImageIO;
 import javax.swing.JRootPane;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
 public final class VideoPlayer extends JRootPane {
     private static final Logger LOGGER = getLogger(VideoPlayer.class);
+
+    private static final int SNAPSHOT_WIDTH = 320;
+    private static final int SNAPSHOT_HEIGHT = 240;
 
     private final EmbeddedMediaPlayerComponent mediaPlayerComponent;
     private final EmbeddedMediaPlayer mediaPlayer;
@@ -45,10 +49,7 @@ public final class VideoPlayer extends JRootPane {
 
     public void loadVideo() {
         videoDetails = ApplicationContext.getInstance().getVideoDetails();
-
-        mediaPlayer.setSnapshotDirectory("/snapshots");
         mediaPlayer.prepareMedia(videoDetails.getSourceFile().getAbsolutePath());
-
         ApplicationContext.getInstance().setStatus(Status.STOPPED);
     }
 
@@ -68,23 +69,45 @@ public final class VideoPlayer extends JRootPane {
         ApplicationContext.getInstance().setStatus(Status.STOPPED);
     }
 
-    public Snapshot captureFrame() {
+    public boolean captureFrame() {
+        if (videoDetails == null) {
+            return false; // TODO: replace on exception
+        }
+
         pause();
+        return mediaPlayer.saveSnapshot();
+    }
 
-        // TODO: take normal snapshot
+    private BufferedImage processImage(BufferedImage image) {
+        int imageWidth = image.getWidth();
+        int imageHeight = image.getHeight();
 
-        BufferedImage image = mediaPlayer.getVideoSurfaceContents();
-        BufferedImage imageCopy = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        double widthCoeff = (double) SNAPSHOT_WIDTH / imageWidth;
+        double heightCoeff = (double) SNAPSHOT_HEIGHT / imageHeight;
+
+        int width;
+        int height;
+        if (widthCoeff < heightCoeff) {
+            width = SNAPSHOT_WIDTH;
+            height = (int) (widthCoeff * imageHeight);
+        } else {
+            width = (int) (heightCoeff * imageWidth);
+            height = SNAPSHOT_HEIGHT;
+        }
+
+        BufferedImage imageCopy = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics g = imageCopy.getGraphics();
-        g.drawImage(image, 0, 0, null);
-        g.drawImage(demo, 0, 0, image.getWidth(), image.getHeight(), null);
+        g.drawImage(image, 0, 0, width, height, null);
+        g.drawImage(demo, 0, 0, width, height, null);
         g.dispose();
-        return new Snapshot(imageCopy, mediaPlayer.getTime());
+
+        return imageCopy;
     }
 
     public void moveToSnapshot(Snapshot snapshot) {
-        mediaPlayer.setTime(snapshot.getTime());
         pause();
+        mediaPlayer.setTime(snapshot.getTime());
+        ApplicationContext.getInstance().updateTimeline(snapshot.getTime());
     }
 
     public void setTime(int newTime) {
@@ -111,9 +134,19 @@ public final class VideoPlayer extends JRootPane {
         return (int) mediaPlayer.getTime();
     }
 
-    private class MediaPlayerActionHandler extends MediaPlayerEventAdapter {
+    private final class MediaPlayerActionHandler extends MediaPlayerEventAdapter {
         @Override public void timeChanged(MediaPlayer mediaPlayer, final long newTime) {
             ApplicationContext.getInstance().updateTimeline(newTime);
+        }
+
+        @Override public void snapshotTaken(MediaPlayer mediaPlayer, String filename) {
+            try {
+                File file = new File(filename);
+                BufferedImage image = ImageIO.read(file);
+                Snapshot snapshot = new Snapshot(processImage(image), file, getTime());
+                ApplicationContext.getInstance().getReportGenerator().addSnapshot(snapshot);
+            } catch (IOException ignored) {
+            }
         }
     }
 }

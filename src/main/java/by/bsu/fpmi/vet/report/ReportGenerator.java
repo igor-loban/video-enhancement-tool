@@ -31,9 +31,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import static by.bsu.fpmi.vet.util.MessageUtils.getMessage;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -41,11 +41,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 public final class ReportGenerator {
     private final static Logger LOGGER = getLogger(ReportGenerator.class);
 
+    private static final String DATE_TIME_FORMAT = getMessage("format.dateTime.reportFileName");
+
     private final String notesTitle = getMessage("report.label.notes");
     private final List<Snapshot> snapshots = new ArrayList<>();
 
-    private WordprocessingMLPackage wordMLPackage;
-    private ObjectFactory docxObjectFactory;
+    private List<byte[]> imagesAsBytes = Collections.synchronizedList(new ArrayList<byte[]>());
 
     public ReportGenerator() {
     }
@@ -71,13 +72,22 @@ public final class ReportGenerator {
     }
 
     public void generate() {
-        Thread docxReportGeneratorThread = new Thread(new DocxReportGenerator());
+        imagesAsBytes.clear();
+        for (Snapshot snapshot : snapshots) {
+            imagesAsBytes.add(convertImageToByteArray(snapshot.getImage()));
+        }
+
+//        Thread docxReportGeneratorThread = new Thread(new DocxReportGenerator());
+//        docxReportGeneratorThread.start();
+
         Thread pdfReportGeneratorThread = new Thread(new PdfReportGenerator());
-        docxReportGeneratorThread.start();
         pdfReportGeneratorThread.start();
     }
 
     private final class DocxReportGenerator implements Runnable {
+        private WordprocessingMLPackage wordMLPackage;
+        private ObjectFactory docxObjectFactory;
+
         @Override public void run() {
             try {
                 wordMLPackage = WordprocessingMLPackage.createPackage();
@@ -88,14 +98,13 @@ public final class ReportGenerator {
                 Iterator<Snapshot> iterator = snapshots.iterator();
                 while (iterator.hasNext()) {
                     Snapshot snapshot = iterator.next();
+                    byte[] imageAsBytes = imagesAsBytes.get(frameGrabNumber - 1);
 
                     mainDocumentPart.addParagraphOfText("Frame Grab: " + frameGrabNumber++);
-                    mainDocumentPart.addParagraphOfText("Time Index: " + snapshot.getTime());
+                    mainDocumentPart.addParagraphOfText("Time Index: " + snapshot.getTimeAsString());
                     mainDocumentPart.addParagraphOfText(notesTitle);
                     mainDocumentPart.addParagraphOfText(snapshot.getNotes());
-                    byte[] imageAsBytes = convertImageToByteArray(snapshot.getImage());
-                    Inline inlineImage = createInlineImage(imageAsBytes);
-                    P imageParagraph = addInlineImageToParagraph(inlineImage);
+                    P imageParagraph = addInlineImageToParagraph(createInlineImage(imageAsBytes));
                     mainDocumentPart.addObject(imageParagraph);
 
                     if (iterator.hasNext()) {
@@ -103,7 +112,7 @@ public final class ReportGenerator {
                     }
                 }
 
-                wordMLPackage.save(new File("report_" + DateTime.now().toString("yyyy-MM-dd_HH-mm-ss") + ".docx"));
+                wordMLPackage.save(new File("report_" + DateTime.now().toString(DATE_TIME_FORMAT) + ".docx"));
                 docxObjectFactory = null;
                 wordMLPackage = null;
 
@@ -143,8 +152,7 @@ public final class ReportGenerator {
         private Inline createInlineImage(byte[] bytes) {
             try {
                 BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordMLPackage, bytes);
-                Random random = new Random();
-                return imagePart.createImageInline("", "", random.nextInt(), random.nextInt(), false);
+                return imagePart.createImageInline("", "", 1, 2, false);
             } catch (Exception e) {
                 throw new ReportGenerationException(e);
             }
@@ -160,17 +168,17 @@ public final class ReportGenerator {
 
                 Document pdfDocument = new Document(PageSize.A4.rotate());
                 PdfWriter.getInstance(pdfDocument,
-                        new FileOutputStream("report_" + DateTime.now().toString("yyyy-MM-dd_HH-mm-ss") + ".pdf"));
+                        new FileOutputStream("report_" + DateTime.now().toString(DATE_TIME_FORMAT) + ".pdf"));
                 pdfDocument.open();
 
                 int frameGrabNumber = 1;
                 Iterator<Snapshot> iterator = snapshots.iterator();
                 while (iterator.hasNext()) {
                     Snapshot snapshot = iterator.next();
-                    byte[] imageAsBytes = convertImageToByteArray(snapshot.getImage());
+                    byte[] imageAsBytes = imagesAsBytes.get(frameGrabNumber - 1);
 
                     pdfDocument.add(new Paragraph("Frame Grab: " + frameGrabNumber++));
-                    pdfDocument.add(new Paragraph("Time Index: " + snapshot.getTime()));
+                    pdfDocument.add(new Paragraph("Time Index: " + snapshot.getTimeAsString()));
                     pdfDocument.add(new Paragraph(notesTitle));
                     pdfDocument.add(new Paragraph(snapshot.getNotes()));
                     pdfDocument.add(Image.getInstance(imageAsBytes));
@@ -207,4 +215,35 @@ public final class ReportGenerator {
             throw new ReportGenerationException(e);
         }
     }
+
+    //    /**
+    //     * Convert the image from the file into an array of bytes.
+    //     *
+    //     * @param file the image file to be converted
+    //     * @return the byte array containing the bytes from the image
+    //     */
+    //    private static byte[] convertImageToByteArray(File file) {
+    //        try {
+    //            InputStream is = new FileInputStream(file);
+    //            long length = file.length();
+    //            // You cannot create an array using a long, it needs to be an int.
+    //            if (length > Integer.MAX_VALUE) {
+    //                System.out.println("File too large!!");
+    //            }
+    //            byte[] bytes = new byte[(int) length];
+    //            int offset = 0;
+    //            int numRead;
+    //            while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+    //                offset += numRead;
+    //            }
+    //            // Ensure all the bytes have been read
+    //            if (offset < bytes.length) {
+    //                System.out.println("Could not completely read file " + file.getName());
+    //            }
+    //            is.close();
+    //            return bytes;
+    //        } catch (IOException e) {
+    //            throw new IllegalArgumentException(e);
+    //        }
+    //    }
 }

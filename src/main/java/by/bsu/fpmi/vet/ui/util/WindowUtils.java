@@ -1,5 +1,6 @@
 package by.bsu.fpmi.vet.ui.util;
 
+import javax.swing.JFrame;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -15,6 +16,10 @@ public final class WindowUtils {
             window.setSize(size);
         }
         window.setLocation((screenSize.width - size.width) / 2, (screenSize.height - size.height - 20) / 2);
+    }
+
+    public static void maximizeByHeight(JFrame frame) {
+        frame.setExtendedState(JFrame.MAXIMIZED_VERT);
     }
 
     private WindowUtils() {

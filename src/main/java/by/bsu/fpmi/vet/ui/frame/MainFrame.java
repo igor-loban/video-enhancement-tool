@@ -140,6 +140,7 @@ public final class MainFrame extends JFrame {
         pack();
         setMinimumSize(new Dimension(getWidth(), MINIMUM_HEIGHT));
         WindowUtils.setLocationToCenter(this);
+        WindowUtils.maximizeByHeight(this);
     }
 
     public void setFocusToNotes() {

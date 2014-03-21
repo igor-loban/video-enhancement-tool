@@ -5,7 +5,6 @@ import by.bsu.fpmi.vet.report.Snapshot;
 import com.google.common.base.Strings;
 
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -14,7 +13,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -141,18 +139,14 @@ public final class SnapshotPanel extends JPanel {
     private void configureComponents() {
         setBorder(BorderFactory.createEtchedBorder());
 
-        pictureLabel.setIcon(getScaledIcon(snapshot.getImage()));
+        pictureLabel.setIcon(new ImageIcon(snapshot.getImage()));
         orderNumberValueLabel.setText(String.valueOf(orderNumber));
-        timeIndexValueLabel.setText(String.valueOf(snapshot.getTime()));
+        timeIndexValueLabel.setText(String.valueOf(snapshot.getTimeAsString()));
         notesTextArea.setText(snapshot.getNotes());
 
         saveNotesButton.addActionListener(new SaveNotesAction());
         goToFrameInVideoButton.addActionListener(new GoToFrameInVideoAction());
         deleteFrameGrabButton.addActionListener(new DeleteFrameGrabAction());
-    }
-
-    private Icon getScaledIcon(Image image) {
-        return new ImageIcon(image.getScaledInstance(-1, 200, Image.SCALE_SMOOTH));
     }
 
     private final class SaveNotesAction implements ActionListener {
