@@ -2,6 +2,7 @@ package by.bsu.fpmi.vet.ui.component;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
 import by.bsu.fpmi.vet.report.Snapshot;
+import by.bsu.fpmi.vet.video.MotionDescriptor;
 import by.bsu.fpmi.vet.video.VideoDetails;
 import com.google.common.base.Strings;
 import org.joda.time.LocalTime;
@@ -20,6 +21,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
+import java.util.ListIterator;
 
 import static by.bsu.fpmi.vet.util.MessageUtils.format;
 import static by.bsu.fpmi.vet.util.MessageUtils.getMessage;
@@ -78,16 +81,14 @@ public final class VideoPlayerPanel extends JPanel {
     private void setupControlActions() {
         positionSlider.addChangeListener(new PositionChangedHandler());
 
+        rewindButton.addActionListener(new RewindAction());
         playButton.addActionListener(new PlayAction());
         pauseButton.addActionListener(new PauseAction());
         stopButton.addActionListener(new StopAction());
+        forwardButton.addActionListener(new ForwardAction());
 
         speedPlusButton.addActionListener(new SpeedPlusAction());
         speedMinusButton.addActionListener(new SpeedMinusAction());
-
-        // TODO: implement
-        rewindButton.setEnabled(false);
-        forwardButton.setEnabled(false);
 
         volumeSlider.addChangeListener(new VolumeChangedHandler());
         muteSoundCheckBox.addChangeListener(new MuteChangedHandler());
@@ -279,6 +280,41 @@ public final class VideoPlayerPanel extends JPanel {
         @Override public void stateChanged(ChangeEvent e) {
             JCheckBox muteSoundCheckBox = (JCheckBox) e.getSource();
             videoPlayer.mute(muteSoundCheckBox.isSelected());
+        }
+    }
+
+    private final class RewindAction implements ActionListener {
+        @Override public void actionPerformed(ActionEvent e) {
+            if (videoDetails == null) {
+                return;
+            }
+
+            int currentTime = videoPlayer.getTime();
+            List<MotionDescriptor> descriptors = videoDetails.getMotionDescriptors();
+            ListIterator<MotionDescriptor> iterator = descriptors.listIterator(descriptors.size());
+            while (iterator.hasPrevious()) {
+                MotionDescriptor descriptor = iterator.previous();
+                if (descriptor.getTime() <= currentTime) {
+                    videoPlayer.setTime(descriptor.getTime() - 50);
+                    break;
+                }
+            }
+        }
+    }
+
+    private final class ForwardAction implements ActionListener {
+        @Override public void actionPerformed(ActionEvent e) {
+            if (videoDetails == null) {
+                return;
+            }
+
+            int currentTime = videoPlayer.getTime();
+            for (MotionDescriptor descriptor : videoDetails.getMotionDescriptors()) {
+                if (descriptor.getTime() >= currentTime) {
+                    videoPlayer.setTime(descriptor.getTime() + 1);
+                    break;
+                }
+            }
         }
     }
 }

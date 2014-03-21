@@ -107,6 +107,10 @@ public final class VideoPlayer extends JRootPane {
         mediaPlayer.setVolume(volume);
     }
 
+    public int getTime() {
+        return (int) mediaPlayer.getTime();
+    }
+
     private class MediaPlayerActionHandler extends MediaPlayerEventAdapter {
         @Override public void timeChanged(MediaPlayer mediaPlayer, final long newTime) {
             ApplicationContext.getInstance().updateTimeline(newTime);

@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public final class ColoredSliderUI extends BasicSliderUI {
+    private static final Color RED = new Color(255, 0, 0); // Нет движения
     private static final Color GREEN = new Color(0, 255, 0); // Нет движения
     private static final Color BLUE = new Color(0, 0, 255); // Есть движение
 
@@ -57,6 +58,8 @@ public final class ColoredSliderUI extends BasicSliderUI {
     private void drawColorBlock(Graphics2D g2d, MotionDescriptor descriptor, int dx, int width) {
         g2d.setColor(descriptor.isVideoFlag() ? BLUE : GREEN);
         g2d.fillRect(trackRect.x + dx, trackRect.y, width, height);
+        g2d.setColor(RED);
+        g2d.fillRect(trackRect.x + dx - 1, trackRect.y, 3, height);
     }
 
     @Override
