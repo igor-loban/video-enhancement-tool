@@ -1,5 +1,6 @@
 package by.bsu.fpmi.vet.ui.util;
 
+import javax.swing.JFrame;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -19,5 +20,9 @@ public final class WindowUtils {
 
     private WindowUtils() {
         throwInstantiationError(this.getClass());
+    }
+
+    public static void maximize(JFrame frame) {
+        frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
     }
 }

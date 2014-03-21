@@ -5,7 +5,7 @@ import by.bsu.fpmi.vet.report.Snapshot;
 import by.bsu.fpmi.vet.ui.action.Actions;
 import by.bsu.fpmi.vet.ui.component.StatusPanel;
 import by.bsu.fpmi.vet.ui.component.VideoPlayer;
-import by.bsu.fpmi.vet.ui.component.VideoPlayerComponent;
+import by.bsu.fpmi.vet.ui.component.VideoPlayerPanel;
 import by.bsu.fpmi.vet.ui.composite.ControlPanel;
 import by.bsu.fpmi.vet.ui.composite.NotesPanel;
 import by.bsu.fpmi.vet.ui.composite.VideoDetailsPanel;
@@ -26,7 +26,7 @@ public final class MainFrame extends JFrame {
     private static final int MINIMUM_HEIGHT = 614;
 
     private final VideoPlayer videoPlayer = new VideoPlayer();
-    private final VideoPlayerComponent videoPlayerComponent = new VideoPlayerComponent(videoPlayer);
+    private final VideoPlayerPanel videoPlayerPanel = new VideoPlayerPanel(videoPlayer);
     private final ControlPanel controlPanel = new ControlPanel();
     private final VideoDetailsPanel videoDetailsPanel = new VideoDetailsPanel();
     private final NotesPanel notesPanel = new NotesPanel();
@@ -47,8 +47,8 @@ public final class MainFrame extends JFrame {
         return videoPlayer;
     }
 
-    public VideoPlayerComponent getVideoPlayerComponent() {
-        return videoPlayerComponent;
+    public VideoPlayerPanel getVideoPlayerPanel() {
+        return videoPlayerPanel;
     }
 
     private void setActionOnClose() {
@@ -101,7 +101,7 @@ public final class MainFrame extends JFrame {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        add(videoPlayerComponent, gbc);
+        add(videoPlayerPanel, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -139,7 +139,7 @@ public final class MainFrame extends JFrame {
     private void setupSizeAndLocation() {
         pack();
         setMinimumSize(new Dimension(getWidth(), MINIMUM_HEIGHT));
-        WindowUtils.setLocationToCenter(this);
+        WindowUtils.maximize(this);
     }
 
     public void setFocusToNotes() {
@@ -152,5 +152,9 @@ public final class MainFrame extends JFrame {
 
     public StatusPanel getStatusPanel() {
         return statusPanel;
+    }
+
+    public VideoDetailsPanel getVideoDetailsPanel() {
+        return videoDetailsPanel;
     }
 }

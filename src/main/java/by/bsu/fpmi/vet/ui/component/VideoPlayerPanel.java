@@ -15,7 +15,6 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -26,8 +25,8 @@ import static by.bsu.fpmi.vet.util.MessageUtils.format;
 import static by.bsu.fpmi.vet.util.MessageUtils.getMessage;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public final class VideoPlayerComponent extends JPanel {
-    private static final Logger LOGGER = getLogger(VideoPlayerComponent.class);
+public final class VideoPlayerPanel extends JPanel {
+    private static final Logger LOGGER = getLogger(VideoPlayerPanel.class);
 
     private final VideoPlayer videoPlayer;
 
@@ -56,7 +55,7 @@ public final class VideoPlayerComponent extends JPanel {
     private VideoDetails videoDetails;
     private boolean firePositionChanged;
 
-    public VideoPlayerComponent(VideoPlayer videoPlayer) {
+    public VideoPlayerPanel(VideoPlayer videoPlayer) {
         this.videoPlayer = videoPlayer;
 
         configureComponents();
@@ -69,8 +68,6 @@ public final class VideoPlayerComponent extends JPanel {
     }
 
     private void configureComponents() {
-        controlPanel.setBackground(Color.RED);
-
         positionSlider.setUI(coloredSliderUI);
 
         volumeSlider.setPaintTicks(true);
@@ -116,12 +113,7 @@ public final class VideoPlayerComponent extends JPanel {
         gbc.fill = GridBagConstraints.NONE;
         controlPanel.add(positionLabel, gbc);
 
-        JPanel playButtonPanel = new JPanel();
-        playButtonPanel.add(rewindButton);
-        playButtonPanel.add(playButton);
-        playButtonPanel.add(pauseButton);
-        playButtonPanel.add(stopButton);
-        playButtonPanel.add(forwardButton);
+        JPanel playButtonPanel = getPlayButtonPanel();
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 1;
@@ -149,13 +141,26 @@ public final class VideoPlayerComponent extends JPanel {
         gbc.anchor = GridBagConstraints.CENTER;
         controlPanel.add(soundControlPanel, gbc);
 
-        JPanel captureButtonPanel = new JPanel();
-        captureButtonPanel.add(captureFrameButton);
         gbc.gridx = 3;
         gbc.weightx = 0;
         gbc.anchor = GridBagConstraints.EAST;
         gbc.insets = new Insets(2, 5, 2, 0);
-        controlPanel.add(captureButtonPanel, gbc);
+        controlPanel.add(captureFrameButton, gbc);
+    }
+
+    private JPanel getPlayButtonPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc2 = new GridBagConstraints();
+        gbc2.gridy = 0;
+        gbc2.insets = new Insets(0, 0, 0, 2);
+        panel.add(rewindButton, gbc2);
+        gbc2.insets = new Insets(0, 2, 0, 2);
+        panel.add(playButton, gbc2);
+        panel.add(pauseButton, gbc2);
+        panel.add(stopButton, gbc2);
+        panel.add(forwardButton, gbc2);
+        return panel;
     }
 
     public void init(VideoDetails videoDetails) {

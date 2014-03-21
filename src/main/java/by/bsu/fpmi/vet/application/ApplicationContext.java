@@ -35,23 +35,24 @@ public final class ApplicationContext {
     public void updateAfterLoad(VideoDetails videoDetails) {
         setVideoDetails(videoDetails);
         mainFrame.getVideoPlayer().loadVideo();
-        mainFrame.getVideoPlayerComponent().init(videoDetails);
+        mainFrame.getVideoPlayerPanel().init(videoDetails);
+        mainFrame.getVideoDetailsPanel().update(videoDetails);
     }
 
     public void updateTimeline(long newTime) {
-        mainFrame.getVideoPlayerComponent().updateTimeline(newTime);
+        mainFrame.getVideoPlayerPanel().updateTimeline(newTime);
     }
 
     public void updateAfterMotionDetection() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
                 ApplicationContext.getInstance().setStatus(Status.ANALYZE, 100);
-                mainFrame.getVideoPlayerComponent().initColoredSlider();
+                mainFrame.getVideoPlayerPanel().initColoredSlider();
             }
         });
 //        ApplicationContext.getInstance().setStatus(Status.ANALYZE, 100);
-//        mainFrame.getVideoPlayerComponent().initColoredSlider();
-//        mainFrame.getVideoPlayerComponent().updateUI();
+//        mainFrame.getVideoPlayerPanel().initColoredSlider();
+//        mainFrame.getVideoPlayerPanel().updateUI();
     }
 
     public void moveToSnapshot(Snapshot snapshot) {
