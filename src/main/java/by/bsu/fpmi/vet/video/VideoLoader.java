@@ -33,14 +33,17 @@ public final class VideoLoader implements Runnable {
 
             VideoDetails videoDetails = new VideoDetails(videoFile);
             videoDetails.setGrabber(grabber);
-            videoDetails.setTotalFrameCount(grabber.getLengthInFrames());
-            videoDetails.setFrameRate(grabber.getFrameRate());
+            int totalFrameCount = grabber.getLengthInFrames();
+            videoDetails.setTotalFrameCount(totalFrameCount);
+            double frameRate = grabber.getFrameRate();
+            videoDetails.setFrameRate(frameRate);
+            videoDetails.setTotalTime((long) (1_000 * totalFrameCount / frameRate));
             videoDetails.setWidth(grabber.getImageWidth());
             videoDetails.setHeight(grabber.getImageHeight());
 
             grabber.stop();
 
-            ApplicationContext.getInstance().initTimeline(videoDetails);
+            ApplicationContext.getInstance().updateAfterLoad(videoDetails);
         } catch (FrameGrabber.Exception e) {
             LOGGER.debug("video loading exception", e);
         }

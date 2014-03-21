@@ -12,6 +12,7 @@ public final class VideoDetails {
     private Map<Integer, Boolean> metaInfo;
 
     private double frameRate;
+    private long totalTime; // Millis
     private int totalFrameCount;
     private int width;
     private int height;
@@ -70,5 +71,13 @@ public final class VideoDetails {
 
     public void setHeight(int height) {
         this.height = height;
+    }
+
+    public long getTotalTime() {
+        return totalTime;
+    }
+
+    public void setTotalTime(long totalTime) {
+        this.totalTime = totalTime;
     }
 }

@@ -166,7 +166,7 @@ public final class SnapshotPanel extends JPanel {
 
     private final class GoToFrameInVideoAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
-            ApplicationContext.getInstance().goToFrameInVideo(snapshot.getFrameNumber());
+            ApplicationContext.getInstance().moveToSnapshot(snapshot);
         }
     }
 

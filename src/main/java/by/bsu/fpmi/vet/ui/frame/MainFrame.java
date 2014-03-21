@@ -1,10 +1,11 @@
 package by.bsu.fpmi.vet.ui.frame;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
+import by.bsu.fpmi.vet.report.Snapshot;
 import by.bsu.fpmi.vet.ui.action.Actions;
 import by.bsu.fpmi.vet.ui.component.StatusPanel;
 import by.bsu.fpmi.vet.ui.component.VideoPlayer;
-import by.bsu.fpmi.vet.ui.component.VideoPlayerPanel;
+import by.bsu.fpmi.vet.ui.component.VideoPlayerComponent;
 import by.bsu.fpmi.vet.ui.composite.ControlPanel;
 import by.bsu.fpmi.vet.ui.composite.NotesPanel;
 import by.bsu.fpmi.vet.ui.composite.VideoDetailsPanel;
@@ -25,7 +26,7 @@ public final class MainFrame extends JFrame {
     private static final int MINIMUM_HEIGHT = 614;
 
     private final VideoPlayer videoPlayer = new VideoPlayer();
-    private final VideoPlayerPanel videoPlayerPanel = new VideoPlayerPanel(videoPlayer);
+    private final VideoPlayerComponent videoPlayerComponent = new VideoPlayerComponent(videoPlayer);
     private final ControlPanel controlPanel = new ControlPanel();
     private final VideoDetailsPanel videoDetailsPanel = new VideoDetailsPanel();
     private final NotesPanel notesPanel = new NotesPanel();
@@ -46,8 +47,8 @@ public final class MainFrame extends JFrame {
         return videoPlayer;
     }
 
-    public VideoPlayerPanel getVideoPlayerPanel() {
-        return videoPlayerPanel;
+    public VideoPlayerComponent getVideoPlayerComponent() {
+        return videoPlayerComponent;
     }
 
     private void setActionOnClose() {
@@ -100,7 +101,7 @@ public final class MainFrame extends JFrame {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        add(videoPlayerPanel, gbc);
+        add(videoPlayerComponent, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -145,8 +146,8 @@ public final class MainFrame extends JFrame {
         notesPanel.getNotesTextArea().grabFocus();
     }
 
-    public void goToFrameInVideo(int frameNumber) {
-        videoPlayer.goToFrameInVideo(frameNumber);
+    public void moveToSnapshot(Snapshot snapshot) {
+        videoPlayer.moveToSnapshot(snapshot);
     }
 
     public StatusPanel getStatusPanel() {

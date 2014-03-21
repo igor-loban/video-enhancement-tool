@@ -1,6 +1,7 @@
 package by.bsu.fpmi.vet.application;
 
 import by.bsu.fpmi.vet.report.ReportGenerator;
+import by.bsu.fpmi.vet.report.Snapshot;
 import by.bsu.fpmi.vet.ui.dialog.FrameGrabsDialog;
 import by.bsu.fpmi.vet.ui.frame.MainFrame;
 import by.bsu.fpmi.vet.video.MotionDetector;
@@ -31,26 +32,26 @@ public final class ApplicationContext {
         mainFrame.getStatusPanel().setStatus(newStatus, params);
     }
 
-    public void initTimeline(VideoDetails videoDetails) {
+    public void updateAfterLoad(VideoDetails videoDetails) {
         setVideoDetails(videoDetails);
-        mainFrame.getVideoPlayerPanel().initTimeline(videoDetails);
         mainFrame.getVideoPlayer().loadVideo();
+        mainFrame.getVideoPlayerComponent().init(videoDetails);
     }
 
-    public void updateTimeline(int frameNumber) {
-        mainFrame.getVideoPlayerPanel().updateTimeline(frameNumber);
+    public void updateTimeline(long newTime) {
+        mainFrame.getVideoPlayerComponent().updateTimeline(newTime);
     }
 
     public void updateAfterMotionDetection() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
-                mainFrame.getVideoPlayerPanel().initColoredSlider();
+                mainFrame.getVideoPlayerComponent().initColoredSlider();
             }
         });
     }
 
-    public void goToFrameInVideo(int frameNumber) {
-        mainFrame.goToFrameInVideo(frameNumber);
+    public void moveToSnapshot(Snapshot snapshot) {
+        mainFrame.moveToSnapshot(snapshot);
         if (frameGrabsDialog != null) {
             frameGrabsDialog.close();
         }

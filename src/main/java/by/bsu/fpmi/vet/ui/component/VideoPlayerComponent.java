@@ -10,6 +10,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -21,15 +23,15 @@ import static by.bsu.fpmi.vet.util.MessageUtils.format;
 import static by.bsu.fpmi.vet.util.MessageUtils.getMessage;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public final class VideoPlayerPanel extends JPanel {
-    private static final Logger LOGGER = getLogger(VideoPlayerPanel.class);
+public final class VideoPlayerComponent extends JPanel {
+    private static final Logger LOGGER = getLogger(VideoPlayerComponent.class);
 
     private final VideoPlayer videoPlayer;
 
     private final JPanel controlPanel = new JPanel();
-    private final JLabel currentPositionLabel =
+    private final JLabel positionLabel =
             new JLabel(format("ui.panel.videoPlayer.label.currentPosition", "00:00:00", "00:00:00"));
-    private final JSlider currentPositionSlider = new JSlider(1, 100, 1);
+    private final JSlider positionSlider = new JSlider(0, 100, 0);
 
     private final JButton rewindButton = new JButton(getMessage("ui.panel.videoPlayer.button.rewind"));
     private final JButton playButton = new JButton(getMessage("ui.panel.videoPlayer.button.play"));
@@ -48,8 +50,9 @@ public final class VideoPlayerPanel extends JPanel {
     private final JButton captureFrameButton = new JButton(getMessage("ui.panel.videoPlayer.button.captureFrame"));
 
     private VideoDetails videoDetails;
+    private boolean firePositionChanged;
 
-    public VideoPlayerPanel(VideoPlayer videoPlayer) {
+    public VideoPlayerComponent(VideoPlayer videoPlayer) {
         this.videoPlayer = videoPlayer;
 
         configureComponents();
@@ -62,18 +65,21 @@ public final class VideoPlayerPanel extends JPanel {
     }
 
     private void configureComponents() {
+        positionSlider.setUI(new ColoredSliderUI(positionSlider, null));
+
         volumeSlider.setPaintTicks(true);
         volumeSlider.setMajorTickSpacing(10);
         volumeSlider.setMinorTickSpacing(5);
     }
 
     private void setupControlActions() {
+        positionSlider.addChangeListener(new PositionChangedHandler());
+
         playButton.addActionListener(new PlayAction());
         pauseButton.addActionListener(new PauseAction());
         stopButton.addActionListener(new StopAction());
 
         // TODO: implement
-        currentPositionSlider.setEnabled(false);
         rewindButton.setEnabled(false);
         forwardButton.setEnabled(false);
         speedPlusButton.setEnabled(false);
@@ -93,13 +99,13 @@ public final class VideoPlayerPanel extends JPanel {
         gbc.gridwidth = 4;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.CENTER;
-        controlPanel.add(currentPositionSlider, gbc);
+        controlPanel.add(positionSlider, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 4;
         gbc.fill = GridBagConstraints.NONE;
-        controlPanel.add(currentPositionLabel, gbc);
+        controlPanel.add(positionLabel, gbc);
 
         JPanel playButtonPanel = new JPanel();
         playButtonPanel.add(rewindButton);
@@ -143,18 +149,21 @@ public final class VideoPlayerPanel extends JPanel {
         controlPanel.add(captureButtonPanel, gbc);
     }
 
-    public void initTimeline(VideoDetails videoDetails) {
+    public void init(VideoDetails videoDetails) {
         this.videoDetails = videoDetails;
-        currentPositionSlider.setMaximum(videoDetails.getTotalFrameCount());
-        currentPositionSlider.setValue(1);
+        positionSlider.setMinimum(0);
+        positionSlider.setMaximum((int) videoDetails.getTotalTime());
+        updateTimeline(0);
     }
 
     public void initColoredSlider() {
-        currentPositionSlider.setUI(new ColoredSliderUI(currentPositionSlider, videoDetails.getMetaInfo()));
+        positionSlider.setUI(new ColoredSliderUI(positionSlider, videoDetails.getMetaInfo()));
     }
 
-    public void updateTimeline(int frameNumber) {
-        currentPositionSlider.setValue(frameNumber);
+    public void updateTimeline(long newTime) {
+        firePositionChanged = false;
+        positionSlider.setValue((int) newTime);
+        firePositionChanged = true;
     }
 
     private final class PlayAction implements ActionListener {
@@ -185,6 +194,15 @@ public final class VideoPlayerPanel extends JPanel {
             Snapshot snapshot = videoPlayer.captureFrame();
             context.getReportGenerator().addSnapshot(snapshot);
             context.getMainFrame().setFocusToNotes();
+        }
+    }
+
+    private final class PositionChangedHandler implements ChangeListener {
+        @Override public void stateChanged(ChangeEvent e) {
+            JSlider positionSlider = (JSlider) e.getSource();
+            if (positionSlider.getValueIsAdjusting() && firePositionChanged) {
+                videoPlayer.setTime(positionSlider.getValue());
+            }
         }
     }
 }
