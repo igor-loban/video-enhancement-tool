@@ -45,9 +45,13 @@ public final class ApplicationContext {
     public void updateAfterMotionDetection() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
+                ApplicationContext.getInstance().setStatus(Status.ANALYZE, 100);
                 mainFrame.getVideoPlayerComponent().initColoredSlider();
             }
         });
+//        ApplicationContext.getInstance().setStatus(Status.ANALYZE, 100);
+//        mainFrame.getVideoPlayerComponent().initColoredSlider();
+//        mainFrame.getVideoPlayerComponent().updateUI();
     }
 
     public void moveToSnapshot(Snapshot snapshot) {

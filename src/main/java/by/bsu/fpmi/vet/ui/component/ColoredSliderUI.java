@@ -1,92 +1,78 @@
 package by.bsu.fpmi.vet.ui.component;
 
+import by.bsu.fpmi.vet.video.MotionDescriptor;
+import by.bsu.fpmi.vet.video.VideoDetails;
+
 import javax.swing.JSlider;
 import javax.swing.plaf.basic.BasicSliderUI;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 
 public final class ColoredSliderUI extends BasicSliderUI {
-    Map<Integer, Boolean> arr = null;
-    Integer min;
-    Integer max;
-    Integer w;
+    private static final Color GREEN = new Color(0, 255, 0); // Нет движения
+    private static final Color BLUE = new Color(0, 0, 255); // Есть движение
 
-    //OpenCVFrameGrabber grab;
-    public ColoredSliderUI(JSlider b, Map<Integer, Boolean> metaInfo) {
-        super(b);
-        min = b.getMinimum();
-        max = b.getMaximum();
-        arr = metaInfo;
-    }
+    private static final int height = 20;
 
-    private int val2XPos(int val) {
-        return w * (val - min) / (max - min);
-    }
+    private List<MotionDescriptor> motionDescriptors;
+    private int width;
+    private int maxValue = 1;
 
-    @Override
-    protected void scrollDueToClickInTrack(int direction) {
-        // this is the default behaviour, let's comment that out
-        //scrollByBlock(direction);
-
-        int value = slider.getValue();
-        if (slider.getOrientation() == JSlider.HORIZONTAL) {
-            value = this.valueForXPosition(slider.getMousePosition().x);
-        } else if (slider.getOrientation() == JSlider.VERTICAL) {
-            value = this.valueForYPosition(slider.getMousePosition().y);
-        }
-        slider.setValue(value);
+    public ColoredSliderUI(JSlider slider) {
+        super(slider);
     }
 
     @Override
     public void paintTrack(Graphics g) {
-        // Draw track.
-        if (arr == null) {
+        if (motionDescriptors == null || motionDescriptors.isEmpty()) {
             super.paintTrack(g);
             return;
         }
 
-        Rectangle r = trackRect;
-        w = r.width;
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(new Color(0, 0, 255, 100));
-        BasicStroke pen1 = new BasicStroke(0); //толщина линии 20
-        g2d.setStroke(pen1);
 
-        Iterator it = arr.entrySet().iterator();
-        Map.Entry<Integer, Boolean> pairs = (Map.Entry<Integer, Boolean>) it.next();
-        while (it.hasNext()) {
-            Map.Entry<Integer, Boolean> pairs2 = (Map.Entry<Integer, Boolean>) it.next();
-            int _x = r.x + val2XPos((int) pairs.getKey());
-            int _y = r.y;
-            int _w = val2XPos((int) pairs2.getKey()) - val2XPos((int) pairs.getKey());
-            int _h = 20;
-            g2d.setColor(new Color(255, 0, 0, 200));
-            g2d.fillRect(_x - 1, _y, 3, 20);
-            if (pairs.getValue()) {
-                g2d.setColor(new Color(0, 0, 255, 200));
-            } else {
-                g2d.setColor(new Color(0, 255, 0, 200));
-            }
-            g2d.fillRect(_x + 1, _y, _w - 1, _h);
-            pairs = pairs2;
+        width = trackRect.width;
+
+        g2d.setColor(BLUE);
+        g2d.setStroke(new BasicStroke(0));
+
+        Iterator<MotionDescriptor> iterator = motionDescriptors.iterator();
+        MotionDescriptor descriptor = iterator.next();
+        while (iterator.hasNext()) {
+            MotionDescriptor nextDescriptor = iterator.next();
+            int dx = getX(descriptor.getTime());
+            int blockWidth = getX(nextDescriptor.getTime()) - getX(descriptor.getTime());
+            drawColorBlock(g2d, descriptor, dx, blockWidth);
+            descriptor = nextDescriptor;
         }
-        int _x = r.x + val2XPos((int) pairs.getKey());
-        int _y = r.y;
-        int _w = w - val2XPos((int) pairs.getKey());
-        int _h = 20;
-        g2d.setColor(new Color(255, 0, 0, 200));
-        g2d.fillRect(_x - 1, _y, 3, 20);
-        if (pairs.getValue()) {
-            g2d.setColor(new Color(0, 0, 255, 200));
-        } else {
-            g2d.setColor(new Color(0, 255, 0, 200));
+        int dx = getX(descriptor.getTime());
+        int _w = width - getX(descriptor.getTime());
+        drawColorBlock(g2d, descriptor, dx, _w);
+    }
+
+    private void drawColorBlock(Graphics2D g2d, MotionDescriptor descriptor, int dx, int width) {
+        g2d.setColor(descriptor.isVideoFlag() ? BLUE : GREEN);
+        g2d.fillRect(trackRect.x + dx, trackRect.y, width, height);
+    }
+
+    @Override
+    protected void scrollDueToClickInTrack(int direction) {
+        if (slider.getOrientation() == JSlider.HORIZONTAL) {
+            int value = this.valueForXPosition(slider.getMousePosition().x);
+            slider.setValue(value);
         }
-        g2d.fillRect(_x + 1, _y, _w - 1, _h);
-        //g2d.fillRect(r.x+val2XPos((int)pairs.getKey()), r.y, w-val2XPos((int)pairs.getKey()), 20);
+    }
+
+    private int getX(int value) {
+        return width * value / maxValue;
+    }
+
+    public void setVideoDetails(VideoDetails videoDetails) {
+        this.motionDescriptors = videoDetails.getMotionDescriptors();
+        this.maxValue = (int) videoDetails.getTotalTime();
     }
 }

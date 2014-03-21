@@ -3,13 +3,14 @@ package by.bsu.fpmi.vet.video;
 import com.googlecode.javacv.FFmpegFrameGrabber;
 
 import java.io.File;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class VideoDetails {
     private final File sourceFile;
 
     private FFmpegFrameGrabber grabber;
-    private Map<Integer, Boolean> metaInfo;
+    private List<MotionDescriptor> motionDescriptors = new ArrayList<>();
 
     private double frameRate;
     private long totalTime; // Millis
@@ -33,12 +34,12 @@ public final class VideoDetails {
         this.grabber = grabber;
     }
 
-    public Map<Integer, Boolean> getMetaInfo() {
-        return metaInfo;
+    public List<MotionDescriptor> getMotionDescriptors() {
+        return motionDescriptors;
     }
 
-    public void setMetaInfo(Map<Integer, Boolean> metaInfo) {
-        this.metaInfo = metaInfo;
+    public void setMotionDescriptors(List<MotionDescriptor> motionDescriptors) {
+        this.motionDescriptors = motionDescriptors;
     }
 
     public double getFrameRate() {

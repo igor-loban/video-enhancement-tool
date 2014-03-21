@@ -9,8 +9,7 @@ import com.googlecode.javacv.FrameGrabber;
 import com.googlecode.javacv.cpp.opencv_core;
 import org.slf4j.Logger;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.googlecode.javacv.cpp.opencv_core.CvMemStorage;
@@ -68,15 +67,19 @@ public final class MotionDetector {
         private final VideoDetails videoDetails;
         private final FFmpegFrameGrabber grabber;
 
-        int totalFrameCount;
+        private int totalFrameCount;
 
         private MotionDetectionAnalyzer(VideoDetails videoDetails) {
             this.videoDetails = videoDetails;
-            this.grabber = videoDetails.getGrabber();
+            this.grabber = videoDetails == null ? null : videoDetails.getGrabber();
         }
 
         @Override public void run() {
-            // Init
+            if (grabber == null) {
+                // TODO: Add error message?
+                return;
+            }
+
             IplImage image = null;
             IplImage prevImage = null;
             IplImage diff = null;
@@ -84,10 +87,11 @@ public final class MotionDetector {
             CvMemStorage storage = CvMemStorage.create();
 
             boolean currentVideoFlag = true;
-            int currentBlockFrame = 0; //timeLine.currentFrame;
+            int currentBlockFrame = 0;
             int currentBlockCounter = 0;
-            Map<Integer, Integer> thumbnailInfo = new LinkedHashMap<>();
-            Map<Integer, Boolean> metaInfo = new LinkedHashMap<>();
+
+            //            Map<Integer, Integer> thumbnailInfo = new LinkedHashMap<>(); // TODO: why it is used?
+            List<MotionDescriptor> motionDescriptors = videoDetails.getMotionDescriptors();
 
             try {
                 grabber.restart();
@@ -95,11 +99,11 @@ public final class MotionDetector {
 
                 totalFrameCount = grabber.getLengthInFrames() - options.getFrameGap();
 
-                // Process And UpdateUI
                 while (true) {
                     Frame frame = grabFrame();
                     int frameNumber = grabber.getFrameNumber();
 
+                    // Update UI
                     ApplicationContext.getInstance()
                             .setStatus(Status.ANALYZE, (int) (100 * (double) frameNumber / totalFrameCount));
 
@@ -144,42 +148,43 @@ public final class MotionDetector {
 
                         cvFindContours(diff, storage, contour, Loader.sizeof(opencv_core.CvContour.class), CV_RETR_LIST,
                                 CV_CHAIN_APPROX_SIMPLE);
-                        if (!contour.isNull()) {
-                            currentBlockCounter = 0;
-                            if (!currentVideoFlag) {
-                                metaInfo.put(currentBlockFrame, false);
-                                thumbnailInfo.put(currentBlockFrame, currentBlockFrame);
-                                currentBlockFrame = frameNumber;
-                                currentVideoFlag = true;
-                            }
-                        } else {
+                        if (contour.isNull()) {
                             currentBlockCounter += options.getFrameGap();
                             if ((currentBlockCounter >= options.getSlideDetection()) && (currentBlockCounter
                                     < options.getSlideDetection() + options.getFrameGap())) {
-                                // TODO: what is 5?
+                                // TODO: what it is 5?
                                 if (frameNumber < currentBlockCounter + 5 + options.getFrameGap()) {
                                     currentVideoFlag = false;
                                 }
-                                metaInfo.put(currentBlockFrame, currentVideoFlag);
-                                thumbnailInfo.put(currentBlockFrame, currentBlockFrame);
+                                motionDescriptors
+                                        .add(new MotionDescriptor(getTime(currentBlockFrame), currentVideoFlag));
+                                // thumbnailInfo.put(currentBlockFrame, currentBlockFrame);
                                 currentBlockFrame = frameNumber - options.getSlideDetection();
                                 currentVideoFlag = false;
+                            }
+                        } else {
+                            currentBlockCounter = 0;
+                            if (!currentVideoFlag) {
+                                motionDescriptors.add(new MotionDescriptor(getTime(currentBlockFrame), false));
+                                // thumbnailInfo.put(currentBlockFrame, currentBlockFrame);
+                                currentBlockFrame = frameNumber;
+                                currentVideoFlag = true;
                             }
                         }
                     }
                 }
 
-                // TODO: save result
-                videoDetails.setMetaInfo(metaInfo);
                 ApplicationContext.getInstance().updateAfterMotionDetection();
-
-                ApplicationContext.getInstance().setStatus(Status.ANALYZE, 100);
             } catch (FrameGrabber.Exception e) {
                 LOGGER.debug("grabber exception", e);
             } finally {
                 // Release resources
                 analyzeComplete.set(true);
             }
+        }
+
+        private int getTime(int frameNumber) {
+            return (int) (1000 * frameNumber / videoDetails.getFrameRate());
         }
 
         private Frame grabFrame() {

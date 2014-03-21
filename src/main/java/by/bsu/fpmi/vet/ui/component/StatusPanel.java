@@ -26,6 +26,6 @@ public final class StatusPanel extends JPanel {
         statusLabel.setText(format(PREFIX + key, params));
         int rgb = Integer.parseInt(getMessage(PREFIX + key + ".color"), 16);
         setBackground(new Color(rgb));
-        updateUI();
+        repaint();
     }
 }

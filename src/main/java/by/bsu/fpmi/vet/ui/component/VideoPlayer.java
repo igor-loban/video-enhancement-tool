@@ -58,7 +58,7 @@ public final class VideoPlayer extends JRootPane {
     }
 
     public void pause() {
-        mediaPlayer.pause();
+        mediaPlayer.setPause(true);
         ApplicationContext.getInstance().setStatus(Status.PAUSED);
     }
 

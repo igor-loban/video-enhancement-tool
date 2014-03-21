@@ -15,6 +15,7 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -34,6 +35,7 @@ public final class VideoPlayerComponent extends JPanel {
     private final JLabel positionLabel =
             new JLabel(format("ui.panel.videoPlayer.label.currentPosition", "00:00:00", "00:00:00"));
     private final JSlider positionSlider = new JSlider(0, 100, 0);
+    private final ColoredSliderUI coloredSliderUI = new ColoredSliderUI(positionSlider);
 
     private final JButton rewindButton = new JButton(getMessage("ui.panel.videoPlayer.button.rewind"));
     private final JButton playButton = new JButton(getMessage("ui.panel.videoPlayer.button.play"));
@@ -67,8 +69,9 @@ public final class VideoPlayerComponent extends JPanel {
     }
 
     private void configureComponents() {
-        // TODO: optimize slider UI
-        positionSlider.setUI(new ColoredSliderUI(positionSlider, null));
+        controlPanel.setBackground(Color.RED);
+
+        positionSlider.setUI(coloredSliderUI);
 
         volumeSlider.setPaintTicks(true);
         volumeSlider.setMajorTickSpacing(10);
@@ -160,10 +163,12 @@ public final class VideoPlayerComponent extends JPanel {
         positionSlider.setMinimum(0);
         positionSlider.setMaximum((int) videoDetails.getTotalTime());
         updateTimeline(0);
+        initColoredSlider();
     }
 
     public void initColoredSlider() {
-        positionSlider.setUI(new ColoredSliderUI(positionSlider, videoDetails.getMetaInfo()));
+        coloredSliderUI.setVideoDetails(videoDetails);
+        positionSlider.repaint();
     }
 
     public void updateTimeline(long newTime) {
