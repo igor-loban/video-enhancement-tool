@@ -91,6 +91,22 @@ public final class VideoPlayer extends JRootPane {
         mediaPlayer.setTime(newTime);
     }
 
+    public float getRate() {
+        return mediaPlayer.getRate();
+    }
+
+    public int setRate(float rate) {
+        return mediaPlayer.setRate(rate);
+    }
+
+    public void mute(boolean muted) {
+        mediaPlayer.mute(muted);
+    }
+
+    public void setVolume(int volume) {
+        mediaPlayer.setVolume(volume);
+    }
+
     private class MediaPlayerActionHandler extends MediaPlayerEventAdapter {
         @Override public void timeChanged(MediaPlayer mediaPlayer, final long newTime) {
             ApplicationContext.getInstance().updateTimeline(newTime);

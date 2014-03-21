@@ -3,6 +3,8 @@ package by.bsu.fpmi.vet.ui.component;
 import by.bsu.fpmi.vet.application.ApplicationContext;
 import by.bsu.fpmi.vet.report.Snapshot;
 import by.bsu.fpmi.vet.video.VideoDetails;
+import com.google.common.base.Strings;
+import org.joda.time.LocalTime;
 import org.slf4j.Logger;
 
 import javax.swing.JButton;
@@ -41,11 +43,11 @@ public final class VideoPlayerComponent extends JPanel {
 
     private final JButton speedMinusButton = new JButton(getMessage("ui.panel.videoPlayer.button.speedMinus"));
     private final JButton speedPlusButton = new JButton(getMessage("ui.panel.videoPlayer.button.speedPlus"));
-    private final JLabel speedLabel = new JLabel("1x");
+    private final JLabel speedLabel = new JLabel("x1.000");
 
     private final JLabel volumeLabel = new JLabel(getMessage("ui.panel.videoPlayer.label.volume"));
     private final JCheckBox muteSoundCheckBox = new JCheckBox(getMessage("ui.panel.videoPlayer.button.muteSound"));
-    private final JSlider volumeSlider = new JSlider(0, 100, 50);
+    private final JSlider volumeSlider = new JSlider(0, 100);
 
     private final JButton captureFrameButton = new JButton(getMessage("ui.panel.videoPlayer.button.captureFrame"));
 
@@ -65,6 +67,7 @@ public final class VideoPlayerComponent extends JPanel {
     }
 
     private void configureComponents() {
+        // TODO: optimize slider UI
         positionSlider.setUI(new ColoredSliderUI(positionSlider, null));
 
         volumeSlider.setPaintTicks(true);
@@ -79,13 +82,16 @@ public final class VideoPlayerComponent extends JPanel {
         pauseButton.addActionListener(new PauseAction());
         stopButton.addActionListener(new StopAction());
 
+        speedPlusButton.addActionListener(new SpeedPlusAction());
+        speedMinusButton.addActionListener(new SpeedMinusAction());
+
         // TODO: implement
         rewindButton.setEnabled(false);
         forwardButton.setEnabled(false);
-        speedPlusButton.setEnabled(false);
-        speedMinusButton.setEnabled(false);
-        volumeSlider.setEnabled(false);
-        muteSoundCheckBox.setEnabled(false);
+
+        volumeSlider.addChangeListener(new VolumeChangedHandler());
+        muteSoundCheckBox.addChangeListener(new MuteChangedHandler());
+        videoPlayer.setVolume(50);
 
         captureFrameButton.addActionListener(new CaptureFrameAction());
     }
@@ -187,6 +193,59 @@ public final class VideoPlayerComponent extends JPanel {
         }
     }
 
+    private final class PositionChangedHandler implements ChangeListener {
+        @Override public void stateChanged(ChangeEvent e) {
+            JSlider positionSlider = (JSlider) e.getSource();
+            int newTime = positionSlider.getValue();
+            if (firePositionChanged) {
+                videoPlayer.setTime(newTime);
+            }
+            updatePositionLabel(newTime, positionSlider.getMaximum());
+        }
+
+        private void updatePositionLabel(int newTime, int totalTime) {
+            // TODO: optimize total time computing
+            positionLabel.setText(format("ui.panel.videoPlayer.label.currentPosition", timeToString(newTime),
+                    timeToString(totalTime)));
+        }
+
+        private String timeToString(int time) {
+            return LocalTime.fromMillisOfDay(time).toString("HH:mm:ss");
+        }
+    }
+
+    private final class SpeedPlusAction implements ActionListener {
+        @Override public void actionPerformed(ActionEvent e) {
+            float rate = videoPlayer.getRate();
+            float newRate = rate * 2.0F;
+            if (rate >= 8.0F) {
+                videoPlayer.setRate(8.0F);
+                return;
+            }
+            int result = videoPlayer.setRate(newRate);
+            if (result == 0) {
+                LOGGER.debug("speed increased from {} to {}", rate, newRate);
+                speedLabel.setText(Strings.padEnd("x" + newRate, 6, '0'));
+            }
+        }
+    }
+
+    private final class SpeedMinusAction implements ActionListener {
+        @Override public void actionPerformed(ActionEvent e) {
+            float rate = videoPlayer.getRate();
+            float newRate = rate / 2.0F;
+            if (rate <= 0.125F) {
+                videoPlayer.setRate(0.125F);
+                return;
+            }
+            int result = videoPlayer.setRate(newRate);
+            if (result == 0) {
+                LOGGER.debug("speed decreased from {} to {}", rate, newRate);
+                speedLabel.setText(Strings.padEnd("x" + newRate, 6, '0'));
+            }
+        }
+    }
+
     private final class CaptureFrameAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
             LOGGER.debug("capture frame");
@@ -197,12 +256,19 @@ public final class VideoPlayerComponent extends JPanel {
         }
     }
 
-    private final class PositionChangedHandler implements ChangeListener {
+    private final class VolumeChangedHandler implements ChangeListener {
         @Override public void stateChanged(ChangeEvent e) {
-            JSlider positionSlider = (JSlider) e.getSource();
-            if (positionSlider.getValueIsAdjusting() && firePositionChanged) {
-                videoPlayer.setTime(positionSlider.getValue());
-            }
+            JSlider volumeSlider = (JSlider) e.getSource();
+            int volume = volumeSlider.getValue();
+            videoPlayer.setVolume(volume);
+            muteSoundCheckBox.setSelected(volume == 0);
+        }
+    }
+
+    private final class MuteChangedHandler implements ChangeListener {
+        @Override public void stateChanged(ChangeEvent e) {
+            JCheckBox muteSoundCheckBox = (JCheckBox) e.getSource();
+            videoPlayer.mute(muteSoundCheckBox.isSelected());
         }
     }
 }
