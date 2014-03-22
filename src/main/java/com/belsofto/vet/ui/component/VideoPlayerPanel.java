@@ -1,12 +1,15 @@
 package com.belsofto.vet.ui.component;
 
 import com.belsofto.vet.application.ApplicationContext;
+import com.belsofto.vet.application.Status;
 import com.belsofto.vet.report.Snapshot;
 import com.belsofto.vet.media.MotionDescriptor;
 import com.belsofto.vet.media.VideoDetails;
 import com.google.common.base.Strings;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
+import uk.co.caprica.vlcj.player.MediaPlayer;
+import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -183,6 +186,13 @@ public final class VideoPlayerPanel extends JPanel {
         firePositionChanged = true;
     }
 
+    public void playAllMovement() {
+        videoPlayer.stop();
+        videoPlayer.addMediaPlayerEventListener(new PlayAllMovementAction());
+        videoPlayer.play();
+        ApplicationContext.getInstance().setStatus(Status.PLAYING_ALL_MOVEMENT);
+    }
+
     private final class PlayAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
             LOGGER.debug("play media");
@@ -201,6 +211,7 @@ public final class VideoPlayerPanel extends JPanel {
         @Override public void actionPerformed(ActionEvent e) {
             LOGGER.debug("stop media");
             videoPlayer.stop();
+            validate();
         }
     }
 
@@ -319,6 +330,34 @@ public final class VideoPlayerPanel extends JPanel {
                 if (descriptor.getTime() >= currentTime) {
                     videoPlayer.setTime(descriptor.getTime() + 1);
                     break;
+                }
+            }
+        }
+    }
+
+    private final class PlayAllMovementAction extends MediaPlayerEventAdapter {
+        @Override public void timeChanged(MediaPlayer mediaPlayer, final long newTime) {
+            if (ApplicationContext.getInstance().getStatus() != Status.PLAYING_ALL_MOVEMENT) {
+                videoPlayer.removeMediaPlayerEventListener(this);
+                return;
+            }
+
+            List<MotionDescriptor> descriptors = videoDetails.getMotionDescriptors();
+            ListIterator<MotionDescriptor> iterator = descriptors.listIterator(descriptors.size());
+            while (iterator.hasPrevious()) {
+                MotionDescriptor descriptor = iterator.previous();
+                if (newTime > descriptor.getTime()) {
+                    if (!descriptor.hasMotion()) {
+                        while (iterator.hasNext()) {
+                            MotionDescriptor descriptorWithMotion = iterator.next();
+                            if (descriptorWithMotion.hasMotion()) {
+                                videoPlayer.setTime(descriptorWithMotion.getTime() + 3);
+                                return;
+                            }
+                        }
+                        videoPlayer.stop();
+                    }
+                    return;
                 }
             }
         }

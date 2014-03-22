@@ -13,7 +13,7 @@ public final class MotionDescriptor {
         return time;
     }
 
-    public boolean isVideoFlag() {
+    public boolean hasMotion() {
         return videoFlag;
     }
 }

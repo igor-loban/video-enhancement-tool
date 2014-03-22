@@ -13,6 +13,8 @@ import javax.swing.SwingUtilities;
 public final class ApplicationContext {
     private static final ApplicationContext INSTANCE = new ApplicationContext();
 
+    private Status status = Status.DEFAULT;
+
     private MainFrame mainFrame;
     private FrameGrabsDialog frameGrabsDialog;
 
@@ -31,6 +33,7 @@ public final class ApplicationContext {
     }
 
     public void setStatus(Status newStatus, Object... params) {
+        this.status = newStatus;
         mainFrame.getStatusPanel().setStatus(newStatus, params);
     }
 
@@ -39,6 +42,7 @@ public final class ApplicationContext {
         mainFrame.getVideoPlayer().loadVideo();
         mainFrame.getVideoPlayerPanel().init(videoDetails);
         mainFrame.getVideoDetailsPanel().update(videoDetails);
+        setStatus(Status.LOADING_COMPLETE);
     }
 
     public void updateTimeline(long newTime) {
@@ -63,6 +67,10 @@ public final class ApplicationContext {
         if (frameGrabsDialog != null) {
             frameGrabsDialog.close();
         }
+    }
+
+    public void playAllMovement() {
+        mainFrame.getVideoPlayerPanel().playAllMovement();
     }
 
     public static ApplicationContext getInstance() {
@@ -115,5 +123,9 @@ public final class ApplicationContext {
 
     public void setSoundDetector(SoundDetector soundDetector) {
         this.soundDetector = soundDetector;
+    }
+
+    public Status getStatus() {
+        return status;
     }
 }

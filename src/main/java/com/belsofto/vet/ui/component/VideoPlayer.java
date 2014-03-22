@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.MediaPlayer;
 import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
+import uk.co.caprica.vlcj.player.MediaPlayerEventListener;
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
 
 import javax.imageio.ImageIO;
@@ -15,6 +16,8 @@ import javax.swing.JRootPane;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -26,6 +29,7 @@ public final class VideoPlayer extends JRootPane {
 
     private final EmbeddedMediaPlayerComponent mediaPlayerComponent;
     private final EmbeddedMediaPlayer mediaPlayer;
+    private final List<MediaPlayerEventListener> listeners = new ArrayList<>();
 
     private VideoDetails videoDetails;
 
@@ -64,6 +68,7 @@ public final class VideoPlayer extends JRootPane {
 
     public void stop() {
         mediaPlayer.stop();
+        clearMediaPlayerEventListener();
         ApplicationContext.getInstance().updateTimeline(mediaPlayer.getTime());
         ApplicationContext.getInstance().setStatus(Status.STOPPED);
     }
@@ -132,6 +137,22 @@ public final class VideoPlayer extends JRootPane {
 
     public int getTime() {
         return (int) mediaPlayer.getTime();
+    }
+
+    public void addMediaPlayerEventListener(MediaPlayerEventListener listener) {
+        listeners.add(listener);
+        mediaPlayer.addMediaPlayerEventListener(listener);
+    }
+
+    public void removeMediaPlayerEventListener(MediaPlayerEventListener listener) {
+        mediaPlayer.removeMediaPlayerEventListener(listener);
+    }
+
+    public void clearMediaPlayerEventListener() {
+        for (MediaPlayerEventListener listener : listeners) {
+            removeMediaPlayerEventListener(listener);
+        }
+        listeners.clear();
     }
 
     private final class MediaPlayerActionHandler extends MediaPlayerEventAdapter {

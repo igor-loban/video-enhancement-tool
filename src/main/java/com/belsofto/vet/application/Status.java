@@ -1,5 +1,15 @@
 package com.belsofto.vet.application;
 
 public enum Status {
-    DEFAULT, LOADING, PLAYING, PAUSED, STOPPED, ANALYZE
+    DEFAULT,
+
+    LOADING,
+    LOADING_COMPLETE,
+
+    PLAYING,
+    PAUSED,
+    STOPPED,
+    PLAYING_ALL_MOVEMENT,
+
+    ANALYZE
 }

@@ -90,14 +90,13 @@ public final class MotionDetector {
             int currentBlockFrame = 0;
             int currentBlockCounter = 0;
 
-            //            Map<Integer, Integer> thumbnailInfo = new LinkedHashMap<>(); // TODO: why it is used?
             List<MotionDescriptor> motionDescriptors = videoDetails.getMotionDescriptors();
 
             try {
                 grabber.restart();
                 grabber.setFrameNumber(1);
 
-                totalFrameCount = grabber.getLengthInFrames() - options.getFrameGap();
+                totalFrameCount = grabber.getLengthInFrames();
 
                 while (true) {
                     Frame frame = grabFrame();

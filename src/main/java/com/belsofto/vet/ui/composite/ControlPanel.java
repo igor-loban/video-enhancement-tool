@@ -1,12 +1,17 @@
 package com.belsofto.vet.ui.composite;
 
+import com.belsofto.vet.application.ApplicationContext;
+import com.belsofto.vet.media.VideoDetails;
 import com.belsofto.vet.ui.component.TitledPanel;
+import com.belsofto.vet.ui.dialog.DialogUtils;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import static com.belsofto.vet.util.MessageUtils.getMessage;
 
@@ -25,7 +30,8 @@ public final class ControlPanel extends TitledPanel {
 
     private void configureComponents() {
         enhancementButton.setEnabled(false);
-        playMovementButton.setEnabled(false);
+
+        playMovementButton.addActionListener(new PlayMovementAction());
         playSoundButton.setEnabled(false);
     }
 
@@ -47,5 +53,17 @@ public final class ControlPanel extends TitledPanel {
 
         gbc.gridy = 2;
         content.add(playSoundButton, gbc);
+    }
+
+    private final class PlayMovementAction implements ActionListener {
+        @Override public void actionPerformed(ActionEvent e) {
+            ApplicationContext context = ApplicationContext.getInstance();
+            VideoDetails videoDetails = context.getVideoDetails();
+            if (videoDetails == null || videoDetails.getMotionDescriptors().isEmpty()) {
+                DialogUtils.showErrorMessage("noMovementFound");
+                return;
+            }
+            context.playAllMovement();
+        }
     }
 }
