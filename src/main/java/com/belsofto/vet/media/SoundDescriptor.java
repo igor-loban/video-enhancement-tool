@@ -2,18 +2,18 @@ package com.belsofto.vet.media;
 
 public final class SoundDescriptor {
     private final int time;
-    private final boolean soundPresent;
+    private final boolean noisePresent;
 
-    public SoundDescriptor(int time, boolean soundPresent) {
+    public SoundDescriptor(int time, boolean noisePresent) {
         this.time = time;
-        this.soundPresent = soundPresent;
+        this.noisePresent = noisePresent;
     }
 
     public int getTime() {
         return time;
     }
 
-    public boolean isSoundPresent() {
-        return soundPresent;
+    public boolean isNoisePresent() {
+        return noisePresent;
     }
 }

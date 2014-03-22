@@ -1,6 +1,7 @@
 package com.belsofto.vet.launcher;
 
 import com.belsofto.vet.application.ApplicationContext;
+import com.belsofto.vet.media.SoundDetector;
 import com.belsofto.vet.report.ReportGenerator;
 import com.belsofto.vet.ui.frame.MainFrame;
 import com.belsofto.vet.media.MotionDetector;
@@ -39,6 +40,7 @@ public final class Launcher {
                 context.setMainFrame(mainFrame);
                 context.setReportGenerator(new ReportGenerator());
                 context.setMotionDetector(new MotionDetector());
+                context.setSoundDetector(new SoundDetector());
                 LOGGER.debug("ApplicationContext initialized");
                 mainFrame.init();
                 LOGGER.debug("MainFrame initialized");

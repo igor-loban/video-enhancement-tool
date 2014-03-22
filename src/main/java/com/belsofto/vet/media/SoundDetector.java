@@ -2,12 +2,20 @@ package com.belsofto.vet.media;
 
 import com.belsofto.vet.application.ApplicationContext;
 import com.belsofto.vet.application.Status;
+import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacv.FFmpegFrameGrabber;
 import com.googlecode.javacv.Frame;
 import com.googlecode.javacv.FrameGrabber;
 import org.slf4j.Logger;
 
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -15,7 +23,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public final class SoundDetector {
     private static final Logger LOGGER = getLogger(SoundDetector.class);
 
-//    private MotionDetectionOptions options = new MotionDetectionOptions(5, 30, 16, false);
+    //    private MotionDetectionOptions options = new MotionDetectionOptions(5, 30, 16, false);
 
     private final AtomicBoolean analyzeComplete = new AtomicBoolean(true);
 
@@ -33,15 +41,15 @@ public final class SoundDetector {
         analyzeThread.start();
     }
 
-//    public MotionDetectionOptions getOptions() {
-//        return options;
-//    }
+    //    public MotionDetectionOptions getOptions() {
+    //        return options;
+    //    }
 
-//    public void setOptions(MotionDetectionOptions options) {
-//        if (options != null) {
-//            this.options = options;
-//        }
-//    }
+    //    public void setOptions(MotionDetectionOptions options) {
+    //        if (options != null) {
+    //            this.options = options;
+    //        }
+    //    }
 
     private final class SoundDetectionAnalyzer implements Runnable {
         private final VideoDetails videoDetails;
@@ -60,17 +68,6 @@ public final class SoundDetector {
                 return;
             }
 
-//            IplImage image = null;
-//            IplImage prevImage = null;
-//            IplImage diff = null;
-
-//            CvMemStorage storage = CvMemStorage.create();
-
-            boolean noisePresent = true;
-            int currentBlockFrame = 0;
-            int currentBlockCounter = 0;
-
-            //            Map<Integer, Integer> thumbnailInfo = new LinkedHashMap<>(); // TODO: why it is used?
             List<SoundDescriptor> soundDescriptors = videoDetails.getSoundDescriptors();
 
             try {
@@ -79,99 +76,145 @@ public final class SoundDetector {
 
                 totalFrameCount = grabber.getLengthInFrames() - 10;
 
-                double mean1 = 1;
-                double mean2;
+                List<AudioFrameDescriptor> descriptors = new ArrayList<>();
 
                 while (true) {
                     Frame frame = grabFrameWithSamples();
                     int frameNumber = grabber.getFrameNumber();
 
+                    if (frameNumber % 3 != 0) {
+                        continue;
+                    }
+
                     // Update UI
                     ApplicationContext.getInstance()
-                            .setStatus(Status.ANALYZE, (int) (100 * (double) frameNumber / totalFrameCount));
+                            .setStatus(Status.ANALYZE, (int) (90 * (double) frameNumber / totalFrameCount));
 
                     if (frameNumber >= totalFrameCount || frame == null) {
                         break;
                     }
 
-//                    mean2 = getSamplesMean(frame.samples);
-
-//                    double diff = Math.abs(mean2 / mean1 - 1);
-//                    noisePresent = diff < 0.5 ? noisePresent : !noisePresent;
-
-//                    if (diff > ) {
-//                    }
-
-//                    if (frameNumber % options.getFrameGap() != 0) {
-//                        continue;
-//                    }
-
-//                    cvSmooth(frame.image, frame.image, CV_GAUSSIAN, 9, 9, 2, 2);
-//                    if (image == null) {
-//                        image = cvCreateImage(cvSize(frame.image.width(), frame.image.height()), IPL_DEPTH_8U, 1);
-//                        cvCvtColor(frame.image, image, CV_RGB2GRAY);
-//                    } else {
-//                        if (prevImage != null) {
-//                            try {
-//                                cvReleaseImage(prevImage);
-//                            } catch (Exception ignored) {
-//                            }
-//                        }
-//                        prevImage = cvCloneImage(image);
-//                        try {
-//                            cvReleaseImage(image);
-//                        } catch (Exception ignored) {
-//                        }
-//                        image = cvCreateImage(cvSize(frame.image.width(), frame.image.height()), IPL_DEPTH_8U, 1);
-//                        cvCvtColor(frame.image, image, CV_RGB2GRAY);
-//                    }
-//
-//                    if (diff == null) {
-//                        diff = create(frame.image.width(), frame.image.height(), IPL_DEPTH_8U, 1);
-//                    }
-//
-//                    if (prevImage != null) {
-//                        cvAbsDiff(image, prevImage, diff);
-//
-//                        cvThreshold(diff, diff, options.getColorThreshold(), 255, CV_THRESH_BINARY);
-//
-//                        opencv_core.CvSeq contour = new opencv_core.CvSeq(null);
-//
-//                        cvFindContours(diff, storage, contour, Loader.sizeof(opencv_core.CvContour.class), CV_RETR_LIST,
-//                                CV_CHAIN_APPROX_SIMPLE);
-//                        if (contour.isNull()) {
-//                            currentBlockCounter += options.getFrameGap();
-//                            if ((currentBlockCounter >= options.getSlideDetection()) && (currentBlockCounter
-//                                    < options.getSlideDetection() + options.getFrameGap())) {
-//                                // TODO: what it is 5?
-//                                if (frameNumber < currentBlockCounter + 5 + options.getFrameGap()) {
-//                                    soundPresent = false;
-//                                }
-//                                soundDescriptors
-//                                        .add(new MotionDescriptor(getTime(currentBlockFrame), soundPresent));
-//                                // thumbnailInfo.put(currentBlockFrame, currentBlockFrame);
-//                                currentBlockFrame = frameNumber - options.getSlideDetection();
-//                                soundPresent = false;
-//                            }
-//                        } else {
-//                            currentBlockCounter = 0;
-//                            if (!soundPresent) {
-//                                soundDescriptors.add(new MotionDescriptor(getTime(currentBlockFrame), false));
-//                                // thumbnailInfo.put(currentBlockFrame, currentBlockFrame);
-//                                currentBlockFrame = frameNumber;
-//                                soundPresent = true;
-//                            }
-//                        }
-//                    }
+                    descriptors.add(new AudioFrameDescriptor(frameNumber, frame.samples));
                 }
 
-                ApplicationContext.getInstance().updateAfterMotionDetection();
+                List<List<Double>> meansList = new ArrayList<>();
+                int count = 0;
+                for (AudioFrameDescriptor descriptor : descriptors) {
+                    List<byte[]> samples = descriptor.getSamplesAsBytes();
+                    if (samples.size() > meansList.size()) {
+                        for (int difference = samples.size() - meansList.size(); difference > 0; --difference) {
+                            meansList.add(new ArrayList<Double>());
+                        }
+                    }
+
+                    for (int i = 0; i < samples.size(); ++i) {
+                        byte[] bytes = samples.get(i);
+                        List<Double> means = meansList.get(i);
+
+                        long sum = calcSum(bytes);
+                        double mean = (double) sum / bytes.length;
+                        descriptor.setMean(i, mean);
+                        means.add(mean);
+                    }
+
+                    // Update UI
+                    ApplicationContext.getInstance()
+                            .setStatus(Status.ANALYZE, 90 + (int) (5 * (double) count++ / descriptors.size()));
+                }
+
+                List<Double> upperBounds = new ArrayList<>();
+                List<Double> lowerBounds = new ArrayList<>();
+                for (List<Double> means : meansList) {
+                    Collections.sort(means);
+                    int size = means.size();
+                    upperBounds.add(means.get((int) (0.9 * size)));
+                    lowerBounds.add(means.get((int) (0.1 * size)));
+                }
+
+                Iterator<AudioFrameDescriptor> iterator = descriptors.iterator();
+                AudioFrameDescriptor descriptor = iterator.next();
+                boolean noisePresent = hasNoise(descriptor, upperBounds, lowerBounds);
+                soundDescriptors.add(new SoundDescriptor(getTime(descriptor.getFrameNumber()), noisePresent));
+
+                count = 0;
+                boolean noisePresentPrev = noisePresent;
+                int frameNumber;
+                int frameNumberPrev = descriptor.getFrameNumber();
+                while (iterator.hasNext()) {
+                    descriptor = iterator.next();
+                    noisePresent = hasNoise(descriptor, upperBounds, lowerBounds);
+                    if (noisePresent == noisePresentPrev) {
+                        continue;
+                    }
+                    frameNumber = descriptor.getFrameNumber();
+                    if (frameNumber - frameNumberPrev <= 10 && noisePresentPrev) {
+                        continue;
+                    }
+
+                    soundDescriptors.add(new SoundDescriptor(getTime(descriptor.getFrameNumber()), noisePresent));
+                    noisePresentPrev = noisePresent;
+
+                    // Update UI
+                    ApplicationContext.getInstance()
+                            .setStatus(Status.ANALYZE, 95 + (int) (5 * (double) count++ / descriptors.size()));
+                }
+
+                for (int i = soundDescriptors.size() - 2; i >= 0; --i) {
+                    SoundDescriptor rightDescriptor = soundDescriptors.get(i + 1);
+                    SoundDescriptor leftDescriptor = soundDescriptors.get(i);
+                    if (!leftDescriptor.isNoisePresent()
+                            && rightDescriptor.getTime() - leftDescriptor.getTime() < 1000) {
+                        soundDescriptors.remove(i + 1);
+                        soundDescriptors.remove(i);
+                        i--;
+                    }
+                }
+
+                for (int i = soundDescriptors.size() - 2; i >= 0; --i) {
+                    SoundDescriptor rightDescriptor = soundDescriptors.get(i + 1);
+                    SoundDescriptor leftDescriptor = soundDescriptors.get(i);
+                    if (leftDescriptor.isNoisePresent()
+                            && rightDescriptor.getTime() - leftDescriptor.getTime() < 100) {
+                        soundDescriptors.remove(i + 1);
+                        soundDescriptors.remove(i);
+                        i--;
+                    }
+                }
+
+                ApplicationContext.getInstance().updateAfterSoundDetection();
             } catch (FrameGrabber.Exception e) {
                 LOGGER.debug("grabber exception", e);
             } finally {
                 // Release resources
                 analyzeComplete.set(true);
             }
+        }
+
+        private boolean hasNoise(AudioFrameDescriptor descriptor, List<Double> upperBounds, List<Double> lowerBounds) {
+            for (int i = 0; i < upperBounds.size(); i++) {
+                double upperBound = upperBounds.get(i);
+                double lowerBound = lowerBounds.get(i);
+                Double mean = descriptor.getMean(i);
+                if (mean != null && (mean >= upperBound || mean <= lowerBound)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private long calcSum(byte[] bytes) {
+            long sum = 0;
+            for (byte value : bytes) {
+                sum += value;
+            }
+            return sum;
+        }
+
+        private byte[] toByteArray(Buffer sample) {
+            ByteBuffer byteBuffer = new Pointer(sample).asByteBuffer();
+            byte[] result = new byte[byteBuffer.remaining()];
+            byteBuffer.get(result);
+            return result;
         }
 
         private int getTime(int frameNumber) {
@@ -194,6 +237,71 @@ public final class SoundDetector {
                 } while (true);
             } catch (FrameGrabber.Exception e) {
                 return null;
+            }
+        }
+
+        private final class Statistics {
+            private long sum;
+            private List<Byte> bytes = new ArrayList<>();
+
+            private double mean;
+            private double disp;
+
+            public void add(byte[] bytes, long sum) {
+                for (byte value : bytes) {
+                    this.bytes.add(value);
+                }
+                this.sum += sum;
+            }
+
+            public void evaluate() {
+                mean = (double) sum / bytes.size();
+                for (byte value : bytes) {
+                    disp += square(value - mean);
+                }
+                disp = Math.sqrt(disp / (bytes.size() - 1));
+            }
+
+            private double square(double value) {
+                return value * value;
+            }
+
+            public double getLowerBound() {
+                return mean - disp;
+            }
+
+            public double getUpperBound() {
+                return mean + disp;
+            }
+        }
+
+        private final class AudioFrameDescriptor {
+            private final int frameNumber;
+            private final List<byte[]> samplesAsBytes;
+            private final Map<Integer, Double> means = new HashMap<>();
+
+            private AudioFrameDescriptor(int frameNumber, Buffer[] samples) {
+                this.frameNumber = frameNumber;
+                this.samplesAsBytes = new ArrayList<>(samples.length);
+                for (Buffer sample : samples) {
+                    samplesAsBytes.add(toByteArray(sample));
+                }
+            }
+
+            public int getFrameNumber() {
+                return frameNumber;
+            }
+
+            public List<byte[]> getSamplesAsBytes() {
+                return samplesAsBytes;
+            }
+
+            public void setMean(int i, double mean) {
+                means.put(i, mean);
+            }
+
+            public Double getMean(int i) {
+                return means.get(i);
             }
         }
     }

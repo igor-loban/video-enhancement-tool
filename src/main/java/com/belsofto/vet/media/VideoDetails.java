@@ -4,14 +4,15 @@ import com.googlecode.javacv.FFmpegFrameGrabber;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class VideoDetails {
     private final File sourceFile;
 
     private FFmpegFrameGrabber grabber;
-    private List<MotionDescriptor> motionDescriptors = new ArrayList<>();
-    private List<SoundDescriptor> soundDescriptors = new ArrayList<>();
+    private List<MotionDescriptor> motionDescriptors = Collections.synchronizedList(new ArrayList<MotionDescriptor>());
+    private List<SoundDescriptor> soundDescriptors = Collections.synchronizedList(new ArrayList<SoundDescriptor>());
 
     private double frameRate;
     private long totalTime; // Millis

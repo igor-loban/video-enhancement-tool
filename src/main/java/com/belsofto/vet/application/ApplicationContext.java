@@ -1,5 +1,6 @@
 package com.belsofto.vet.application;
 
+import com.belsofto.vet.media.SoundDetector;
 import com.belsofto.vet.report.ReportGenerator;
 import com.belsofto.vet.report.Snapshot;
 import com.belsofto.vet.ui.dialog.FrameGrabsDialog;
@@ -17,6 +18,7 @@ public final class ApplicationContext {
 
     private ReportGenerator reportGenerator;
     private MotionDetector motionDetector;
+    private SoundDetector soundDetector;
 
     private VideoDetails videoDetails;
 
@@ -50,9 +52,10 @@ public final class ApplicationContext {
                 mainFrame.getVideoPlayerPanel().initColoredSlider();
             }
         });
-//        ApplicationContext.getInstance().setStatus(Status.ANALYZE, 100);
-//        mainFrame.getVideoPlayerPanel().initColoredSlider();
-//        mainFrame.getVideoPlayerPanel().updateUI();
+    }
+
+    public void updateAfterSoundDetection() {
+        updateAfterMotionDetection();
     }
 
     public void moveToSnapshot(Snapshot snapshot) {
@@ -104,5 +107,13 @@ public final class ApplicationContext {
 
     public void setVideoDetails(VideoDetails videoDetails) {
         this.videoDetails = videoDetails;
+    }
+
+    public SoundDetector getSoundDetector() {
+        return soundDetector;
+    }
+
+    public void setSoundDetector(SoundDetector soundDetector) {
+        this.soundDetector = soundDetector;
     }
 }

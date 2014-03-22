@@ -10,6 +10,7 @@ public enum Actions implements ActionSource {
     ANALYZE(new AnalyzeAction()),
     RUN_MOTION_DETECTION(new RunMotionDetectionAction()),
     MOTION_DETECTION_OPTIONS(new MotionDetectionOptionsAction()),
+    RUN_SOUND_DETECTION(new RunSoundDetectionAction()),
 
     REPORT(new ReportAction()),
     VIEW_FRAMES_CAPTURED(new ViewFramesCapturedAction()),

@@ -1,6 +1,7 @@
 package com.belsofto.vet.ui.component;
 
 import com.belsofto.vet.media.MotionDescriptor;
+import com.belsofto.vet.media.SoundDescriptor;
 import com.belsofto.vet.media.VideoDetails;
 
 import javax.swing.JSlider;
@@ -13,14 +14,20 @@ import java.util.Iterator;
 import java.util.List;
 
 public final class ColoredSliderUI extends BasicSliderUI {
-    private static final Color RED = new Color(255, 0, 0); // Нет движения
-    private static final Color GREEN = new Color(0, 255, 0); // Нет движения
-    private static final Color BLUE = new Color(0, 0, 255); // Есть движение
+    private static final Color RED = Color.RED; // Separator
+    private static final Color GREEN = Color.GREEN; // No movement
+    private static final Color BLUE = Color.BLUE; // Movement present
+    private static final Color LIGHT_GREEN = new Color(150, 255, 150); // Noise present
+    private static final Color LIGHT_BLUE = new Color(150, 150, 255); // Sound present
 
-    private static final int height = 20;
+    private static final int MOTION_HEIGHT = 15;
+    private static final int SOUND_HEIGHT = 5;
 
     private List<MotionDescriptor> motionDescriptors;
+    private List<SoundDescriptor> soundDescriptors;
     private int width;
+    private int motionHeight = MOTION_HEIGHT + SOUND_HEIGHT;
+    private int soundHeight = MOTION_HEIGHT + SOUND_HEIGHT;
     private int maxValue = 1;
 
     public ColoredSliderUI(JSlider slider) {
@@ -29,15 +36,38 @@ public final class ColoredSliderUI extends BasicSliderUI {
 
     @Override
     public void paintTrack(Graphics g) {
-        if (motionDescriptors == null || motionDescriptors.isEmpty()) {
+        boolean motionEmpty = isEmpty(motionDescriptors);
+        boolean soundEmpty = isEmpty(soundDescriptors);
+//        if (motionEmpty && soundEmpty) {
             super.paintTrack(g);
-            return;
-        }
-
-        Graphics2D g2d = (Graphics2D) g;
+//            return;
+//        }
 
         width = trackRect.width;
+        Graphics2D g2d = (Graphics2D) g;
+        if (!soundEmpty) {
+            drawSoundPart(g2d);
+            motionHeight = MOTION_HEIGHT;
+        }
+        if (!motionEmpty) {
+            drawMotionPart(g2d);
+        }
+        if (!motionEmpty && !soundEmpty) {
+            drawSeparator(g2d);
+        }
+    }
 
+    private boolean isEmpty(List<?> list) {
+        return list == null || list.isEmpty();
+    }
+
+    private void drawSeparator(Graphics2D g2d) {
+        g2d.setColor(RED);
+        g2d.fillRect(trackRect.x, trackRect.y + MOTION_HEIGHT, width, 3);
+//        g2d.drawLine(trackRect.x, trackRect.y + MOTION_HEIGHT, trackRect.x + width, trackRect.y + MOTION_HEIGHT);
+    }
+
+    private void drawMotionPart(Graphics2D g2d) {
         g2d.setColor(BLUE);
         g2d.setStroke(new BasicStroke(0));
 
@@ -47,19 +77,46 @@ public final class ColoredSliderUI extends BasicSliderUI {
             MotionDescriptor nextDescriptor = iterator.next();
             int dx = getX(descriptor.getTime());
             int blockWidth = getX(nextDescriptor.getTime()) - getX(descriptor.getTime());
-            drawColorBlock(g2d, descriptor, dx, blockWidth);
+            drawMotionBlock(g2d, descriptor, dx, blockWidth);
             descriptor = nextDescriptor;
         }
         int dx = getX(descriptor.getTime());
         int _w = width - getX(descriptor.getTime());
-        drawColorBlock(g2d, descriptor, dx, _w);
+        drawMotionBlock(g2d, descriptor, dx, _w);
     }
 
-    private void drawColorBlock(Graphics2D g2d, MotionDescriptor descriptor, int dx, int width) {
+    private void drawMotionBlock(Graphics2D g2d, MotionDescriptor descriptor, int dx, int width) {
         g2d.setColor(descriptor.isVideoFlag() ? BLUE : GREEN);
-        g2d.fillRect(trackRect.x + dx, trackRect.y, width, height);
+        g2d.fillRect(trackRect.x + dx, trackRect.y, width, motionHeight);
         g2d.setColor(RED);
-        g2d.fillRect(trackRect.x + dx - 1, trackRect.y, 3, height);
+        g2d.fillRect(trackRect.x + dx - 1, trackRect.y, 3, motionHeight);
+//        g2d.drawLine(trackRect.x + dx, trackRect.y, trackRect.x + dx, trackRect.y + motionHeight);
+    }
+
+    private void drawSoundPart(Graphics2D g2d) {
+        g2d.setColor(BLUE);
+        g2d.setStroke(new BasicStroke(0));
+
+        Iterator<SoundDescriptor> iterator = soundDescriptors.iterator();
+        SoundDescriptor descriptor = iterator.next();
+        while (iterator.hasNext()) {
+            SoundDescriptor nextDescriptor = iterator.next();
+            int dx = getX(descriptor.getTime());
+            int blockWidth = getX(nextDescriptor.getTime()) - getX(descriptor.getTime());
+            drawSoundBlock(g2d, descriptor, dx, blockWidth);
+            descriptor = nextDescriptor;
+        }
+        int dx = getX(descriptor.getTime());
+        int _w = width - getX(descriptor.getTime());
+        drawSoundBlock(g2d, descriptor, dx, _w);
+    }
+
+    private void drawSoundBlock(Graphics2D g2d, SoundDescriptor descriptor, int dx, int width) {
+        g2d.setColor(descriptor.isNoisePresent() ? LIGHT_GREEN : LIGHT_BLUE);
+        g2d.fillRect(trackRect.x + dx, trackRect.y, width, soundHeight);
+        g2d.setColor(RED);
+        g2d.fillRect(trackRect.x + dx - 1, trackRect.y, 3, soundHeight);
+//        g2d.drawLine(trackRect.x + dx, trackRect.y, trackRect.x + dx, trackRect.y + soundHeight);
     }
 
     @Override
@@ -76,6 +133,7 @@ public final class ColoredSliderUI extends BasicSliderUI {
 
     public void setVideoDetails(VideoDetails videoDetails) {
         this.motionDescriptors = videoDetails.getMotionDescriptors();
+        this.soundDescriptors = videoDetails.getSoundDescriptors();
         this.maxValue = (int) videoDetails.getTotalTime();
     }
 }
