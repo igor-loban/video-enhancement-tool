@@ -39,5 +39,5 @@ configurations {
 
 jar {
     from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    manifest { attributes 'Main-Class': 'by.bsu.fpmi.vet.launcher.Launcher' }
+    manifest { attributes 'Main-Class': 'com.belsofto.vet.launcher.Launcher' }
 }
