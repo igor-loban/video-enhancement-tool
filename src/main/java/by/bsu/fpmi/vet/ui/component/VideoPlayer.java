@@ -69,13 +69,14 @@ public final class VideoPlayer extends JRootPane {
         ApplicationContext.getInstance().setStatus(Status.STOPPED);
     }
 
-    public boolean captureFrame() {
+    public Snapshot captureFrame() {
         if (videoDetails == null) {
-            return false; // TODO: replace on exception
+            return null; // TODO: replace on exception
         }
 
         pause();
-        return mediaPlayer.saveSnapshot();
+        BufferedImage image = mediaPlayer.getSnapshot();
+        return new Snapshot(processImage(image), getTime());
     }
 
     private BufferedImage processImage(BufferedImage image) {
@@ -137,16 +138,6 @@ public final class VideoPlayer extends JRootPane {
     private final class MediaPlayerActionHandler extends MediaPlayerEventAdapter {
         @Override public void timeChanged(MediaPlayer mediaPlayer, final long newTime) {
             ApplicationContext.getInstance().updateTimeline(newTime);
-        }
-
-        @Override public void snapshotTaken(MediaPlayer mediaPlayer, String filename) {
-            try {
-                File file = new File(filename);
-                BufferedImage image = ImageIO.read(file);
-                Snapshot snapshot = new Snapshot(processImage(image), file, getTime());
-                ApplicationContext.getInstance().getReportGenerator().addSnapshot(snapshot);
-            } catch (IOException ignored) {
-            }
         }
     }
 }

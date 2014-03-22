@@ -1,6 +1,7 @@
 package by.bsu.fpmi.vet.ui.component;
 
 import by.bsu.fpmi.vet.application.ApplicationContext;
+import by.bsu.fpmi.vet.report.Snapshot;
 import by.bsu.fpmi.vet.video.MotionDescriptor;
 import by.bsu.fpmi.vet.video.VideoDetails;
 import com.google.common.base.Strings;
@@ -260,8 +261,11 @@ public final class VideoPlayerPanel extends JPanel {
         @Override public void actionPerformed(ActionEvent e) {
             LOGGER.debug("capture frame");
             ApplicationContext context = ApplicationContext.getInstance();
-            videoPlayer.captureFrame();
-            context.getMainFrame().setFocusToNotes();
+            Snapshot snapshot = videoPlayer.captureFrame();
+            if (snapshot != null) {
+                context.getReportGenerator().addSnapshot(snapshot);
+                context.getMainFrame().setFocusToNotes();
+            }
         }
     }
 

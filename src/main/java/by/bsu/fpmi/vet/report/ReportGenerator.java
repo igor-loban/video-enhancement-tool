@@ -77,8 +77,8 @@ public final class ReportGenerator {
             imagesAsBytes.add(convertImageToByteArray(snapshot.getImage()));
         }
 
-//        Thread docxReportGeneratorThread = new Thread(new DocxReportGenerator());
-//        docxReportGeneratorThread.start();
+        Thread docxReportGeneratorThread = new Thread(new DocxReportGenerator());
+        docxReportGeneratorThread.start();
 
         Thread pdfReportGeneratorThread = new Thread(new PdfReportGenerator());
         pdfReportGeneratorThread.start();
@@ -118,7 +118,7 @@ public final class ReportGenerator {
 
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override public void run() {
-                        JOptionPane.showMessageDialog(null, "DOCX report generated.", "Report",
+                        JOptionPane.showMessageDialog(null, "Reports generated.", "Report",
                                 JOptionPane.INFORMATION_MESSAGE);
                     }
                 });
@@ -189,13 +189,6 @@ public final class ReportGenerator {
                 }
 
                 pdfDocument.close();
-
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override public void run() {
-                        JOptionPane.showMessageDialog(null, "PDF report generated.", "Report",
-                                JOptionPane.INFORMATION_MESSAGE);
-                    }
-                });
             } catch (IOException | DocumentException e) {
                 LOGGER.debug("report generate error", e);
                 throw new ReportGenerationException(e);
@@ -215,35 +208,4 @@ public final class ReportGenerator {
             throw new ReportGenerationException(e);
         }
     }
-
-    //    /**
-    //     * Convert the image from the file into an array of bytes.
-    //     *
-    //     * @param file the image file to be converted
-    //     * @return the byte array containing the bytes from the image
-    //     */
-    //    private static byte[] convertImageToByteArray(File file) {
-    //        try {
-    //            InputStream is = new FileInputStream(file);
-    //            long length = file.length();
-    //            // You cannot create an array using a long, it needs to be an int.
-    //            if (length > Integer.MAX_VALUE) {
-    //                System.out.println("File too large!!");
-    //            }
-    //            byte[] bytes = new byte[(int) length];
-    //            int offset = 0;
-    //            int numRead;
-    //            while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
-    //                offset += numRead;
-    //            }
-    //            // Ensure all the bytes have been read
-    //            if (offset < bytes.length) {
-    //                System.out.println("Could not completely read file " + file.getName());
-    //            }
-    //            is.close();
-    //            return bytes;
-    //        } catch (IOException e) {
-    //            throw new IllegalArgumentException(e);
-    //        }
-    //    }
 }

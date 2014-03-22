@@ -31,7 +31,7 @@ public final class SnapshotListPanel extends JPanel {
             add(new SnapshotPanel(i + 1, snapshots.get(i), this), gbc);
         }
 
-        repaint();
+        updateUI(); // repaint()
     }
 
     public void removeSnapshot(Snapshot snapshot) {
