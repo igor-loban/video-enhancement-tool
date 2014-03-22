@@ -10,7 +10,6 @@ import com.googlecode.javacv.cpp.opencv_core;
 import org.slf4j.Logger;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.googlecode.javacv.cpp.opencv_core.CvMemStorage;
 import static com.googlecode.javacv.cpp.opencv_core.IPL_DEPTH_8U;
@@ -37,15 +36,9 @@ public final class MotionDetector {
 
     private MotionDetectionOptions options = new MotionDetectionOptions(5, 30, 16, false);
 
-    private final AtomicBoolean analyzeComplete = new AtomicBoolean(true);
+//    private final AtomicBoolean analyzeComplete = new AtomicBoolean(true);
 
     public void analyzeVideo() {
-        if (!analyzeComplete.get()) {
-            // TODO: error?
-            return;
-        }
-
-        analyzeComplete.set(false);
         // TODO: Block UI
         ApplicationContext.getInstance().blockUI();
         VideoDetails videoDetails = ApplicationContext.getInstance().getVideoDetails();
@@ -176,9 +169,6 @@ public final class MotionDetector {
                 ApplicationContext.getInstance().updateAfterMotionDetection();
             } catch (FrameGrabber.Exception e) {
                 LOGGER.debug("grabber exception", e);
-            } finally {
-                // Release resources
-                analyzeComplete.set(true);
             }
         }
 
@@ -190,6 +180,9 @@ public final class MotionDetector {
             try {
                 Frame frame;
                 int frameNumber;
+                int prevFrameNumber = Integer.MIN_VALUE;
+                int limit = 10;
+                int count = 0;
                 do {
                     frame = grabber.grabFrame();
                     frameNumber = grabber.getFrameNumber();
@@ -199,6 +192,13 @@ public final class MotionDetector {
                     if (frameNumber >= totalFrameCount) {
                         return null;
                     }
+                    if (frameNumber == prevFrameNumber) {
+                        count++;
+                    }
+                    if (count >= limit) {
+                        return null;
+                    }
+                    prevFrameNumber = frameNumber;
                 } while (true);
             } catch (FrameGrabber.Exception e) {
                 return null;

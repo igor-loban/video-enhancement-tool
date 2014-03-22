@@ -72,6 +72,10 @@ public final class ReportGenerator {
     }
 
     public void generate() {
+        if (snapshots.isEmpty()) {
+            return;
+        }
+
         imagesAsBytes.clear();
         for (Snapshot snapshot : snapshots) {
             imagesAsBytes.add(convertImageToByteArray(snapshot.getImage()));

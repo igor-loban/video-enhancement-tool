@@ -53,7 +53,6 @@ public final class VideoPlayer extends JRootPane {
     public void loadVideo() {
         videoDetails = ApplicationContext.getInstance().getVideoDetails();
         mediaPlayer.prepareMedia(videoDetails.getSourceFile().getAbsolutePath());
-        ApplicationContext.getInstance().setStatus(Status.STOPPED);
     }
 
     public void play() {
@@ -158,6 +157,10 @@ public final class VideoPlayer extends JRootPane {
     private final class MediaPlayerActionHandler extends MediaPlayerEventAdapter {
         @Override public void timeChanged(MediaPlayer mediaPlayer, final long newTime) {
             ApplicationContext.getInstance().updateTimeline(newTime);
+        }
+
+        @Override public void finished(MediaPlayer mediaPlayer) {
+            stop();
         }
     }
 }
