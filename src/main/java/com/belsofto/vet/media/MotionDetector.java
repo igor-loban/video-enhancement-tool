@@ -36,7 +36,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public final class MotionDetector {
     private static final Logger LOGGER = getLogger(MotionDetector.class);
 
-    private MotionDetectionOptions options = new MotionDetectionOptions(5, 30, 16, false);
+    private MotionDetectionOptions options = new MotionDetectionOptions();
 
     public void analyzeVideo() {
         // TODO: Block UI
@@ -50,7 +50,7 @@ public final class MotionDetector {
         return options;
     }
 
-    public void setOptions(MotionDetectionOptions options) {
+    public void setMotionDetectionOptions(MotionDetectionOptions options) {
         if (options != null) {
             this.options = options;
         }
@@ -73,12 +73,6 @@ public final class MotionDetector {
                 return;
             }
 
-            //            setBackground(Color.GREEN);
-            //            JFrame testFrame = new JFrame();
-            //            testFrame.setSize(700, 700);
-            //            testFrame.add(this);
-            //            testFrame.setVisible(true);
-
             IplImage image = null;
             IplImage prevImage = null;
             IplImage diff = null;
@@ -99,15 +93,6 @@ public final class MotionDetector {
                 grabber.setFrameNumber(1);
 
                 totalFrameCount = grabber.getLengthInFrames();
-
-                //                getGraphics().drawImage(diffCopy.getBufferedImage(), 0, 250, null);
-                //                getGraphics().clearRect(590, 260, 100, 50);
-                //                getGraphics().drawString("C: " + (contour.isNull() ? "null" : contour.total()),
-                // 600, 270);
-                //                try {
-                //                    Thread.sleep(millis);
-                //                } catch (InterruptedException ignored) {
-                //                }
 
                 while (true) {
                     Frame frame = grabFrame();
@@ -152,23 +137,22 @@ public final class MotionDetector {
                     if (prevImage != null) {
                         cvAbsDiff(image, prevImage, diff);
 
-                        // From HIGH to LOW
                         motionThreshold = MotionThreshold.NO;
 
                         IplImage diffCopy = diff.clone();
-                        cvThreshold(diffCopy, diffCopy, 200, 255, CV_THRESH_BINARY);
+                        cvThreshold(diffCopy, diffCopy, options.getHighThreshold(), 255, CV_THRESH_BINARY);
                         CvSeq contour = new CvSeq(null);
                         cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class), CV_RETR_LIST,
                                 CV_CHAIN_APPROX_SIMPLE);
                         if (contour.isNull()) {
                             diffCopy = diff.clone();
-                            cvThreshold(diffCopy, diffCopy, 150, 255, CV_THRESH_BINARY);
+                            cvThreshold(diffCopy, diffCopy, options.getMediumThreshold(), 255, CV_THRESH_BINARY);
                             contour = new CvSeq(null);
                             cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class), CV_RETR_LIST,
                                     CV_CHAIN_APPROX_SIMPLE);
                             if (contour.isNull()) {
                                 diffCopy = diff.clone();
-                                cvThreshold(diffCopy, diffCopy, 100, 255, CV_THRESH_BINARY);
+                                cvThreshold(diffCopy, diffCopy, options.getLowThreshold(), 255, CV_THRESH_BINARY);
                                 contour = new CvSeq(null);
                                 cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class), CV_RETR_LIST,
                                         CV_CHAIN_APPROX_SIMPLE);

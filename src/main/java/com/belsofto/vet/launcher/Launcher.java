@@ -41,6 +41,8 @@ public final class Launcher {
                 context.setReportGenerator(new ReportGenerator());
                 context.setMotionDetector(new MotionDetector());
                 context.setSoundDetector(new SoundDetector());
+                context.setUserDirectory(System.getProperty("user.dir"));
+                context.loadApplicationSettings();
                 LOGGER.debug("ApplicationContext initialized");
                 mainFrame.init();
                 LOGGER.debug("MainFrame initialized");
