@@ -11,26 +11,10 @@ public final class MotionDetectionOptions {
     private int highThreshold = 150;
     private boolean usedMediumThreshold = true;
     private boolean usedHighThreshold = true;
-    private Color noMotionColor = new Color(0x7C7C7C);
-    private Color lowMotionColor = new Color(0x267C26);
-    private Color mediumMotionColor = new Color(0x267CFF);
-    private Color highMotionColor = new Color(0x26FFFF);
-
-    public MotionDetectionOptions() {
-    }
-
-    public MotionDetectionOptions(int frameGap, int slideMinFrame, boolean highVideoQuality, int lowThreshold,
-                                  int mediumThreshold, int highThreshold, boolean usedMediumThreshold,
-                                  boolean usedHighThreshold) {
-        this.frameGap = frameGap;
-        this.slideMinFrame = slideMinFrame;
-        this.lowThreshold = lowThreshold;
-        this.mediumThreshold = mediumThreshold;
-        this.highThreshold = highThreshold;
-        this.highVideoQuality = highVideoQuality;
-        this.usedMediumThreshold = usedMediumThreshold;
-        this.usedHighThreshold = usedHighThreshold;
-    }
+    private Color noMotionColor = MotionThreshold.NO.color();
+    private Color lowMotionColor = MotionThreshold.LOW.color();
+    private Color mediumMotionColor = MotionThreshold.MEDIUM.color();
+    private Color highMotionColor = MotionThreshold.HIGH.color();
 
     public int getFrameGap() {
         return frameGap;
@@ -114,17 +98,21 @@ public final class MotionDetectionOptions {
 
     public void setNoMotionColor(Color noMotionColor) {
         this.noMotionColor = noMotionColor;
+        MotionThreshold.NO.color(noMotionColor);
     }
 
     public void setLowMotionColor(Color lowMotionColor) {
         this.lowMotionColor = lowMotionColor;
+        MotionThreshold.LOW.color(lowMotionColor);
     }
 
     public void setMediumMotionColor(Color mediumMotionColor) {
         this.mediumMotionColor = mediumMotionColor;
+        MotionThreshold.MEDIUM.color(mediumMotionColor);
     }
 
     public void setHighMotionColor(Color highMotionColor) {
         this.highMotionColor = highMotionColor;
+        MotionThreshold.HIGH.color(highMotionColor);
     }
 }

@@ -16,8 +16,6 @@ import java.util.NoSuchElementException;
 
 public final class ColoredSliderUI extends BasicSliderUI {
     private static final Color RED = Color.RED; // Separator
-    private static final Color GREEN = Color.GREEN; // No movement
-    private static final Color BLUE = Color.BLUE; // Movement present
     private static final Color LIGHT_GREEN = new Color(150, 255, 150); // Noise present
     private static final Color LIGHT_BLUE = new Color(150, 150, 255); // Sound present
 
@@ -97,9 +95,6 @@ public final class ColoredSliderUI extends BasicSliderUI {
     }
 
     private void drawSoundPart(Graphics2D g2d) {
-        g2d.setColor(BLUE);
-        g2d.setStroke(new BasicStroke(0));
-
         Iterator<SoundDescriptor> iterator = soundDescriptors.iterator();
         SoundDescriptor descriptor = iterator.next();
         while (iterator.hasNext()) {
@@ -118,8 +113,8 @@ public final class ColoredSliderUI extends BasicSliderUI {
         g2d.setColor(descriptor.isNoisePresent() ? LIGHT_GREEN : LIGHT_BLUE);
         g2d.fillRect(trackRect.x + dx, trackRect.y, width, soundHeight);
         g2d.setColor(RED);
-        g2d.fillRect(trackRect.x + dx - 1, trackRect.y, 3, soundHeight);
-//        g2d.drawLine(trackRect.x + dx, trackRect.y, trackRect.x + dx, trackRect.y + soundHeight);
+//        g2d.fillRect(trackRect.x + dx - 1, trackRect.y, 3, soundHeight);
+        g2d.drawLine(trackRect.x + dx, trackRect.y, trackRect.x + dx, trackRect.y + soundHeight);
     }
 
     @Override

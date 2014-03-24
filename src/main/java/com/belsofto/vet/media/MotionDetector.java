@@ -139,17 +139,22 @@ public final class MotionDetector {
 
                         motionThreshold = MotionThreshold.NO;
 
-                        IplImage diffCopy = diff.clone();
-                        cvThreshold(diffCopy, diffCopy, options.getHighThreshold(), 255, CV_THRESH_BINARY);
                         CvSeq contour = new CvSeq(null);
-                        cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class), CV_RETR_LIST,
-                                CV_CHAIN_APPROX_SIMPLE);
-                        if (contour.isNull()) {
+                        IplImage diffCopy = null;
+                        if (options.isUsedHighThreshold()) {
                             diffCopy = diff.clone();
-                            cvThreshold(diffCopy, diffCopy, options.getMediumThreshold(), 255, CV_THRESH_BINARY);
-                            contour = new CvSeq(null);
+                            cvThreshold(diffCopy, diffCopy, options.getHighThreshold(), 255, CV_THRESH_BINARY);
                             cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class), CV_RETR_LIST,
                                     CV_CHAIN_APPROX_SIMPLE);
+                        }
+                        if (contour.isNull()) {
+                            if (options.isUsedMediumThreshold()) {
+                                diffCopy = diff.clone();
+                                cvThreshold(diffCopy, diffCopy, options.getMediumThreshold(), 255, CV_THRESH_BINARY);
+                                contour = new CvSeq(null);
+                                cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class), CV_RETR_LIST,
+                                        CV_CHAIN_APPROX_SIMPLE);
+                            }
                             if (contour.isNull()) {
                                 diffCopy = diff.clone();
                                 cvThreshold(diffCopy, diffCopy, options.getLowThreshold(), 255, CV_THRESH_BINARY);
@@ -166,31 +171,27 @@ public final class MotionDetector {
                             motionThreshold = MotionThreshold.HIGH;
                         }
 
-                        if (contour.isNull()) { // If no movement detected
-
+                        if (motionThreshold == MotionThreshold.NO) { // If no movement detected
                             currentBlockLength += options.getFrameGap();
-
                             if (currentBlockLength >= options.getSlideMinFrame()
                                     && currentBlockLength < options.getSlideMinFrame() + options
                                     .getFrameGap()) { // New slide detected
-
-                                prevMotionThreshold = currentBlockHasMovement ? motionThreshold : MotionThreshold.NO;
                                 motionDescriptors.add(new MotionDescriptor(getTime(currentBlockStartFrame),
                                         prevMotionThreshold));
+                                prevMotionThreshold = motionThreshold;
                                 currentBlockStartFrame = frameNumber - options.getSlideMinFrame();
                                 currentBlockHasMovement = false;
                             }
                         } else { // If movement detected
                             currentBlockLength = 0;
-
                             if (!currentBlockHasMovement) { // If previous block has no movement
                                 motionDescriptors
                                         .add(new MotionDescriptor(getTime(currentBlockStartFrame), MotionThreshold.NO));
                                 currentBlockStartFrame = frameNumber;
                                 currentBlockHasMovement = true; // New block has movement
                             } else if (motionThreshold != prevMotionThreshold) {
-                                motionDescriptors
-                                        .add(new MotionDescriptor(getTime(currentBlockStartFrame), prevMotionThreshold));
+                                motionDescriptors.add(new MotionDescriptor(getTime(currentBlockStartFrame),
+                                        prevMotionThreshold));
                                 prevMotionThreshold = motionThreshold;
                                 currentBlockStartFrame = frameNumber;
                                 currentBlockHasMovement = true; // New block has movement

@@ -156,6 +156,15 @@ public final class ApplicationContext {
                 options.setHighThreshold(intValue);
             }
 
+            boolValue = getBooleanValue(properties, "mdo.usedMediumThreshold");
+            if (boolValue != null) {
+                options.setUsedMediumThreshold(boolValue);
+            }
+            boolValue = getBooleanValue(properties, "mdo.usedHighThreshold");
+            if (boolValue != null) {
+                options.setUsedHighThreshold(boolValue);
+            }
+
             Color color = getColorValue(properties, "mdo.noMotionColor");
             if (color != null) {
                 options.setNoMotionColor(color);

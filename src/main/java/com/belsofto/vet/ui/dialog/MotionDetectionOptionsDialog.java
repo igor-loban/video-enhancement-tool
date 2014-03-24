@@ -56,9 +56,9 @@ public final class MotionDetectionOptionsDialog extends JDialog {
     private final JSpinner highThresholdSpinner = new JSpinner(new SpinnerNumberModel(150, 0, 255, 1));
 
     private final JCheckBox usedMediumThresholdCheckbox =
-            new JCheckBox(getMessage("ui.dialog.motionDetectionOptions.label.use"), true);
+            new JCheckBox(getMessage("ui.dialog.motionDetectionOptions.label.use"));
     private final JCheckBox usedHighThresholdCheckbox =
-            new JCheckBox(getMessage("ui.dialog.motionDetectionOptions.label.use"), true);
+            new JCheckBox(getMessage("ui.dialog.motionDetectionOptions.label.use"));
 
     private final JRadioButton lowVideoQualityButton =
             new JRadioButton(getMessage("ui.dialog.motionDetectionOptions.label.videoQuality.low"), true);
@@ -84,6 +84,7 @@ public final class MotionDetectionOptionsDialog extends JDialog {
         videoQualityButtonGroup.add(highVideoQualityButton);
 
         MotionDetectionOptions options = ApplicationContext.getInstance().getMotionDetector().getOptions();
+
         frameGapSpinner.setValue(options.getFrameGap());
         slideMinFrameSpinner.setValue(options.getSlideMinFrame());
 
@@ -114,6 +115,9 @@ public final class MotionDetectionOptionsDialog extends JDialog {
         highMotionColorValueLabel.addMouseListener(labelColorChooseAction);
 
         usedMediumThresholdCheckbox.addChangeListener(new UsedMediumThresholdChangeHandler());
+
+        usedMediumThresholdCheckbox.setSelected(options.isUsedMediumThreshold());
+        usedHighThresholdCheckbox.setSelected(options.isUsedHighThreshold());
 
         if (options.isHighVideoQuality()) {
             highVideoQualityButton.setSelected(true);
