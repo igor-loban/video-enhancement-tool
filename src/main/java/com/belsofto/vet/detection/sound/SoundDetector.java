@@ -162,7 +162,7 @@ public final class SoundDetector {
                     ApplicationContext.getInstance().setStatus(Status.ANALYZE, 95 + (int) (5 * (double) i / length));
                 }
 
-                for (int i = soundDescriptors.size() - 2; i >= 0; --i) {
+                for (int i = soundDescriptors.size() - 2; i > 0; --i) {
                     SoundDescriptor rightDescriptor = soundDescriptors.get(i + 1);
                     SoundDescriptor leftDescriptor = soundDescriptors.get(i);
                     if (rightDescriptor.getTime() - leftDescriptor.getTime() < options.getSoundLowerBound()) {

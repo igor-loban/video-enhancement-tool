@@ -74,6 +74,7 @@ public final class MainFrame extends JFrame {
         analyzeMenu.add(Actions.MOTION_DETECTION_OPTIONS.get());
         analyzeMenu.addSeparator();
         analyzeMenu.add(Actions.RUN_SOUND_DETECTION.get());
+        analyzeMenu.add(Actions.SOUND_DETECTION_OPTIONS.get());
         mainMenu.add(analyzeMenu);
 
         JMenu reportMenu = new JMenu(Actions.REPORT.get());

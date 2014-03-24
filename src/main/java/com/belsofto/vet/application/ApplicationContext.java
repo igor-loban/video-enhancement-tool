@@ -2,6 +2,7 @@ package com.belsofto.vet.application;
 
 import com.belsofto.vet.detection.motion.MotionDetectionOptions;
 import com.belsofto.vet.detection.motion.MotionDetector;
+import com.belsofto.vet.detection.sound.SoundDetectionOptions;
 import com.belsofto.vet.detection.sound.SoundDetector;
 import com.belsofto.vet.media.VideoDetails;
 import com.belsofto.vet.report.ReportGenerator;
@@ -17,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Properties;
 
 public final class ApplicationContext {
@@ -91,31 +93,51 @@ public final class ApplicationContext {
     public void updateApplicationProperties() {
         try (FileOutputStream fos = new FileOutputStream(userDirectory + SETTINGS_RELATIVE_PATH)) {
             Properties properties = new Properties();
-
-            MotionDetectionOptions options = motionDetector.getOptions();
-
-            properties.put("mdo.frameGap", String.valueOf(options.getFrameGap()));
-            properties.put("mdo.slideMinFrame", String.valueOf(options.getSlideMinFrame()));
-            properties.put("mdo.highVideoQuality", String.valueOf(options.isHighVideoQuality()));
-
-            properties.put("mdo.lowThreshold", String.valueOf(options.getLowThreshold()));
-            properties.put("mdo.mediumThreshold", String.valueOf(options.getMediumThreshold()));
-            properties.put("mdo.highThreshold", String.valueOf(options.getHighThreshold()));
-
-            properties.put("mdo.usedMediumThreshold", String.valueOf(options.isUsedMediumThreshold()));
-            properties.put("mdo.usedHighThreshold", String.valueOf(options.isUsedHighThreshold()));
-
-            properties.put("mdo.noMotionColor", Integer.toHexString(options.getNoMotionColor().getRGB()));
-            properties.put("mdo.lowMotionColor", Integer.toHexString(options.getLowMotionColor().getRGB()));
-            properties.put("mdo.mediumMotionColor", Integer.toHexString(options.getMediumMotionColor().getRGB()));
-            properties.put("mdo.highMotionColor", Integer.toHexString(options.getHighMotionColor().getRGB()));
-
-            properties.store(fos, "Motion Detection Options");
+            updateMotionDetectionProperties(properties, fos);
+            properties = new Properties();
+            updateSoundDetectionProperties(properties, fos);
             fos.flush();
             LOGGER.debug("application properties saved successfully");
         } catch (IOException e) {
             LOGGER.debug("application properties saving failed", e);
         }
+    }
+
+    private void updateSoundDetectionProperties(Properties properties, OutputStream outputStream) throws IOException {
+        SoundDetectionOptions options = soundDetector.getOptions();
+
+        properties.put("sdo.frameGap", String.valueOf(options.getFrameGap()));
+        properties.put("sdo.soundLowerBound", String.valueOf(options.getSoundLowerBound()));
+
+        properties.put("sdo.minNoiseBound", String.valueOf(options.getMinNoiseBound()));
+        properties.put("sdo.maxNoiseBound", String.valueOf(options.getMaxNoiseBound()));
+
+        properties.put("sdo.noiseColor", Integer.toHexString(options.getNoiseColor().getRGB()));
+        properties.put("sdo.soundColor", Integer.toHexString(options.getSoundColor().getRGB()));
+
+        properties.store(outputStream, "Sound Detection Options");
+    }
+
+    private void updateMotionDetectionProperties(Properties properties, OutputStream outputStream) throws IOException {
+        MotionDetectionOptions options = motionDetector.getOptions();
+
+        properties.put("mdo.frameGap", String.valueOf(options.getFrameGap()));
+        properties.put("mdo.slideMinFrame", String.valueOf(options.getSlideMinFrame()));
+        properties.put("mdo.highVideoQuality", String.valueOf(options.isHighVideoQuality()));
+
+        properties.put("mdo.lowThreshold", String.valueOf(options.getLowThreshold()));
+        properties.put("mdo.mediumThreshold", String.valueOf(options.getMediumThreshold()));
+        properties.put("mdo.highThreshold", String.valueOf(options.getHighThreshold()));
+
+        properties.put("mdo.usedMediumThreshold", String.valueOf(options.isUsedMediumThreshold()));
+        properties.put("mdo.usedHighThreshold", String.valueOf(options.isUsedHighThreshold()));
+
+        properties.put("mdo.noMotionColor", Integer.toHexString(options.getNoMotionColor().getRGB()));
+        properties.put("mdo.lowMotionColor", Integer.toHexString(options.getLowMotionColor().getRGB()));
+        properties.put("mdo.mediumMotionColor", Integer.toHexString(options.getMediumMotionColor().getRGB()));
+        properties.put("mdo.highMotionColor", Integer.toHexString(options.getHighMotionColor().getRGB()));
+
+        properties.store(outputStream, "Motion Detection Options");
     }
 
     public void loadApplicationSettings() {
@@ -127,64 +149,98 @@ public final class ApplicationContext {
         try (FileInputStream fis = new FileInputStream(settingsFile)) {
             Properties properties = new Properties();
             properties.load(fis);
-
-            MotionDetectionOptions options = motionDetector.getOptions();
-
-            Integer intValue = getIntegerValue(properties, "mdo.frameGap");
-            if (intValue != null) {
-                options.setFrameGap(intValue);
-            }
-            intValue = getIntegerValue(properties, "mdo.slideMinFrame");
-            if (intValue != null) {
-                options.setSlideMinFrame(intValue);
-            }
-            Boolean boolValue = getBooleanValue(properties, "mdo.highVideoQuality");
-            if (boolValue != null) {
-                options.setHighVideoQuality(boolValue);
-            }
-
-            intValue = getIntegerValue(properties, "mdo.lowThreshold");
-            if (intValue != null) {
-                options.setLowThreshold(intValue);
-            }
-            intValue = getIntegerValue(properties, "mdo.mediumThreshold");
-            if (intValue != null) {
-                options.setMediumThreshold(intValue);
-            }
-            intValue = getIntegerValue(properties, "mdo.highThreshold");
-            if (intValue != null) {
-                options.setHighThreshold(intValue);
-            }
-
-            boolValue = getBooleanValue(properties, "mdo.usedMediumThreshold");
-            if (boolValue != null) {
-                options.setUsedMediumThreshold(boolValue);
-            }
-            boolValue = getBooleanValue(properties, "mdo.usedHighThreshold");
-            if (boolValue != null) {
-                options.setUsedHighThreshold(boolValue);
-            }
-
-            Color color = getColorValue(properties, "mdo.noMotionColor");
-            if (color != null) {
-                options.setNoMotionColor(color);
-            }
-            color = getColorValue(properties, "mdo.lowMotionColor");
-            if (color != null) {
-                options.setLowMotionColor(color);
-            }
-            color = getColorValue(properties, "mdo.mediumMotionColor");
-            if (color != null) {
-                options.setMediumMotionColor(color);
-            }
-            color = getColorValue(properties, "mdo.highMotionColor");
-            if (color != null) {
-                options.setHighMotionColor(color);
-            }
-
+            loadMotionDetectionOptions(properties);
+            loadSoundDetectionOptions(properties);
             LOGGER.debug("application properties loaded successfully");
         } catch (IOException e) {
             LOGGER.debug("application properties loading failed", e);
+        }
+    }
+
+    private void loadSoundDetectionOptions(Properties properties) {
+        SoundDetectionOptions options = soundDetector.getOptions();
+
+        Integer intValue = getIntegerValue(properties, "sdo.frameGap");
+        if (intValue != null) {
+            options.setFrameGap(intValue);
+        }
+        intValue = getIntegerValue(properties, "sdo.soundLowerBound");
+        if (intValue != null) {
+            options.setSoundLowerBound(intValue);
+        }
+
+        Double doubleValue = getDoubleValue(properties, "sdo.minNoiseBound");
+        if (doubleValue != null) {
+            options.setMinNoiseBound(doubleValue);
+        }
+        doubleValue = getDoubleValue(properties, "sdo.maxNoiseBound");
+        if (doubleValue != null) {
+            options.setMaxNoiseBound(doubleValue);
+        }
+
+        Color color = getColorValue(properties, "sdo.noiseColor");
+        if (color != null) {
+            options.setNoiseColor(color);
+        }
+        color = getColorValue(properties, "sdo.soundColor");
+        if (color != null) {
+            options.setSoundColor(color);
+        }
+    }
+
+    private void loadMotionDetectionOptions(Properties properties) {
+        MotionDetectionOptions options = motionDetector.getOptions();
+
+        Integer intValue = getIntegerValue(properties, "mdo.frameGap");
+        if (intValue != null) {
+            options.setFrameGap(intValue);
+        }
+        intValue = getIntegerValue(properties, "mdo.slideMinFrame");
+        if (intValue != null) {
+            options.setSlideMinFrame(intValue);
+        }
+        Boolean boolValue = getBooleanValue(properties, "mdo.highVideoQuality");
+        if (boolValue != null) {
+            options.setHighVideoQuality(boolValue);
+        }
+
+        intValue = getIntegerValue(properties, "mdo.lowThreshold");
+        if (intValue != null) {
+            options.setLowThreshold(intValue);
+        }
+        intValue = getIntegerValue(properties, "mdo.mediumThreshold");
+        if (intValue != null) {
+            options.setMediumThreshold(intValue);
+        }
+        intValue = getIntegerValue(properties, "mdo.highThreshold");
+        if (intValue != null) {
+            options.setHighThreshold(intValue);
+        }
+
+        boolValue = getBooleanValue(properties, "mdo.usedMediumThreshold");
+        if (boolValue != null) {
+            options.setUsedMediumThreshold(boolValue);
+        }
+        boolValue = getBooleanValue(properties, "mdo.usedHighThreshold");
+        if (boolValue != null) {
+            options.setUsedHighThreshold(boolValue);
+        }
+
+        Color color = getColorValue(properties, "mdo.noMotionColor");
+        if (color != null) {
+            options.setNoMotionColor(color);
+        }
+        color = getColorValue(properties, "mdo.lowMotionColor");
+        if (color != null) {
+            options.setLowMotionColor(color);
+        }
+        color = getColorValue(properties, "mdo.mediumMotionColor");
+        if (color != null) {
+            options.setMediumMotionColor(color);
+        }
+        color = getColorValue(properties, "mdo.highMotionColor");
+        if (color != null) {
+            options.setHighMotionColor(color);
         }
     }
 
@@ -201,6 +257,18 @@ public final class ApplicationContext {
             return null;
         }
         return Boolean.parseBoolean(properties.getProperty(key));
+    }
+
+    private Double getDoubleValue(Properties properties, String key) {
+        if (!properties.containsKey(key)) {
+            return null;
+        }
+        String valueAsString = properties.getProperty(key);
+        try {
+            return Double.parseDouble(valueAsString);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private Integer getIntegerValue(Properties properties, String key) {
