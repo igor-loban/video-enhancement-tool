@@ -1,6 +1,8 @@
 package com.belsofto.vet.report;
 
+import com.belsofto.vet.application.ApplicationContext;
 import com.belsofto.vet.exception.ReportGenerationException;
+import com.belsofto.vet.ui.dialog.DialogUtils;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Image;
@@ -23,7 +25,6 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -34,7 +35,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.belsofto.vet.util.MessageUtils.format;
 import static com.belsofto.vet.util.MessageUtils.getMessage;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -46,9 +49,21 @@ public final class ReportGenerator {
     private final String notesTitle = getMessage("report.label.notes");
     private final List<Snapshot> snapshots = new ArrayList<>();
 
+    private final AtomicBoolean docxGenerated = new AtomicBoolean();
+    private final AtomicBoolean pdfGenerated = new AtomicBoolean();
+
+    private ReportOptions options = new ReportOptions();
     private List<byte[]> imagesAsBytes = Collections.synchronizedList(new ArrayList<byte[]>());
 
     public ReportGenerator() {
+    }
+
+    public void setOptions(ReportOptions options) {
+        this.options = options;
+    }
+
+    public ReportOptions getOptions() {
+        return options;
     }
 
     public List<Snapshot> getSnapshots() {
@@ -81,11 +96,20 @@ public final class ReportGenerator {
             imagesAsBytes.add(convertImageToByteArray(snapshot.getImage()));
         }
 
-        Thread docxReportGeneratorThread = new Thread(new DocxReportGenerator());
-        docxReportGeneratorThread.start();
+        docxGenerated.set(true);
+        pdfGenerated.set(true);
 
-        Thread pdfReportGeneratorThread = new Thread(new PdfReportGenerator());
-        pdfReportGeneratorThread.start();
+        if (options.isDocxPresent()) {
+            docxGenerated.set(false);
+            Thread docxReportGeneratorThread = new Thread(new DocxReportGenerator());
+            docxReportGeneratorThread.start();
+        }
+
+        if (options.isPdfPresent()) {
+            pdfGenerated.set(false);
+            Thread pdfReportGeneratorThread = new Thread(new PdfReportGenerator());
+            pdfReportGeneratorThread.start();
+        }
     }
 
     private final class DocxReportGenerator implements Runnable {
@@ -116,14 +140,16 @@ public final class ReportGenerator {
                     }
                 }
 
-                wordMLPackage.save(new File("report_" + DateTime.now().toString(DATE_TIME_FORMAT) + ".docx"));
+                File reportDirectory = new File(getReportDirectory());
+                reportDirectory.mkdirs();
+
+                wordMLPackage.save(new File(getReportDirectory() + getFileName("docx")));
                 docxObjectFactory = null;
                 wordMLPackage = null;
 
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override public void run() {
-                        JOptionPane.showMessageDialog(null, "Reports generated.", "Report",
-                                JOptionPane.INFORMATION_MESSAGE);
+                        DialogUtils.showInfoMessage("reportsGenerated");
                     }
                 });
             } catch (Docx4JException e) {
@@ -170,9 +196,12 @@ public final class ReportGenerator {
                     return;
                 }
 
+                File reportDirectory = new File(getReportDirectory());
+                reportDirectory.mkdirs();
+
                 Document pdfDocument = new Document(PageSize.A4.rotate());
-                PdfWriter.getInstance(pdfDocument,
-                        new FileOutputStream("report_" + DateTime.now().toString(DATE_TIME_FORMAT) + ".pdf"));
+                File reportFile = new File(getReportDirectory() + getFileName("pdf"));
+                PdfWriter.getInstance(pdfDocument, new FileOutputStream(reportFile));
                 pdfDocument.open();
 
                 int frameGrabNumber = 1;
@@ -193,11 +222,28 @@ public final class ReportGenerator {
                 }
 
                 pdfDocument.close();
+
+                if (!options.isDocxPresent()) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override public void run() {
+                            DialogUtils.showInfoMessage("reportsGenerated");
+                        }
+                    });
+                }
             } catch (IOException | DocumentException e) {
                 LOGGER.debug("report generate error", e);
                 throw new ReportGenerationException(e);
             }
         }
+    }
+
+    private String getReportDirectory() {
+        return ApplicationContext.getInstance().getUserDirectory() + "/reports/";
+    }
+
+    private String getFileName(String extension) {
+        return format("format.file.report", ApplicationContext.getInstance().getVideoName(),
+                DateTime.now().toString(DATE_TIME_FORMAT), extension);
     }
 
     private byte[] convertImageToByteArray(BufferedImage image) {

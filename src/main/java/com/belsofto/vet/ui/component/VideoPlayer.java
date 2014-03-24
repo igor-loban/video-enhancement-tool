@@ -3,6 +3,7 @@ package com.belsofto.vet.ui.component;
 import com.belsofto.vet.application.ApplicationContext;
 import com.belsofto.vet.application.Status;
 import com.belsofto.vet.media.VideoDetails;
+import com.belsofto.vet.report.ReportOptions;
 import com.belsofto.vet.report.Snapshot;
 import org.slf4j.Logger;
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
@@ -23,9 +24,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public final class VideoPlayer extends JRootPane {
     private static final Logger LOGGER = getLogger(VideoPlayer.class);
-
-    private static final int SNAPSHOT_WIDTH = 320;
-    private static final int SNAPSHOT_HEIGHT = 240;
 
     private final EmbeddedMediaPlayerComponent mediaPlayerComponent;
     private final EmbeddedMediaPlayer mediaPlayer;
@@ -83,20 +81,25 @@ public final class VideoPlayer extends JRootPane {
     }
 
     private BufferedImage processImage(BufferedImage image) {
+        ReportOptions options = ApplicationContext.getInstance().getReportGenerator().getOptions();
+
+        int snapshotWidth = options.getSnapshotWidth();
+        int snapshotHeight = options.getSnapshotHeight();
+
         int imageWidth = image.getWidth();
         int imageHeight = image.getHeight();
 
-        double widthCoeff = (double) SNAPSHOT_WIDTH / imageWidth;
-        double heightCoeff = (double) SNAPSHOT_HEIGHT / imageHeight;
+        double widthCoeff = (double) snapshotWidth / imageWidth;
+        double heightCoeff = (double) snapshotHeight / imageHeight;
 
         int width;
         int height;
         if (widthCoeff < heightCoeff) {
-            width = SNAPSHOT_WIDTH;
+            width = snapshotWidth;
             height = (int) (widthCoeff * imageHeight);
         } else {
             width = (int) (heightCoeff * imageWidth);
-            height = SNAPSHOT_HEIGHT;
+            height = snapshotHeight;
         }
 
         BufferedImage imageCopy = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);

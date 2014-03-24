@@ -6,10 +6,10 @@ import com.belsofto.vet.detection.sound.SoundDetectionOptions;
 import com.belsofto.vet.detection.sound.SoundDetector;
 import com.belsofto.vet.media.VideoDetails;
 import com.belsofto.vet.report.ReportGenerator;
+import com.belsofto.vet.report.ReportOptions;
 import com.belsofto.vet.report.Snapshot;
 import com.belsofto.vet.ui.dialog.FrameGrabsDialog;
 import com.belsofto.vet.ui.frame.MainFrame;
-import com.belsofto.vet.util.MessageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +22,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
+
+import static com.belsofto.vet.util.MessageUtils.format;
 
 public final class ApplicationContext {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationContext.class);
@@ -48,20 +50,25 @@ public final class ApplicationContext {
 
     public boolean saveSnapshot(Snapshot snapshot) {
         try {
-            File file = new File(getSnapshotFileName(snapshot));
-            return file.mkdirs() && ImageIO.write(snapshot.getImage(), "png", file);
+            File snapshotDirectory = new File(getSnapshotDirectory());
+            snapshotDirectory.mkdirs();
+            File snapshotFile = new File(getSnapshotDirectory() + getSnapshotFileName(snapshot));
+            return ImageIO.write(snapshot.getImage(), "png", snapshotFile);
         } catch (IOException e) {
             LOGGER.debug("snapshot saving failed", e);
             return false;
         }
     }
 
-    private String getSnapshotFileName(Snapshot snapshot) {
-        String suffix = getVideoFileName() + "_" + snapshot.getTimeAsString().replace(':', '-');
-        return userDirectory + MessageUtils.format("format.file.snapshot", suffix);
+    private String getSnapshotDirectory() {
+        return userDirectory + "/snapshots/";
     }
 
-    private String getVideoFileName() {
+    private String getSnapshotFileName(Snapshot snapshot) {
+        return format("format.file.snapshot", getVideoName(), snapshot.getTimeAsString().replace(':', '-'), "png");
+    }
+
+    public String getVideoName() {
         String fileName = videoDetails.getSourceFile().getName();
         int dotIndex = fileName.lastIndexOf('.');
         return dotIndex == -1 ? fileName : fileName.substring(0, dotIndex);
@@ -123,11 +130,25 @@ public final class ApplicationContext {
             updateMotionDetectionProperties(properties, fos);
             properties = new Properties();
             updateSoundDetectionProperties(properties, fos);
+            properties = new Properties();
+            updateReportProperties(properties, fos);
             fos.flush();
             LOGGER.debug("application properties saved successfully");
         } catch (IOException e) {
             LOGGER.debug("application properties saving failed", e);
         }
+    }
+
+    private void updateReportProperties(Properties properties, OutputStream outputStream) throws IOException {
+        ReportOptions options = reportGenerator.getOptions();
+
+        properties.put("ro.snapshotWidth", String.valueOf(options.getSnapshotWidth()));
+        properties.put("ro.snapshotHeight", String.valueOf(options.getSnapshotHeight()));
+
+        properties.put("ro.docxPresent", String.valueOf(options.isDocxPresent()));
+        properties.put("ro.pdfPresent", String.valueOf(options.isPdfPresent()));
+
+        properties.store(outputStream, "Report Options");
     }
 
     private void updateSoundDetectionProperties(Properties properties, OutputStream outputStream) throws IOException {
@@ -178,9 +199,32 @@ public final class ApplicationContext {
             properties.load(fis);
             loadMotionDetectionOptions(properties);
             loadSoundDetectionOptions(properties);
+            loadReportOptions(properties);
             LOGGER.debug("application properties loaded successfully");
         } catch (IOException e) {
             LOGGER.debug("application properties loading failed", e);
+        }
+    }
+
+    private void loadReportOptions(Properties properties) {
+        ReportOptions options = reportGenerator.getOptions();
+
+        Integer intValue = getIntegerValue(properties, "ro.snapshotWidth");
+        if (intValue != null) {
+            options.setSnapshotWidth(intValue);
+        }
+        intValue = getIntegerValue(properties, "ro.snapshotHeight");
+        if (intValue != null) {
+            options.setSnapshotHeight(intValue);
+        }
+
+        Boolean boolValue = getBooleanValue(properties, "ro.docxPresent");
+        if (boolValue != null) {
+            options.setDocxPresent(boolValue);
+        }
+        boolValue = getBooleanValue(properties, "mdo.pdfPresent");
+        if (boolValue != null) {
+            options.setPdfPresent(boolValue);
         }
     }
 
@@ -372,5 +416,9 @@ public final class ApplicationContext {
 
     public void setUserDirectory(String userDirectory) {
         this.userDirectory = userDirectory;
+    }
+
+    public String getUserDirectory() {
+        return userDirectory;
     }
 }
