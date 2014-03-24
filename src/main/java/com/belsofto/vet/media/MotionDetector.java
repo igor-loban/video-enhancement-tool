@@ -6,12 +6,14 @@ import com.googlecode.javacpp.Loader;
 import com.googlecode.javacv.FFmpegFrameGrabber;
 import com.googlecode.javacv.Frame;
 import com.googlecode.javacv.FrameGrabber;
-import com.googlecode.javacv.cpp.opencv_core;
 import org.slf4j.Logger;
 
+import javax.swing.JPanel;
 import java.util.List;
 
+import static com.googlecode.javacv.cpp.opencv_core.CvContour;
 import static com.googlecode.javacv.cpp.opencv_core.CvMemStorage;
+import static com.googlecode.javacv.cpp.opencv_core.CvSeq;
 import static com.googlecode.javacv.cpp.opencv_core.IPL_DEPTH_8U;
 import static com.googlecode.javacv.cpp.opencv_core.IplImage;
 import static com.googlecode.javacv.cpp.opencv_core.IplImage.create;
@@ -36,8 +38,6 @@ public final class MotionDetector {
 
     private MotionDetectionOptions options = new MotionDetectionOptions(5, 30, 16, false);
 
-//    private final AtomicBoolean analyzeComplete = new AtomicBoolean(true);
-
     public void analyzeVideo() {
         // TODO: Block UI
         ApplicationContext.getInstance().blockUI();
@@ -56,7 +56,7 @@ public final class MotionDetector {
         }
     }
 
-    private final class MotionDetectionAnalyzer implements Runnable {
+    private final class MotionDetectionAnalyzer extends JPanel implements Runnable {
         private final VideoDetails videoDetails;
         private final FFmpegFrameGrabber grabber;
 
@@ -73,23 +73,41 @@ public final class MotionDetector {
                 return;
             }
 
+            //            setBackground(Color.GREEN);
+            //            JFrame testFrame = new JFrame();
+            //            testFrame.setSize(700, 700);
+            //            testFrame.add(this);
+            //            testFrame.setVisible(true);
+
             IplImage image = null;
             IplImage prevImage = null;
             IplImage diff = null;
 
             CvMemStorage storage = CvMemStorage.create();
 
-            boolean currentVideoFlag = true;
-            int currentBlockFrame = 0;
-            int currentBlockCounter = 0;
+            MotionThreshold motionThreshold;
+            MotionThreshold prevMotionThreshold = MotionThreshold.NO;
+            boolean currentBlockHasMovement = true;
+            int currentBlockStartFrame = 0;
+            int currentBlockLength = 0;
 
             List<MotionDescriptor> motionDescriptors = videoDetails.getMotionDescriptors();
+            motionDescriptors.clear();
 
             try {
                 grabber.restart();
                 grabber.setFrameNumber(1);
 
                 totalFrameCount = grabber.getLengthInFrames();
+
+                //                getGraphics().drawImage(diffCopy.getBufferedImage(), 0, 250, null);
+                //                getGraphics().clearRect(590, 260, 100, 50);
+                //                getGraphics().drawString("C: " + (contour.isNull() ? "null" : contour.total()),
+                // 600, 270);
+                //                try {
+                //                    Thread.sleep(millis);
+                //                } catch (InterruptedException ignored) {
+                //                }
 
                 while (true) {
                     Frame frame = grabFrame();
@@ -134,36 +152,71 @@ public final class MotionDetector {
                     if (prevImage != null) {
                         cvAbsDiff(image, prevImage, diff);
 
-                        cvThreshold(diff, diff, options.getColorThreshold(), 255, CV_THRESH_BINARY);
+                        // From HIGH to LOW
+                        motionThreshold = MotionThreshold.NO;
 
-                        opencv_core.CvSeq contour = new opencv_core.CvSeq(null);
-
-                        cvFindContours(diff, storage, contour, Loader.sizeof(opencv_core.CvContour.class), CV_RETR_LIST,
+                        IplImage diffCopy = diff.clone();
+                        cvThreshold(diffCopy, diffCopy, 200, 255, CV_THRESH_BINARY);
+                        CvSeq contour = new CvSeq(null);
+                        cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class), CV_RETR_LIST,
                                 CV_CHAIN_APPROX_SIMPLE);
                         if (contour.isNull()) {
-                            currentBlockCounter += options.getFrameGap();
-                            if ((currentBlockCounter >= options.getSlideDetection()) && (currentBlockCounter
-                                    < options.getSlideDetection() + options.getFrameGap())) {
-                                // TODO: what it is 5?
-                                if (frameNumber < currentBlockCounter + 5 + options.getFrameGap()) {
-                                    currentVideoFlag = false;
+                            diffCopy = diff.clone();
+                            cvThreshold(diffCopy, diffCopy, 150, 255, CV_THRESH_BINARY);
+                            contour = new CvSeq(null);
+                            cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class), CV_RETR_LIST,
+                                    CV_CHAIN_APPROX_SIMPLE);
+                            if (contour.isNull()) {
+                                diffCopy = diff.clone();
+                                cvThreshold(diffCopy, diffCopy, 100, 255, CV_THRESH_BINARY);
+                                contour = new CvSeq(null);
+                                cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class), CV_RETR_LIST,
+                                        CV_CHAIN_APPROX_SIMPLE);
+                                if (!contour.isNull()) {
+                                    motionThreshold = MotionThreshold.LOW;
                                 }
-                                motionDescriptors
-                                        .add(new MotionDescriptor(getTime(currentBlockFrame), currentVideoFlag));
-                                // thumbnailInfo.put(currentBlockFrame, currentBlockFrame);
-                                currentBlockFrame = frameNumber - options.getSlideDetection();
-                                currentVideoFlag = false;
+                            } else {
+                                motionThreshold = MotionThreshold.MEDIUM;
                             }
                         } else {
-                            currentBlockCounter = 0;
-                            if (!currentVideoFlag) {
-                                motionDescriptors.add(new MotionDescriptor(getTime(currentBlockFrame), false));
-                                // thumbnailInfo.put(currentBlockFrame, currentBlockFrame);
-                                currentBlockFrame = frameNumber;
-                                currentVideoFlag = true;
+                            motionThreshold = MotionThreshold.HIGH;
+                        }
+
+                        if (contour.isNull()) { // If no movement detected
+
+                            currentBlockLength += options.getFrameGap();
+
+                            if (currentBlockLength >= options.getSlideMinFrame()
+                                    && currentBlockLength < options.getSlideMinFrame() + options
+                                    .getFrameGap()) { // New slide detected
+
+                                prevMotionThreshold = currentBlockHasMovement ? motionThreshold : MotionThreshold.NO;
+                                motionDescriptors.add(new MotionDescriptor(getTime(currentBlockStartFrame),
+                                        prevMotionThreshold));
+                                currentBlockStartFrame = frameNumber - options.getSlideMinFrame();
+                                currentBlockHasMovement = false;
+                            }
+                        } else { // If movement detected
+                            currentBlockLength = 0;
+
+                            if (!currentBlockHasMovement) { // If previous block has no movement
+                                motionDescriptors
+                                        .add(new MotionDescriptor(getTime(currentBlockStartFrame), MotionThreshold.NO));
+                                currentBlockStartFrame = frameNumber;
+                                currentBlockHasMovement = true; // New block has movement
+                            } else if (motionThreshold != prevMotionThreshold) {
+                                motionDescriptors
+                                        .add(new MotionDescriptor(getTime(currentBlockStartFrame), prevMotionThreshold));
+                                prevMotionThreshold = motionThreshold;
+                                currentBlockStartFrame = frameNumber;
+                                currentBlockHasMovement = true; // New block has movement
                             }
                         }
                     }
+                }
+
+                if (!currentBlockHasMovement) {
+                    motionDescriptors.add(new MotionDescriptor(getTime(currentBlockStartFrame), MotionThreshold.NO));
                 }
 
                 ApplicationContext.getInstance().updateAfterMotionDetection();
@@ -181,14 +234,20 @@ public final class MotionDetector {
                 Frame frame;
                 int frameNumber;
                 int prevFrameNumber = Integer.MIN_VALUE;
-                int limit = 10;
+                int limit = 5_000;
                 int count = 0;
                 do {
                     frame = grabber.grabFrame();
-                    frameNumber = grabber.getFrameNumber();
-                    if (frame != null && frame.image != null) {
+                    if (frame == null) {
+                        return null;
+                    }
+                    if (frame.image != null) {
                         return frame;
                     }
+                    if (frame.samples != null) {
+                        continue;
+                    }
+                    frameNumber = grabber.getFrameNumber();
                     if (frameNumber >= totalFrameCount) {
                         return null;
                     }

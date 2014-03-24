@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -100,7 +101,7 @@ public final class SoundDetector {
                 List<List<Double>> meansList = new ArrayList<>();
                 int count = 0;
                 for (AudioFrameDescriptor descriptor : descriptors) {
-                    List<byte[]> samples = descriptor.getSamplesAsBytes();
+                    List<short[]> samples = descriptor.getSamplesAsShorts();
                     if (samples.size() > meansList.size()) {
                         for (int difference = samples.size() - meansList.size(); difference > 0; --difference) {
                             meansList.add(new ArrayList<Double>());
@@ -108,11 +109,11 @@ public final class SoundDetector {
                     }
 
                     for (int i = 0; i < samples.size(); ++i) {
-                        byte[] bytes = samples.get(i);
+                        short[] sample = samples.get(i);
                         List<Double> means = meansList.get(i);
 
-                        long sum = calcSum(bytes);
-                        double mean = (double) sum / bytes.length;
+                        long sum = calcSum(sample);
+                        double mean = (double) sum / sample.length;
                         descriptor.setMean(i, mean);
                         means.add(mean);
                     }
@@ -127,8 +128,8 @@ public final class SoundDetector {
                 for (List<Double> means : meansList) {
                     Collections.sort(means);
                     int size = means.size();
-                    upperBounds.add(means.get((int) (0.9 * size)));
-                    lowerBounds.add(means.get((int) (0.1 * size)));
+                    upperBounds.add(means.get((int) (0.75 * size)));
+                    lowerBounds.add(means.get((int) (0.25 * size)));
                 }
 
                 Iterator<AudioFrameDescriptor> iterator = descriptors.iterator();
@@ -163,18 +164,18 @@ public final class SoundDetector {
                     SoundDescriptor rightDescriptor = soundDescriptors.get(i + 1);
                     SoundDescriptor leftDescriptor = soundDescriptors.get(i);
                     if (!leftDescriptor.isNoisePresent()
-                            && rightDescriptor.getTime() - leftDescriptor.getTime() < 1000) {
+                            && rightDescriptor.getTime() - leftDescriptor.getTime() < 300) {
                         soundDescriptors.remove(i + 1);
                         soundDescriptors.remove(i);
                         i--;
                     }
                 }
 
-                for (int i = soundDescriptors.size() - 2; i >= 0; --i) {
+                for (int i = soundDescriptors.size() - 2; i > 0; --i) {
                     SoundDescriptor rightDescriptor = soundDescriptors.get(i + 1);
                     SoundDescriptor leftDescriptor = soundDescriptors.get(i);
                     if (leftDescriptor.isNoisePresent()
-                            && rightDescriptor.getTime() - leftDescriptor.getTime() < 100) {
+                            && rightDescriptor.getTime() - leftDescriptor.getTime() < 300) {
                         soundDescriptors.remove(i + 1);
                         soundDescriptors.remove(i);
                         i--;
@@ -202,18 +203,19 @@ public final class SoundDetector {
             return true;
         }
 
-        private long calcSum(byte[] bytes) {
+        private long calcSum(short[] sample) {
             long sum = 0;
-            for (byte value : bytes) {
+            for (short value : sample) {
                 sum += value;
             }
             return sum;
         }
 
-        private byte[] toByteArray(Buffer sample) {
+        private short[] toShortArray(Buffer sample) {
             ByteBuffer byteBuffer = new Pointer(sample).asByteBuffer();
-            byte[] result = new byte[byteBuffer.remaining()];
-            byteBuffer.get(result);
+            ShortBuffer shortBuffer = byteBuffer.asShortBuffer();
+            short[] result = new short[shortBuffer.remaining()];
+            shortBuffer.get(result);
             return result;
         }
 
@@ -277,14 +279,14 @@ public final class SoundDetector {
 
         private final class AudioFrameDescriptor {
             private final int frameNumber;
-            private final List<byte[]> samplesAsBytes;
+            private final List<short[]> samplesAsShorts;
             private final Map<Integer, Double> means = new HashMap<>();
 
             private AudioFrameDescriptor(int frameNumber, Buffer[] samples) {
                 this.frameNumber = frameNumber;
-                this.samplesAsBytes = new ArrayList<>(samples.length);
+                this.samplesAsShorts = new ArrayList<>(samples.length);
                 for (Buffer sample : samples) {
-                    samplesAsBytes.add(toByteArray(sample));
+                    samplesAsShorts.add(toShortArray(sample));
                 }
             }
 
@@ -292,8 +294,8 @@ public final class SoundDetector {
                 return frameNumber;
             }
 
-            public List<byte[]> getSamplesAsBytes() {
-                return samplesAsBytes;
+            public List<short[]> getSamplesAsShorts() {
+                return samplesAsShorts;
             }
 
             public void setMean(int i, double mean) {

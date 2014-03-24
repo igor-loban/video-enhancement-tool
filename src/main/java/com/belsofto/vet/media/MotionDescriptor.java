@@ -2,18 +2,18 @@ package com.belsofto.vet.media;
 
 public final class MotionDescriptor {
     private final int time;
-    private final boolean videoFlag;
+    private final MotionThreshold motionThreshold;
 
-    public MotionDescriptor(int time, boolean videoFlag) {
+    public MotionDescriptor(int time, MotionThreshold motionThreshold) {
         this.time = time;
-        this.videoFlag = videoFlag;
+        this.motionThreshold = motionThreshold;
     }
 
     public int getTime() {
         return time;
     }
 
-    public boolean hasMotion() {
-        return videoFlag;
+    public MotionThreshold getMotionThreshold() {
+        return motionThreshold;
     }
 }

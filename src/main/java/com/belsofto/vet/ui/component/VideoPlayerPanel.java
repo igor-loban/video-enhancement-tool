@@ -2,6 +2,7 @@ package com.belsofto.vet.ui.component;
 
 import com.belsofto.vet.application.ApplicationContext;
 import com.belsofto.vet.application.Status;
+import com.belsofto.vet.media.MotionThreshold;
 import com.belsofto.vet.report.Snapshot;
 import com.belsofto.vet.media.MotionDescriptor;
 import com.belsofto.vet.media.VideoDetails;
@@ -347,10 +348,10 @@ public final class VideoPlayerPanel extends JPanel {
             while (iterator.hasPrevious()) {
                 MotionDescriptor descriptor = iterator.previous();
                 if (newTime > descriptor.getTime()) {
-                    if (!descriptor.hasMotion()) {
+                    if (descriptor.getMotionThreshold() == MotionThreshold.NO) {
                         while (iterator.hasNext()) {
                             MotionDescriptor descriptorWithMotion = iterator.next();
-                            if (descriptorWithMotion.hasMotion()) {
+                            if (descriptorWithMotion.getMotionThreshold() != MotionThreshold.NO) {
                                 videoPlayer.setTime(descriptorWithMotion.getTime() + 3);
                                 return;
                             }

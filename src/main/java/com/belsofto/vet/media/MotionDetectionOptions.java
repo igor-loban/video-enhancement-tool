@@ -17,7 +17,7 @@ public final class MotionDetectionOptions {
         return frameGap;
     }
 
-    public int getSlideDetection() {
+    public int getSlideMinFrame() {
         return slideDetection;
     }
 

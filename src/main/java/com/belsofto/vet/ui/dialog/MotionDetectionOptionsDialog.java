@@ -57,7 +57,7 @@ public final class MotionDetectionOptionsDialog extends JDialog {
 
         MotionDetectionOptions options = ApplicationContext.getInstance().getMotionDetector().getOptions();
         frameGapSpinner.setValue(options.getFrameGap());
-        slideDetectionSpinner.setValue(options.getSlideDetection());
+        slideDetectionSpinner.setValue(options.getSlideMinFrame());
         colorThresholdSpinner.setValue(options.getColorThreshold());
         if (options.isHighVideoQuality()) {
             highVideoQualityButton.setSelected(true);

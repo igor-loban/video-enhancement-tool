@@ -12,6 +12,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public final class ColoredSliderUI extends BasicSliderUI {
     private static final Color RED = Color.RED; // Separator
@@ -43,18 +44,22 @@ public final class ColoredSliderUI extends BasicSliderUI {
             return;
         }
 
-        width = trackRect.width;
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.setStroke(new BasicStroke(0));
-        if (!soundEmpty) {
-            drawSoundPart(g2d);
-            motionHeight = MOTION_HEIGHT;
-        }
-        if (!motionEmpty) {
-            drawMotionPart(g2d);
-        }
-        if (!motionEmpty && !soundEmpty) {
-            drawSeparator(g2d);
+        try {
+            width = trackRect.width;
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setStroke(new BasicStroke(0));
+            if (!soundEmpty) {
+                drawSoundPart(g2d);
+                motionHeight = MOTION_HEIGHT;
+            }
+            if (!motionEmpty) {
+                drawMotionPart(g2d);
+            }
+            if (!motionEmpty && !soundEmpty) {
+                drawSeparator(g2d);
+            }
+        } catch (NoSuchElementException e) {
+            super.paintTrack(g);
         }
     }
 
@@ -84,7 +89,7 @@ public final class ColoredSliderUI extends BasicSliderUI {
     }
 
     private void drawMotionBlock(Graphics2D g2d, MotionDescriptor descriptor, int dx, int width) {
-        g2d.setColor(descriptor.hasMotion() ? BLUE : GREEN);
+        g2d.setColor(descriptor.getMotionThreshold().color());
         g2d.fillRect(trackRect.x + dx, trackRect.y, width, motionHeight);
         g2d.setColor(RED);
         g2d.fillRect(trackRect.x + dx - 1, trackRect.y, 3, motionHeight);
