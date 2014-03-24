@@ -1,5 +1,7 @@
 package com.belsofto.vet.media;
 
+import com.belsofto.vet.detection.motion.MotionDescriptor;
+import com.belsofto.vet.detection.sound.SoundDescriptor;
 import com.googlecode.javacv.FFmpegFrameGrabber;
 
 import java.io.File;

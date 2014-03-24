@@ -1,7 +1,7 @@
 package com.belsofto.vet.ui.dialog;
 
 import com.belsofto.vet.application.ApplicationContext;
-import com.belsofto.vet.media.MotionDetectionOptions;
+import com.belsofto.vet.detection.motion.MotionDetectionOptions;
 import com.belsofto.vet.ui.util.WindowUtils;
 
 import javax.swing.ButtonGroup;

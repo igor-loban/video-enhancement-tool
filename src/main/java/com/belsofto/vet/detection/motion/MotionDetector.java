@@ -1,7 +1,8 @@
-package com.belsofto.vet.media;
+package com.belsofto.vet.detection.motion;
 
 import com.belsofto.vet.application.ApplicationContext;
 import com.belsofto.vet.application.Status;
+import com.belsofto.vet.media.VideoDetails;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacv.FFmpegFrameGrabber;
 import com.googlecode.javacv.Frame;
@@ -95,7 +96,7 @@ public final class MotionDetector {
                 totalFrameCount = grabber.getLengthInFrames();
 
                 while (true) {
-                    Frame frame = grabFrame();
+                    Frame frame = grabImageFrame();
                     int frameNumber = grabber.getFrameNumber();
 
                     // Update UI
@@ -140,7 +141,7 @@ public final class MotionDetector {
                         motionThreshold = MotionThreshold.NO;
 
                         CvSeq contour = new CvSeq(null);
-                        IplImage diffCopy = null;
+                        IplImage diffCopy;
                         if (options.isUsedHighThreshold()) {
                             diffCopy = diff.clone();
                             cvThreshold(diffCopy, diffCopy, options.getHighThreshold(), 255, CV_THRESH_BINARY);
@@ -214,7 +215,7 @@ public final class MotionDetector {
             return (int) (1000 * frameNumber / videoDetails.getFrameRate());
         }
 
-        private Frame grabFrame() {
+        private Frame grabImageFrame() {
             try {
                 Frame frame;
                 int frameNumber;
@@ -237,12 +238,12 @@ public final class MotionDetector {
                         return null;
                     }
                     if (frameNumber == prevFrameNumber) {
-                        count++;
+                        if (++count >= limit) {
+                            return null;
+                        }
+                    } else {
+                        prevFrameNumber = frameNumber;
                     }
-                    if (count >= limit) {
-                        return null;
-                    }
-                    prevFrameNumber = frameNumber;
                 } while (true);
             } catch (FrameGrabber.Exception e) {
                 return null;

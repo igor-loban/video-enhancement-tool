@@ -1,8 +1,8 @@
-package com.belsofto.vet.media;
+package com.belsofto.vet.detection.motion;
 
 import java.awt.Color;
 
-public final class MotionDetectionOptions {
+public class MotionDetectionOptions {
     private int frameGap = 5;
     private int slideMinFrame = 30;
     private boolean highVideoQuality = false;

@@ -2,9 +2,9 @@ package com.belsofto.vet.ui.component;
 
 import com.belsofto.vet.application.ApplicationContext;
 import com.belsofto.vet.application.Status;
-import com.belsofto.vet.media.MotionThreshold;
+import com.belsofto.vet.detection.motion.MotionThreshold;
 import com.belsofto.vet.report.Snapshot;
-import com.belsofto.vet.media.MotionDescriptor;
+import com.belsofto.vet.detection.motion.MotionDescriptor;
 import com.belsofto.vet.media.VideoDetails;
 import com.google.common.base.Strings;
 import org.joda.time.LocalTime;

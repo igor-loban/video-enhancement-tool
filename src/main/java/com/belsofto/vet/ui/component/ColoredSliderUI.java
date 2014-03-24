@@ -1,7 +1,7 @@
 package com.belsofto.vet.ui.component;
 
-import com.belsofto.vet.media.MotionDescriptor;
-import com.belsofto.vet.media.SoundDescriptor;
+import com.belsofto.vet.detection.motion.MotionDescriptor;
+import com.belsofto.vet.detection.sound.SoundDescriptor;
 import com.belsofto.vet.media.VideoDetails;
 
 import javax.swing.JSlider;
@@ -15,9 +15,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public final class ColoredSliderUI extends BasicSliderUI {
-    private static final Color RED = Color.RED; // Separator
-    private static final Color LIGHT_GREEN = new Color(150, 255, 150); // Noise present
-    private static final Color LIGHT_BLUE = new Color(150, 150, 255); // Sound present
+    private static final Color SEPARATOR_COLOR = Color.RED;
 
     private static final int MOTION_HEIGHT = 15;
     private static final int SOUND_HEIGHT = 5;
@@ -66,7 +64,7 @@ public final class ColoredSliderUI extends BasicSliderUI {
     }
 
     private void drawSeparator(Graphics2D g2d) {
-        g2d.setColor(RED);
+        g2d.setColor(SEPARATOR_COLOR);
 //        g2d.fillRect(trackRect.x, trackRect.y + MOTION_HEIGHT, width, 3);
         g2d.drawLine(trackRect.x, trackRect.y + MOTION_HEIGHT, trackRect.x + width, trackRect.y + MOTION_HEIGHT);
     }
@@ -89,7 +87,7 @@ public final class ColoredSliderUI extends BasicSliderUI {
     private void drawMotionBlock(Graphics2D g2d, MotionDescriptor descriptor, int dx, int width) {
         g2d.setColor(descriptor.getMotionThreshold().color());
         g2d.fillRect(trackRect.x + dx, trackRect.y, width, motionHeight);
-        g2d.setColor(RED);
+        g2d.setColor(SEPARATOR_COLOR);
         g2d.fillRect(trackRect.x + dx - 1, trackRect.y, 3, motionHeight);
 //        g2d.drawLine(trackRect.x + dx, trackRect.y, trackRect.x + dx, trackRect.y + motionHeight);
     }
@@ -110,9 +108,9 @@ public final class ColoredSliderUI extends BasicSliderUI {
     }
 
     private void drawSoundBlock(Graphics2D g2d, SoundDescriptor descriptor, int dx, int width) {
-        g2d.setColor(descriptor.isNoisePresent() ? LIGHT_GREEN : LIGHT_BLUE);
+        g2d.setColor(descriptor.getSoundThreshold().color());
         g2d.fillRect(trackRect.x + dx, trackRect.y, width, soundHeight);
-        g2d.setColor(RED);
+        g2d.setColor(SEPARATOR_COLOR);
 //        g2d.fillRect(trackRect.x + dx - 1, trackRect.y, 3, soundHeight);
         g2d.drawLine(trackRect.x + dx, trackRect.y, trackRect.x + dx, trackRect.y + soundHeight);
     }

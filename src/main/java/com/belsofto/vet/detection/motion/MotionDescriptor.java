@@ -1,4 +1,4 @@
-package com.belsofto.vet.media;
+package com.belsofto.vet.detection.motion;
 
 public final class MotionDescriptor {
     private final int time;

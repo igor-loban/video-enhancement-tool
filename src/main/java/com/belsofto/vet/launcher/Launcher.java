@@ -1,10 +1,10 @@
 package com.belsofto.vet.launcher;
 
 import com.belsofto.vet.application.ApplicationContext;
-import com.belsofto.vet.media.SoundDetector;
+import com.belsofto.vet.detection.sound.SoundDetector;
 import com.belsofto.vet.report.ReportGenerator;
 import com.belsofto.vet.ui.frame.MainFrame;
-import com.belsofto.vet.media.MotionDetector;
+import com.belsofto.vet.detection.motion.MotionDetector;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package com.belsofto.vet.media;
+package com.belsofto.vet.detection.motion;
 
 import java.awt.Color;
 

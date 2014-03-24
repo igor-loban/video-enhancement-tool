@@ -1,8 +1,8 @@
 package com.belsofto.vet.application;
 
-import com.belsofto.vet.media.MotionDetectionOptions;
-import com.belsofto.vet.media.MotionDetector;
-import com.belsofto.vet.media.SoundDetector;
+import com.belsofto.vet.detection.motion.MotionDetectionOptions;
+import com.belsofto.vet.detection.motion.MotionDetector;
+import com.belsofto.vet.detection.sound.SoundDetector;
 import com.belsofto.vet.media.VideoDetails;
 import com.belsofto.vet.report.ReportGenerator;
 import com.belsofto.vet.report.Snapshot;
