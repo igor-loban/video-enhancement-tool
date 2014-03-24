@@ -1,6 +1,7 @@
 package com.belsofto.vet.ui.dialog;
 
 import com.belsofto.vet.application.ApplicationContext;
+import com.belsofto.vet.report.Snapshot;
 import com.belsofto.vet.ui.action.Actions;
 import com.belsofto.vet.ui.composite.SnapshotListPanel;
 import com.belsofto.vet.ui.util.WindowUtils;
@@ -14,6 +15,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import static com.belsofto.vet.util.MessageUtils.format;
 import static com.belsofto.vet.util.MessageUtils.getMessage;
@@ -22,6 +24,7 @@ public final class FrameGrabsDialog extends JDialog {
     private static final int MINIMUM_HEIGHT = 320;
 
     private final SnapshotListPanel snapshotListPanel = new SnapshotListPanel();
+
     private final JButton deleteAllFramesButton =
             new JButton(getMessage("ui.dialog.frameGrabs.button.deleteAllFrames"));
     private final JButton exportFramesButton =
@@ -31,17 +34,17 @@ public final class FrameGrabsDialog extends JDialog {
 
     public FrameGrabsDialog() {
         super(ApplicationContext.getInstance().getMainFrame(), getMessage("ui.dialog.frameGrabs.title"), true);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         configureComponents();
         arrangeComponents();
         setupSizeAndLocation();
     }
 
     private void configureComponents() {
-        // TODO: implement
-        exportFramesButton.setEnabled(false);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         deleteAllFramesButton.addActionListener(new DeleteAllFramesAction());
+
+        exportFramesButton.addActionListener(new ExportFramesAction());
         generateReportButton.addActionListener(Actions.GENERATE_REPORT.get());
         closeButton.addActionListener(new CloseAction());
     }
@@ -119,6 +122,26 @@ public final class FrameGrabsDialog extends JDialog {
     private final class CloseAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
             close();
+        }
+    }
+
+    private final class ExportFramesAction implements ActionListener {
+        @Override public void actionPerformed(ActionEvent e) {
+            ApplicationContext context = ApplicationContext.getInstance();
+            List<Snapshot> snapshots = context.getReportGenerator().getSnapshots();
+            if (snapshots.isEmpty()) {
+                DialogUtils.showErrorMessage("noSnapshotsFound");
+            }
+
+            boolean result = true;
+            for (Snapshot snapshot : snapshots) {
+                result &= context.saveSnapshot(snapshot);
+            }
+            if (result) {
+                DialogUtils.showInfoMessage("allSnapshotsSaved");
+            } else {
+                DialogUtils.showErrorMessage("snapshotsSavedFailed");
+            }
         }
     }
 }

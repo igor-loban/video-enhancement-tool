@@ -9,9 +9,11 @@ import com.belsofto.vet.report.ReportGenerator;
 import com.belsofto.vet.report.Snapshot;
 import com.belsofto.vet.ui.dialog.FrameGrabsDialog;
 import com.belsofto.vet.ui.frame.MainFrame;
+import com.belsofto.vet.util.MessageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
 import java.awt.Color;
 import java.io.File;
@@ -42,6 +44,27 @@ public final class ApplicationContext {
     private VideoDetails videoDetails;
 
     private ApplicationContext() {
+    }
+
+    public boolean saveSnapshot(Snapshot snapshot) {
+        try {
+            File file = new File(getSnapshotFileName(snapshot));
+            return file.mkdirs() && ImageIO.write(snapshot.getImage(), "png", file);
+        } catch (IOException e) {
+            LOGGER.debug("snapshot saving failed", e);
+            return false;
+        }
+    }
+
+    private String getSnapshotFileName(Snapshot snapshot) {
+        String suffix = getVideoFileName() + "_" + snapshot.getTimeAsString().replace(':', '-');
+        return userDirectory + MessageUtils.format("format.file.snapshot", suffix);
+    }
+
+    private String getVideoFileName() {
+        String fileName = videoDetails.getSourceFile().getName();
+        int dotIndex = fileName.lastIndexOf('.');
+        return dotIndex == -1 ? fileName : fileName.substring(0, dotIndex);
     }
 
     public void blockUI() {
