@@ -86,8 +86,12 @@ public final class ApplicationContext {
         }
     }
 
-    public void playAllMovement() {
-        mainFrame.getVideoPlayerPanel().playAllMovement();
+    public void playAllMovements() {
+        mainFrame.getVideoPlayerPanel().playAllMovements();
+    }
+
+    public void playAllSounds() {
+        mainFrame.getVideoPlayerPanel().playAllSounds();
     }
 
     public void updateApplicationProperties() {

@@ -31,8 +31,8 @@ public final class ControlPanel extends TitledPanel {
     private void configureComponents() {
         enhancementButton.setEnabled(false);
 
-        playMovementButton.addActionListener(new PlayMovementAction());
-        playSoundButton.setEnabled(false);
+        playMovementButton.addActionListener(new PlayAllMovementsAction());
+        playSoundButton.addActionListener(new PlayAllSoundsAction());
     }
 
     private void arrangeComponents() {
@@ -55,15 +55,27 @@ public final class ControlPanel extends TitledPanel {
         content.add(playSoundButton, gbc);
     }
 
-    private final class PlayMovementAction implements ActionListener {
+    private final class PlayAllMovementsAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
             ApplicationContext context = ApplicationContext.getInstance();
             VideoDetails videoDetails = context.getVideoDetails();
             if (videoDetails == null || videoDetails.getMotionDescriptors().isEmpty()) {
-                DialogUtils.showErrorMessage("noMovementFound");
+                DialogUtils.showErrorMessage("noMovementDescriptorsFound");
                 return;
             }
-            context.playAllMovement();
+            context.playAllMovements();
+        }
+    }
+
+    private final class PlayAllSoundsAction implements ActionListener {
+        @Override public void actionPerformed(ActionEvent e) {
+            ApplicationContext context = ApplicationContext.getInstance();
+            VideoDetails videoDetails = context.getVideoDetails();
+            if (videoDetails == null || videoDetails.getSoundDescriptors().isEmpty()) {
+                DialogUtils.showErrorMessage("noSoundDescriptorsFound");
+                return;
+            }
+            context.playAllSounds();
         }
     }
 }

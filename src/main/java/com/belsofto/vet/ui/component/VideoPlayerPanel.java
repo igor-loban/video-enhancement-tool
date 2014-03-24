@@ -2,10 +2,12 @@ package com.belsofto.vet.ui.component;
 
 import com.belsofto.vet.application.ApplicationContext;
 import com.belsofto.vet.application.Status;
-import com.belsofto.vet.detection.motion.MotionThreshold;
-import com.belsofto.vet.report.Snapshot;
 import com.belsofto.vet.detection.motion.MotionDescriptor;
+import com.belsofto.vet.detection.motion.MotionThreshold;
+import com.belsofto.vet.detection.sound.SoundDescriptor;
+import com.belsofto.vet.detection.sound.SoundThreshold;
 import com.belsofto.vet.media.VideoDetails;
+import com.belsofto.vet.report.Snapshot;
 import com.google.common.base.Strings;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
@@ -187,11 +189,18 @@ public final class VideoPlayerPanel extends JPanel {
         firePositionChanged = true;
     }
 
-    public void playAllMovement() {
+    public void playAllMovements() {
         videoPlayer.stop();
-        videoPlayer.addMediaPlayerEventListener(new PlayAllMovementAction());
+        videoPlayer.addMediaPlayerEventListener(new PlayAllMovementsAction());
         videoPlayer.play();
         ApplicationContext.getInstance().setStatus(Status.PLAYING_ALL_MOVEMENT);
+    }
+
+    public void playAllSounds() {
+        videoPlayer.stop();
+        videoPlayer.addMediaPlayerEventListener(new PlayAllSoundsAction());
+        videoPlayer.play();
+        ApplicationContext.getInstance().setStatus(Status.PLAYING_ALL_SOUND);
     }
 
     private final class PlayAction implements ActionListener {
@@ -336,7 +345,7 @@ public final class VideoPlayerPanel extends JPanel {
         }
     }
 
-    private final class PlayAllMovementAction extends MediaPlayerEventAdapter {
+    private final class PlayAllMovementsAction extends MediaPlayerEventAdapter {
         @Override public void timeChanged(MediaPlayer mediaPlayer, final long newTime) {
             if (ApplicationContext.getInstance().getStatus() != Status.PLAYING_ALL_MOVEMENT) {
                 videoPlayer.removeMediaPlayerEventListener(this);
@@ -353,6 +362,34 @@ public final class VideoPlayerPanel extends JPanel {
                             MotionDescriptor descriptorWithMotion = iterator.next();
                             if (descriptorWithMotion.getMotionThreshold() != MotionThreshold.NO) {
                                 videoPlayer.setTime(descriptorWithMotion.getTime() + 3);
+                                return;
+                            }
+                        }
+                        videoPlayer.stop();
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+    private final class PlayAllSoundsAction extends MediaPlayerEventAdapter {
+        @Override public void timeChanged(MediaPlayer mediaPlayer, final long newTime) {
+            if (ApplicationContext.getInstance().getStatus() != Status.PLAYING_ALL_SOUND) {
+                videoPlayer.removeMediaPlayerEventListener(this);
+                return;
+            }
+
+            List<SoundDescriptor> descriptors = videoDetails.getSoundDescriptors();
+            ListIterator<SoundDescriptor> iterator = descriptors.listIterator(descriptors.size());
+            while (iterator.hasPrevious()) {
+                SoundDescriptor descriptor = iterator.previous();
+                if (newTime > descriptor.getTime()) {
+                    if (descriptor.getSoundThreshold() == SoundThreshold.NOISE) {
+                        while (iterator.hasNext()) {
+                            SoundDescriptor descriptorWithSound = iterator.next();
+                            if (descriptorWithSound.getSoundThreshold() != SoundThreshold.NOISE) {
+                                videoPlayer.setTime(descriptorWithSound.getTime() + 3);
                                 return;
                             }
                         }

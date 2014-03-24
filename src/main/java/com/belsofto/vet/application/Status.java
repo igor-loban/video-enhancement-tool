@@ -10,6 +10,7 @@ public enum Status {
     PAUSED,
     STOPPED,
     PLAYING_ALL_MOVEMENT,
+    PLAYING_ALL_SOUND,
 
     ANALYZE
 }
