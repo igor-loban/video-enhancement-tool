@@ -4,8 +4,8 @@ public final class MotionDescriptor {
     private final int time;
     private final MotionThreshold motionThreshold;
 
-    public MotionDescriptor(int time, MotionThreshold motionThreshold) {
-        this.time = time;
+    public MotionDescriptor(long timeNanos, MotionThreshold motionThreshold) {
+        this.time = (int) (timeNanos / 1_000);
         this.motionThreshold = motionThreshold;
     }
 

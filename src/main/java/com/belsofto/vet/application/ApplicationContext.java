@@ -103,6 +103,7 @@ public final class ApplicationContext {
     }
 
     public void updateAfterMotionDetection() {
+        System.gc();
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
                 ApplicationContext.getInstance().setStatus(Status.ANALYZE, 100);

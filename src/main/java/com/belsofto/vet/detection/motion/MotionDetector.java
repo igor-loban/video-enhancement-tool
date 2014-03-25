@@ -10,7 +10,10 @@ import com.googlecode.javacv.FrameGrabber;
 import org.slf4j.Logger;
 
 import javax.swing.JPanel;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.googlecode.javacv.cpp.opencv_core.CvContour;
 import static com.googlecode.javacv.cpp.opencv_core.CvMemStorage;
@@ -59,194 +62,313 @@ public final class MotionDetector {
 
     private final class MotionDetectionAnalyzer extends JPanel implements Runnable {
         private final VideoDetails videoDetails;
-        private final FFmpegFrameGrabber grabber;
 
-        private int totalFrameCount;
+        private final List<MotionDescriptor> motionDescriptors1 = new ArrayList<>();
+        private final List<MotionDescriptor> motionDescriptors2 = new ArrayList<>();
+        private final List<MotionDescriptor> motionDescriptors3 = new ArrayList<>();
+        private final List<MotionDescriptor> motionDescriptors4 = new ArrayList<>();
+
+        private final AtomicInteger finishedWorkerCount = new AtomicInteger();
+        private final AtomicInteger timestampMillis1 = new AtomicInteger();
+        private final AtomicInteger timestampMillis2 = new AtomicInteger();
+        private final AtomicInteger timestampMillis3 = new AtomicInteger();
+        private final AtomicInteger timestampMillis4 = new AtomicInteger();
 
         private MotionDetectionAnalyzer(VideoDetails videoDetails) {
             this.videoDetails = videoDetails;
-            this.grabber = videoDetails == null ? null : videoDetails.getGrabber();
         }
 
         @Override public void run() {
-            if (grabber == null) {
-                // TODO: Add error message?
-                return;
+            long totalTimeNanos = videoDetails.getTotalTimeMillis() * 1_000;
+            long interval = totalTimeNanos / 4;
+            File file = videoDetails.getSourceFile();
+
+            Thread worker1 = new Thread(new Worker(motionDescriptors1, timestampMillis1, 0, interval, file));
+            Thread worker2 =
+                    new Thread(new Worker(motionDescriptors2, timestampMillis2, interval + 1, 2 * interval, file));
+            Thread worker3 =
+                    new Thread(new Worker(motionDescriptors3, timestampMillis3, 2 * interval + 1, 3 * interval, file));
+            Thread worker4 = new Thread(
+                    new Worker(motionDescriptors4, timestampMillis4, 3 * interval + 1, totalTimeNanos, file));
+
+            worker1.start();
+            worker2.start();
+            worker3.start();
+            worker4.start();
+
+            ApplicationContext context = ApplicationContext.getInstance();
+
+            long intervalMillis = (long) ((double) interval / 1_000);
+            long totalTimeMillis = (long) ((double) totalTimeNanos / 1_000);
+            long time;
+            while (finishedWorkerCount.get() < 4) {
+                // Update UI
+                time = -6 * intervalMillis;
+                time += timestampMillis1.get();
+                time += timestampMillis2.get();
+                time += timestampMillis3.get();
+                time += timestampMillis4.get();
+
+                if (time < 0) {
+                    time = 0;
+                }
+
+                context.setStatus(Status.ANALYZE, (int) ((double) time * 100.0 / totalTimeMillis));
+
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException ignored) {
+                }
             }
 
-            IplImage image = null;
-            IplImage prevImage = null;
-            IplImage diff = null;
-
-            CvMemStorage storage = CvMemStorage.create();
-
-            MotionThreshold motionThreshold;
-            MotionThreshold prevMotionThreshold = MotionThreshold.NO;
-            boolean currentBlockHasMovement = true;
-            int currentBlockStartFrame = 0;
-            int currentBlockLength = 0;
+            List<MotionDescriptor> result = new ArrayList<>(motionDescriptors1);
+            appendMotionDescriptors(result, motionDescriptors2);
+            appendMotionDescriptors(result, motionDescriptors3);
+            appendMotionDescriptors(result, motionDescriptors4);
 
             List<MotionDescriptor> motionDescriptors = videoDetails.getMotionDescriptors();
             motionDescriptors.clear();
+            motionDescriptors.addAll(result);
 
-            try {
-                grabber.restart();
-                grabber.setFrameNumber(1);
+            context.updateAfterMotionDetection();
+        }
 
-                totalFrameCount = grabber.getLengthInFrames();
+        private void appendMotionDescriptors(List<MotionDescriptor> result, List<MotionDescriptor> descriptors) {
+            if (!result.isEmpty() && !descriptors.isEmpty()
+                    && getLastMotionThreshold(result) == getFirstMotionThreshold(descriptors)) {
+                descriptors.remove(0);
+            }
+            result.addAll(descriptors);
+        }
 
-                while (true) {
-                    Frame frame = grabImageFrame();
-                    int frameNumber = grabber.getFrameNumber();
+        private MotionThreshold getFirstMotionThreshold(List<MotionDescriptor> descriptors) {
+            return descriptors.get(0).getMotionThreshold();
+        }
 
-                    // Update UI
-                    ApplicationContext.getInstance()
-                            .setStatus(Status.ANALYZE, (int) (100 * (double) frameNumber / totalFrameCount));
+        private MotionThreshold getLastMotionThreshold(List<MotionDescriptor> descriptors) {
+            return descriptors.get(descriptors.size() - 1).getMotionThreshold();
+        }
 
-                    if (frameNumber >= totalFrameCount || frame == null) {
-                        break;
-                    }
+        private final class Worker implements Runnable {
+            private final List<MotionDescriptor> motionDescriptors;
+            private final AtomicInteger progress;
+            private final long startTimeNanos;
+            private final long endTimeNanos;
+            private final FFmpegFrameGrabber grabber;
 
-                    if (frameNumber % options.getFrameGap() != 0) {
-                        continue;
-                    }
+            public Worker(List<MotionDescriptor> motionDescriptors, AtomicInteger progress, long startTimeNanos,
+                          long endTimeNanos, File file) {
+                this.motionDescriptors = motionDescriptors;
+                this.progress = progress;
+                this.startTimeNanos = startTimeNanos;
+                this.endTimeNanos = endTimeNanos;
 
-                    cvSmooth(frame.image, frame.image, CV_GAUSSIAN, 9, 9, 2, 2);
-                    if (image == null) {
-                        image = cvCreateImage(cvSize(frame.image.width(), frame.image.height()), IPL_DEPTH_8U, 1);
-                        cvCvtColor(frame.image, image, CV_RGB2GRAY);
-                    } else {
-                        if (prevImage != null) {
+                this.grabber = new FFmpegFrameGrabber(file);
+            }
+
+            @Override public void run() {
+                try {
+                    grabber.restart();
+                    grabber.setTimestamp(startTimeNanos);
+
+
+                    IplImage image = null;
+                    IplImage prevImage = null;
+                    IplImage diff = null;
+
+                    CvMemStorage storage = CvMemStorage.create();
+
+                    MotionThreshold motionThreshold;
+                    MotionThreshold prevMotionThreshold = MotionThreshold.NO;
+                    boolean currentBlockHasMovement = true;
+                    long frameGapNanos = convertToNanos(options.getFrameGap());
+                    long slideMinNanos = convertToNanos(options.getSlideMinFrame());
+                    long currentBlockStartTimestamp = startTimeNanos;
+                    long currentBlockLength = 0;
+                    long currentTimestamp;
+                    int frameCount = 0;
+                    GrabResult grabResult;
+                    IplImage frameImage;
+
+                    while (true) {
+                        grabResult = grabImageFrame();
+                        frameImage = grabResult.getImage();
+                        currentTimestamp = grabResult.getTimestamp();
+                        grabResult = null;
+
+                        progress.set((int) ((double) currentTimestamp / 1_000));
+
+                        if (frameImage == null) {
+                            break;
+                        }
+
+                        if (frameCount++ % options.getFrameGap() != 0) {
+                            continue;
+                        }
+
+                        cvSmooth(frameImage, frameImage, CV_GAUSSIAN, 9, 9, 2, 2);
+                        if (image == null) {
+                            image = cvCreateImage(cvSize(frameImage.width(), frameImage.height()), IPL_DEPTH_8U, 1);
+                            cvCvtColor(frameImage, image, CV_RGB2GRAY);
+                        } else {
+                            if (prevImage != null) {
+                                try {
+                                    cvReleaseImage(prevImage);
+                                } catch (Exception ignored) {
+                                }
+                            }
+                            prevImage = cvCloneImage(image);
                             try {
-                                cvReleaseImage(prevImage);
+                                cvReleaseImage(image);
                             } catch (Exception ignored) {
                             }
+                            image = cvCreateImage(cvSize(frameImage.width(), frameImage.height()), IPL_DEPTH_8U, 1);
+                            cvCvtColor(frameImage, image, CV_RGB2GRAY);
                         }
-                        prevImage = cvCloneImage(image);
-                        try {
-                            cvReleaseImage(image);
-                        } catch (Exception ignored) {
+
+                        if (diff == null) {
+                            diff = create(frameImage.width(), frameImage.height(), IPL_DEPTH_8U, 1);
                         }
-                        image = cvCreateImage(cvSize(frame.image.width(), frame.image.height()), IPL_DEPTH_8U, 1);
-                        cvCvtColor(frame.image, image, CV_RGB2GRAY);
-                    }
 
-                    if (diff == null) {
-                        diff = create(frame.image.width(), frame.image.height(), IPL_DEPTH_8U, 1);
-                    }
+                        if (prevImage != null) {
+                            cvAbsDiff(image, prevImage, diff);
 
-                    if (prevImage != null) {
-                        cvAbsDiff(image, prevImage, diff);
+                            motionThreshold = MotionThreshold.NO;
 
-                        motionThreshold = MotionThreshold.NO;
-
-                        CvSeq contour = new CvSeq(null);
-                        IplImage diffCopy;
-                        if (options.isUsedHighThreshold()) {
-                            diffCopy = diff.clone();
-                            cvThreshold(diffCopy, diffCopy, options.getHighThreshold(), 255, CV_THRESH_BINARY);
-                            cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class), CV_RETR_LIST,
-                                    CV_CHAIN_APPROX_SIMPLE);
-                        }
-                        if (contour.isNull()) {
-                            if (options.isUsedMediumThreshold()) {
+                            CvSeq contour = new CvSeq(null);
+                            IplImage diffCopy;
+                            if (options.isUsedHighThreshold()) {
                                 diffCopy = diff.clone();
-                                cvThreshold(diffCopy, diffCopy, options.getMediumThreshold(), 255, CV_THRESH_BINARY);
-                                contour = new CvSeq(null);
+                                cvThreshold(diffCopy, diffCopy, options.getHighThreshold(), 255, CV_THRESH_BINARY);
                                 cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class), CV_RETR_LIST,
                                         CV_CHAIN_APPROX_SIMPLE);
                             }
                             if (contour.isNull()) {
-                                diffCopy = diff.clone();
-                                cvThreshold(diffCopy, diffCopy, options.getLowThreshold(), 255, CV_THRESH_BINARY);
-                                contour = new CvSeq(null);
-                                cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class), CV_RETR_LIST,
-                                        CV_CHAIN_APPROX_SIMPLE);
-                                if (!contour.isNull()) {
-                                    motionThreshold = MotionThreshold.LOW;
+                                if (options.isUsedMediumThreshold()) {
+                                    diffCopy = diff.clone();
+                                    cvThreshold(diffCopy, diffCopy, options.getMediumThreshold(), 255,
+                                            CV_THRESH_BINARY);
+                                    contour = new CvSeq(null);
+                                    cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class),
+                                            CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
+                                }
+                                if (contour.isNull()) {
+                                    diffCopy = diff.clone();
+                                    cvThreshold(diffCopy, diffCopy, options.getLowThreshold(), 255, CV_THRESH_BINARY);
+                                    contour = new CvSeq(null);
+                                    cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class),
+                                            CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
+                                    if (!contour.isNull()) {
+                                        motionThreshold = MotionThreshold.LOW;
+                                    }
+                                } else {
+                                    motionThreshold = MotionThreshold.MEDIUM;
                                 }
                             } else {
-                                motionThreshold = MotionThreshold.MEDIUM;
+                                motionThreshold = MotionThreshold.HIGH;
+                            }
+
+                            if (motionThreshold == MotionThreshold.NO) { // If no movement detected
+                                currentBlockLength += frameGapNanos;
+                                if (currentBlockLength >= slideMinNanos
+                                        && currentBlockLength < slideMinNanos + frameGapNanos) { // New slide detected
+                                    motionDescriptors
+                                            .add(new MotionDescriptor(currentBlockStartTimestamp, prevMotionThreshold));
+                                    prevMotionThreshold = motionThreshold;
+                                    currentBlockStartTimestamp = currentTimestamp - slideMinNanos;
+                                    currentBlockHasMovement = false;
+                                }
+                            } else { // If movement detected
+                                currentBlockLength = 0;
+                                if (!currentBlockHasMovement) { // If previous block has no movement
+                                    motionDescriptors
+                                            .add(new MotionDescriptor(currentBlockStartTimestamp, MotionThreshold.NO));
+                                    currentBlockStartTimestamp = currentTimestamp;
+                                    currentBlockHasMovement = true; // New block has movement
+                                } else if (motionThreshold != prevMotionThreshold) {
+                                    motionDescriptors
+                                            .add(new MotionDescriptor(currentBlockStartTimestamp, prevMotionThreshold));
+                                    prevMotionThreshold = motionThreshold;
+                                    currentBlockStartTimestamp = currentTimestamp;
+                                    currentBlockHasMovement = true; // New block has movement
+                                }
+                            }
+                        }
+                    }
+
+                    if (!currentBlockHasMovement) {
+                        motionDescriptors.add(new MotionDescriptor(currentBlockStartTimestamp, MotionThreshold.NO));
+                    }
+
+                    finishedWorkerCount.incrementAndGet();
+                } catch (FrameGrabber.Exception e) {
+                    // TODO: fail
+                    return;
+                } finally {
+                    if (grabber != null) {
+                        try {
+                            grabber.release();
+                        } catch (FrameGrabber.Exception ignored) {
+                        }
+                    }
+                }
+            }
+
+            private GrabResult grabImageFrame() {
+                try {
+                    Frame frame;
+                    long timestampNanos;
+                    long timestampNanosPrev = Long.MIN_VALUE;
+                    int limit = 5_000;
+                    int count = 0;
+                    do {
+                        frame = grabber.grabFrame();
+                        timestampNanos = grabber.getTimestamp();
+                        if (timestampNanos >= endTimeNanos) {
+                            return new GrabResult(timestampNanos, null);
+                        }
+                        if (frame == null) {
+                            return new GrabResult(grabber.getTimestamp(), null);
+                        }
+                        if (frame.image != null) {
+                            return new GrabResult(grabber.getTimestamp(), frame.image);
+                        }
+                        if (frame.samples != null) {
+                            continue;
+                        }
+                        if (timestampNanos == timestampNanosPrev) {
+                            if (++count >= limit) {
+                                return new GrabResult(timestampNanos, null);
                             }
                         } else {
-                            motionThreshold = MotionThreshold.HIGH;
+                            timestampNanosPrev = timestampNanos;
                         }
-
-                        if (motionThreshold == MotionThreshold.NO) { // If no movement detected
-                            currentBlockLength += options.getFrameGap();
-                            if (currentBlockLength >= options.getSlideMinFrame()
-                                    && currentBlockLength < options.getSlideMinFrame() + options
-                                    .getFrameGap()) { // New slide detected
-                                motionDescriptors.add(new MotionDescriptor(getTime(currentBlockStartFrame),
-                                        prevMotionThreshold));
-                                prevMotionThreshold = motionThreshold;
-                                currentBlockStartFrame = frameNumber - options.getSlideMinFrame();
-                                currentBlockHasMovement = false;
-                            }
-                        } else { // If movement detected
-                            currentBlockLength = 0;
-                            if (!currentBlockHasMovement) { // If previous block has no movement
-                                motionDescriptors
-                                        .add(new MotionDescriptor(getTime(currentBlockStartFrame), MotionThreshold.NO));
-                                currentBlockStartFrame = frameNumber;
-                                currentBlockHasMovement = true; // New block has movement
-                            } else if (motionThreshold != prevMotionThreshold) {
-                                motionDescriptors.add(new MotionDescriptor(getTime(currentBlockStartFrame),
-                                        prevMotionThreshold));
-                                prevMotionThreshold = motionThreshold;
-                                currentBlockStartFrame = frameNumber;
-                                currentBlockHasMovement = true; // New block has movement
-                            }
-                        }
-                    }
+                    } while (true);
+                } catch (FrameGrabber.Exception e) {
+                    return new GrabResult(-1, null);
                 }
-
-                if (!currentBlockHasMovement) {
-                    motionDescriptors.add(new MotionDescriptor(getTime(currentBlockStartFrame), MotionThreshold.NO));
-                }
-
-                ApplicationContext.getInstance().updateAfterMotionDetection();
-            } catch (FrameGrabber.Exception e) {
-                LOGGER.debug("grabber exception", e);
             }
-        }
 
-        private int getTime(int frameNumber) {
-            return (int) (1000 * frameNumber / videoDetails.getFrameRate());
-        }
+            private long convertToNanos(int frameNumber) {
+                return (long) (1_000_000 * frameNumber / videoDetails.getFrameRate());
+            }
 
-        private Frame grabImageFrame() {
-            try {
-                Frame frame;
-                int frameNumber;
-                int prevFrameNumber = Integer.MIN_VALUE;
-                int limit = 5_000;
-                int count = 0;
-                do {
-                    frame = grabber.grabFrame();
-                    if (frame == null) {
-                        return null;
-                    }
-                    if (frame.image != null) {
-                        return frame;
-                    }
-                    if (frame.samples != null) {
-                        continue;
-                    }
-                    frameNumber = grabber.getFrameNumber();
-                    if (frameNumber >= totalFrameCount) {
-                        return null;
-                    }
-                    if (frameNumber == prevFrameNumber) {
-                        if (++count >= limit) {
-                            return null;
-                        }
-                    } else {
-                        prevFrameNumber = frameNumber;
-                    }
-                } while (true);
-            } catch (FrameGrabber.Exception e) {
-                return null;
+            private final class GrabResult {
+                private final long timestamp;
+                private final IplImage image;
+
+                private GrabResult(long timestamp, IplImage image) {
+                    this.timestamp = timestamp;
+                    this.image = image;
+                }
+
+                public long getTimestamp() {
+                    return timestamp;
+                }
+
+                public IplImage getImage() {
+                    return image;
+                }
             }
         }
     }
