@@ -145,10 +145,12 @@ public final class MotionDetector {
             if (descriptors.size() >= 2) {
                 MotionDescriptor descriptor1 = descriptors.get(0);
                 MotionDescriptor descriptor2 = descriptors.get(1);
-                if (descriptor2.getTime() - descriptor1.getTime() < convertToNanos(2 * options.getFrameGap()) / 1_000) {
+                if (descriptor2.getTime() - descriptor1.getTime() < convertToNanos(options.getFrameGap() + 1) / 1_000
+                        && descriptor1.getMotionThreshold() == descriptor2.getMotionThreshold()) {
                     descriptors.remove(1);
                     descriptors.remove(0);
-                    descriptors.add(0, new MotionDescriptor(descriptor1.getTime(), descriptor2.getMotionThreshold()));
+                    descriptors.add(0,
+                            new MotionDescriptor(descriptor1.getTime() * 1_000, descriptor2.getMotionThreshold()));
                 }
             }
             if (!result.isEmpty() && !descriptors.isEmpty()
@@ -196,7 +198,7 @@ public final class MotionDetector {
 
                     MotionThreshold motionThreshold;
                     MotionThreshold prevMotionThreshold = MotionThreshold.NO;
-                    boolean currentBlockHasMovement = true;
+                    boolean currentBlockHasMovement = false;
                     long frameGapNanos = convertToNanos(options.getFrameGap());
                     long slideMinNanos = convertToNanos(options.getSlideMinFrame());
                     long currentBlockStartTimestamp = startTimeNanos;
@@ -275,8 +277,6 @@ public final class MotionDetector {
                                     cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class),
                                             CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
                                     if (!contour.isNull()) {
-                                        //                                        LOGGER.debug("LOW: " +
-                                        // currentTimestamp);
                                         motionThreshold = MotionThreshold.LOW;
                                     }
                                 } else {
@@ -292,7 +292,7 @@ public final class MotionDetector {
                                         && currentBlockLength < slideMinNanos + frameGapNanos) { // New slide detected
                                     motionDescriptors
                                             .add(new MotionDescriptor(currentBlockStartTimestamp, prevMotionThreshold));
-                                    prevMotionThreshold = motionThreshold;
+                                    prevMotionThreshold = MotionThreshold.NO;
                                     currentBlockStartTimestamp = currentTimestamp - slideMinNanos;
                                     currentBlockHasMovement = false;
                                 }
@@ -301,6 +301,7 @@ public final class MotionDetector {
                                 if (!currentBlockHasMovement) { // If previous block has no movement
                                     motionDescriptors
                                             .add(new MotionDescriptor(currentBlockStartTimestamp, MotionThreshold.NO));
+                                    prevMotionThreshold = motionThreshold;
                                     currentBlockStartTimestamp = currentTimestamp;
                                     currentBlockHasMovement = true; // New block has movement
                                 } else if (motionThreshold != prevMotionThreshold) {
@@ -314,11 +315,7 @@ public final class MotionDetector {
                         }
                     }
 
-                    if (!currentBlockHasMovement) {
-                        motionDescriptors.add(new MotionDescriptor(currentBlockStartTimestamp, MotionThreshold.NO));
-                    } else {
-                        motionDescriptors.add(new MotionDescriptor(currentBlockStartTimestamp, prevMotionThreshold));
-                    }
+                    motionDescriptors.add(new MotionDescriptor(currentBlockStartTimestamp, prevMotionThreshold));
 
                     finishedWorkerCount.incrementAndGet();
                 } catch (FrameGrabber.Exception e) {
