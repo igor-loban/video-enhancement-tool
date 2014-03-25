@@ -8,6 +8,7 @@ import com.belsofto.vet.detection.sound.SoundDescriptor;
 import com.belsofto.vet.detection.sound.SoundThreshold;
 import com.belsofto.vet.media.VideoDetails;
 import com.belsofto.vet.report.Snapshot;
+import com.belsofto.vet.ui.dialog.DialogUtils;
 import com.google.common.base.Strings;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
@@ -210,6 +211,10 @@ public final class VideoPlayerPanel extends JPanel {
     private final class PlayAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
             LOGGER.debug("play media");
+            if (videoDetails == null) {
+                DialogUtils.showErrorMessage("noVideoLoaded");
+                return;
+            }
             videoPlayer.play();
         }
     }
@@ -217,6 +222,10 @@ public final class VideoPlayerPanel extends JPanel {
     private final class PauseAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
             LOGGER.debug("pause media");
+            if (videoDetails == null) {
+                DialogUtils.showErrorMessage("noVideoLoaded");
+                return;
+            }
             videoPlayer.pause();
         }
     }
@@ -224,6 +233,10 @@ public final class VideoPlayerPanel extends JPanel {
     private final class StopAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
             LOGGER.debug("stop media");
+            if (videoDetails == null) {
+                DialogUtils.showErrorMessage("noVideoLoaded");
+                return;
+            }
             videoPlayer.stop();
             validate();
         }
@@ -285,6 +298,10 @@ public final class VideoPlayerPanel extends JPanel {
     private final class CaptureFrameAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
             LOGGER.debug("capture frame");
+            if (videoDetails == null) {
+                DialogUtils.showErrorMessage("noVideoLoaded");
+                return;
+            }
             ApplicationContext context = ApplicationContext.getInstance();
             Snapshot snapshot = videoPlayer.captureFrame();
             if (snapshot != null) {
@@ -312,11 +329,11 @@ public final class VideoPlayerPanel extends JPanel {
 
     private final class RewindAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
+            LOGGER.debug("rewind to previous block");
             if (videoDetails == null) {
+                DialogUtils.showErrorMessage("noVideoLoaded");
                 return;
             }
-
-            LOGGER.debug("rewind to previous block");
 
             int currentTime = videoPlayer.getTime();
             List<MotionDescriptor> descriptors = videoDetails.getMotionDescriptors();
@@ -333,11 +350,11 @@ public final class VideoPlayerPanel extends JPanel {
 
     private final class ForwardAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
+            LOGGER.debug("forward to next block");
             if (videoDetails == null) {
+                DialogUtils.showErrorMessage("noVideoLoaded");
                 return;
             }
-
-            LOGGER.debug("forward to next block");
 
             int currentTime = videoPlayer.getTime();
             for (MotionDescriptor descriptor : videoDetails.getMotionDescriptors()) {

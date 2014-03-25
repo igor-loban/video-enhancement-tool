@@ -131,6 +131,7 @@ public final class FrameGrabsDialog extends JDialog {
             List<Snapshot> snapshots = context.getReportGenerator().getSnapshots();
             if (snapshots.isEmpty()) {
                 DialogUtils.showErrorMessage("noSnapshotsFound");
+                return;
             }
 
             boolean result = true;

@@ -1,6 +1,7 @@
 package com.belsofto.vet.ui.action;
 
 import com.belsofto.vet.application.ApplicationContext;
+import com.belsofto.vet.ui.dialog.DialogUtils;
 import org.slf4j.Logger;
 
 import java.awt.event.ActionEvent;
@@ -12,6 +13,11 @@ final class RunMotionDetectionAction extends AdvancedAbstractAction {
 
     @Override public void actionPerformed(ActionEvent e) {
         LOGGER.debug("run motion detection");
-        ApplicationContext.getInstance().getMotionDetector().analyzeVideo();
+        ApplicationContext context = ApplicationContext.getInstance();
+        if (context.getVideoDetails() == null) {
+            DialogUtils.showErrorMessage("noVideoLoaded");
+            return;
+        }
+        context.getMotionDetector().analyzeVideo();
     }
 }

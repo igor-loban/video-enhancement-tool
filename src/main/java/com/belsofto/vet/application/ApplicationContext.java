@@ -76,11 +76,6 @@ public final class ApplicationContext {
         return dotIndex == -1 ? fileName : fileName.substring(0, dotIndex);
     }
 
-    public void blockUI() {
-        mainFrame.getVideoPlayer().pause();
-        // TODO: disable buttons
-    }
-
     public void setStatus(Status newStatus, Object... params) {
         this.status = newStatus;
         mainFrame.getStatusPanel().setStatus(newStatus, params);
@@ -103,13 +98,13 @@ public final class ApplicationContext {
     }
 
     public void updateAfterMotionDetection() {
-        System.gc();
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
                 ApplicationContext.getInstance().setStatus(Status.ANALYZE, 100);
                 mainFrame.getVideoPlayerPanel().initColoredSlider();
             }
         });
+        System.gc();
     }
 
     public void updateAfterSoundDetection() {
@@ -383,10 +378,6 @@ public final class ApplicationContext {
 
     public void setReportGenerator(ReportGenerator reportGenerator) {
         this.reportGenerator = reportGenerator;
-    }
-
-    public FrameGrabsDialog getFrameGrabsDialog() {
-        return frameGrabsDialog;
     }
 
     public void setFrameGrabsDialog(FrameGrabsDialog frameGrabsDialog) {

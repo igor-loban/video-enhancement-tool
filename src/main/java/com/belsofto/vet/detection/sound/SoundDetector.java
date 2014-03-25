@@ -36,8 +36,6 @@ public final class SoundDetector {
         }
 
         analyzeComplete.set(false);
-        // TODO: Block UI
-        ApplicationContext.getInstance().blockUI();
         VideoDetails videoDetails = ApplicationContext.getInstance().getVideoDetails();
         Thread analyzeThread = new Thread(new SoundDetectionAnalyzer(videoDetails));
         analyzeThread.start();

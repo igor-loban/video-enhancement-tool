@@ -43,9 +43,11 @@ public final class MotionDetector {
     private MotionDetectionOptions options = new MotionDetectionOptions();
 
     public void analyzeVideo() {
-        // TODO: Block UI
-        ApplicationContext.getInstance().blockUI();
-        VideoDetails videoDetails = ApplicationContext.getInstance().getVideoDetails();
+        ApplicationContext context = ApplicationContext.getInstance();
+        VideoDetails videoDetails = context.getVideoDetails();
+        if (videoDetails == null) {
+            return; // TODO: signal about error
+        }
         Thread analyzeThread = new Thread(new MotionDetectionAnalyzer(videoDetails));
         analyzeThread.start();
     }
