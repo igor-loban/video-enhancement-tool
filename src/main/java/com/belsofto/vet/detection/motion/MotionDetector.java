@@ -303,10 +303,10 @@ public final class MotionDetector {
                     finishedWorkerCount.incrementAndGet();
                 } catch (FrameGrabber.Exception e) {
                     // TODO: fail
-                    return;
                 } finally {
                     if (grabber != null) {
                         try {
+                            grabber.stop();
                             grabber.release();
                         } catch (FrameGrabber.Exception ignored) {
                         }
