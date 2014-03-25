@@ -17,7 +17,7 @@ public final class VideoDetails {
     private List<SoundDescriptor> soundDescriptors = Collections.synchronizedList(new ArrayList<SoundDescriptor>());
 
     private double frameRate;
-    private long totalTime; // Millis
+    private int totalTimeMillis;
     private int totalFrameCount;
     private int width;
     private int height;
@@ -78,12 +78,12 @@ public final class VideoDetails {
         this.height = height;
     }
 
-    public long getTotalTime() {
-        return totalTime;
+    public int getTotalTimeMillis() {
+        return totalTimeMillis;
     }
 
-    public void setTotalTime(long totalTime) {
-        this.totalTime = totalTime;
+    public void setTotalTimeMillis(int totalTimeMillis) {
+        this.totalTimeMillis = totalTimeMillis;
     }
 
     public List<SoundDescriptor> getSoundDescriptors() {

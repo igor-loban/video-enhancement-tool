@@ -4,6 +4,9 @@ import com.belsofto.vet.application.ApplicationContext;
 import com.belsofto.vet.media.VideoDetails;
 import com.belsofto.vet.ui.component.TitledPanel;
 import com.belsofto.vet.ui.dialog.DialogUtils;
+import com.belsofto.vet.ui.dialog.RecordVideoFragmentDialog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -16,8 +19,10 @@ import java.awt.event.ActionListener;
 import static com.belsofto.vet.util.MessageUtils.getMessage;
 
 public final class ControlPanel extends TitledPanel {
-    private final JButton enhancementButton =
-            new JButton(getMessage("ui.panel.control.button.videoImageEnhancementControls"));
+    private static final Logger LOGGER = LoggerFactory.getLogger(ControlPanel.class);
+
+    private final JButton recordVideoFragmentButton =
+            new JButton(getMessage("ui.panel.control.button.recordVideoFragmentButton"));
     private final JButton playMovementButton =
             new JButton(getMessage("ui.panel.control.button.playAllFramesWithMovement"));
     private final JButton playSoundButton = new JButton(getMessage("ui.panel.control.button.playAllFramesWithSound"));
@@ -29,8 +34,7 @@ public final class ControlPanel extends TitledPanel {
     }
 
     private void configureComponents() {
-        enhancementButton.setEnabled(false);
-
+        recordVideoFragmentButton.addActionListener(new RecordVideoFragment());
         playMovementButton.addActionListener(new PlayAllMovementsAction());
         playSoundButton.addActionListener(new PlayAllSoundsAction());
     }
@@ -46,7 +50,7 @@ public final class ControlPanel extends TitledPanel {
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.anchor = GridBagConstraints.WEST;
-        content.add(enhancementButton, gbc);
+        content.add(recordVideoFragmentButton, gbc);
 
         gbc.gridy = 1;
         content.add(playMovementButton, gbc);
@@ -76,6 +80,20 @@ public final class ControlPanel extends TitledPanel {
                 return;
             }
             context.playAllSounds();
+        }
+    }
+
+    private final class RecordVideoFragment implements ActionListener {
+        @Override public void actionPerformed(ActionEvent e) {
+            ApplicationContext context = ApplicationContext.getInstance();
+            VideoDetails videoDetails = context.getVideoDetails();
+            if (videoDetails == null) {
+                DialogUtils.showErrorMessage("noVideoLoaded");
+                return;
+            }
+            RecordVideoFragmentDialog dialog = new RecordVideoFragmentDialog();
+            dialog.setVisible(true);
+            LOGGER.debug("record video dialog opened");
         }
     }
 }

@@ -29,10 +29,6 @@ public final class DialogUtils {
         return getMessage(MESSAGE_PREFIX + ERROR_PREFIX + key);
     }
 
-    private DialogUtils() {
-        ErrorUtils.throwInstantiationError(this.getClass());
-    }
-
     public static void showInfoMessage(String key) {
         JOptionPane.showMessageDialog(getParentComponent(), getInfoMessage(key), INFO_TITLE,
                 JOptionPane.INFORMATION_MESSAGE);
@@ -40,5 +36,9 @@ public final class DialogUtils {
 
     private static String getInfoMessage(String key) {
         return getMessage(MESSAGE_PREFIX + INFO_PREFIX + key);
+    }
+
+    private DialogUtils() {
+        ErrorUtils.throwInstantiationError(this.getClass());
     }
 }

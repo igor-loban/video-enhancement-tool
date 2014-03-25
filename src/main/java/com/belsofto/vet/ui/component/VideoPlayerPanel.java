@@ -173,7 +173,7 @@ public final class VideoPlayerPanel extends JPanel {
     public void init(VideoDetails videoDetails) {
         this.videoDetails = videoDetails;
         positionSlider.setMinimum(0);
-        positionSlider.setMaximum((int) videoDetails.getTotalTime());
+        positionSlider.setMaximum((int) videoDetails.getTotalTimeMillis());
         updateTimeline(0);
         initColoredSlider();
     }
@@ -201,6 +201,10 @@ public final class VideoPlayerPanel extends JPanel {
         videoPlayer.addMediaPlayerEventListener(new PlayAllSoundsAction());
         videoPlayer.play();
         ApplicationContext.getInstance().setStatus(Status.PLAYING_ALL_SOUND);
+    }
+
+    public void repaintTimeline() {
+        positionSlider.repaint();
     }
 
     private final class PlayAction implements ActionListener {

@@ -5,6 +5,7 @@ import com.belsofto.vet.detection.motion.MotionDetector;
 import com.belsofto.vet.detection.sound.SoundDetectionOptions;
 import com.belsofto.vet.detection.sound.SoundDetector;
 import com.belsofto.vet.media.VideoDetails;
+import com.belsofto.vet.media.VideoRecorder;
 import com.belsofto.vet.report.ReportGenerator;
 import com.belsofto.vet.report.ReportOptions;
 import com.belsofto.vet.report.Snapshot;
@@ -44,6 +45,7 @@ public final class ApplicationContext {
     private SoundDetector soundDetector;
 
     private VideoDetails videoDetails;
+    private VideoRecorder videoRecorder;
 
     private ApplicationContext() {
     }
@@ -90,6 +92,10 @@ public final class ApplicationContext {
         mainFrame.getVideoPlayerPanel().init(videoDetails);
         mainFrame.getVideoDetailsPanel().update(videoDetails);
         setStatus(Status.LOADING_COMPLETE);
+    }
+
+    public void repaintTimeline() {
+        mainFrame.getVideoPlayerPanel().repaintTimeline();
     }
 
     public void updateTimeline(long newTime) {
@@ -420,5 +426,13 @@ public final class ApplicationContext {
 
     public String getUserDirectory() {
         return userDirectory;
+    }
+
+    public VideoRecorder getVideoRecorder() {
+        return videoRecorder;
+    }
+
+    public void setVideoRecorder(VideoRecorder videoRecorder) {
+        this.videoRecorder = videoRecorder;
     }
 }

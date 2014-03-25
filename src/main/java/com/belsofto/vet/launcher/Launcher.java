@@ -2,6 +2,7 @@ package com.belsofto.vet.launcher;
 
 import com.belsofto.vet.application.ApplicationContext;
 import com.belsofto.vet.detection.sound.SoundDetector;
+import com.belsofto.vet.media.VideoRecorder;
 import com.belsofto.vet.report.ReportGenerator;
 import com.belsofto.vet.ui.frame.MainFrame;
 import com.belsofto.vet.detection.motion.MotionDetector;
@@ -35,14 +36,17 @@ public final class Launcher {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                MainFrame mainFrame = new MainFrame();
                 ApplicationContext context = ApplicationContext.getInstance();
-                context.setMainFrame(mainFrame);
                 context.setReportGenerator(new ReportGenerator());
                 context.setMotionDetector(new MotionDetector());
                 context.setSoundDetector(new SoundDetector());
+                context.setVideoRecorder(new VideoRecorder());
                 context.setUserDirectory(System.getProperty("user.dir"));
                 context.loadApplicationSettings();
+
+                MainFrame mainFrame = new MainFrame();
+                context.setMainFrame(mainFrame);
+
                 LOGGER.debug("ApplicationContext initialized");
                 mainFrame.init();
                 LOGGER.debug("MainFrame initialized");

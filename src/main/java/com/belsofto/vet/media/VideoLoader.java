@@ -37,7 +37,7 @@ public final class VideoLoader implements Runnable {
             videoDetails.setTotalFrameCount(totalFrameCount);
             double frameRate = grabber.getFrameRate();
             videoDetails.setFrameRate(frameRate);
-            videoDetails.setTotalTime((long) (1_000 * totalFrameCount / frameRate));
+            videoDetails.setTotalTimeMillis((int) (grabber.getLengthInTime() / 1_000));
             videoDetails.setWidth(grabber.getImageWidth());
             videoDetails.setHeight(grabber.getImageHeight());
 
