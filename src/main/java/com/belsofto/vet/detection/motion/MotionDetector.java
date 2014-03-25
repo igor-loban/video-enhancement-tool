@@ -85,6 +85,11 @@ public final class MotionDetector {
             long interval = totalTimeNanos / 4;
             File file = videoDetails.getSourceFile();
 
+            //            Thread worker1 = new Thread(new Worker(motionDescriptors1, timestampMillis1, 0, interval,
+            // file));
+            //            Thread worker2 =
+            //                    new Thread(new Worker(motionDescriptors2, timestampMillis2, interval + 1,
+            // totalTimeNanos, file));
             Thread worker1 = new Thread(new Worker(motionDescriptors1, timestampMillis1, 0, interval, file));
             Thread worker2 =
                     new Thread(new Worker(motionDescriptors2, timestampMillis2, interval + 1, 2 * interval, file));
@@ -101,7 +106,7 @@ public final class MotionDetector {
             ApplicationContext context = ApplicationContext.getInstance();
 
             long intervalMillis = (long) ((double) interval / 1_000);
-            long totalTimeMillis = (long) ((double) totalTimeNanos / 1_000);
+            long totalTimeMillis = videoDetails.getTotalTimeMillis();
             long time;
             while (finishedWorkerCount.get() < 4) {
                 // Update UI
@@ -123,7 +128,8 @@ public final class MotionDetector {
                 }
             }
 
-            List<MotionDescriptor> result = new ArrayList<>(motionDescriptors1);
+            List<MotionDescriptor> result = new ArrayList<>();
+            appendMotionDescriptors(result, motionDescriptors1);
             appendMotionDescriptors(result, motionDescriptors2);
             appendMotionDescriptors(result, motionDescriptors3);
             appendMotionDescriptors(result, motionDescriptors4);
@@ -136,6 +142,15 @@ public final class MotionDetector {
         }
 
         private void appendMotionDescriptors(List<MotionDescriptor> result, List<MotionDescriptor> descriptors) {
+            if (descriptors.size() >= 2) {
+                MotionDescriptor descriptor1 = descriptors.get(0);
+                MotionDescriptor descriptor2 = descriptors.get(1);
+                if (descriptor2.getTime() - descriptor1.getTime() < convertToNanos(2 * options.getFrameGap()) / 1_000) {
+                    descriptors.remove(1);
+                    descriptors.remove(0);
+                    descriptors.add(0, new MotionDescriptor(descriptor1.getTime(), descriptor2.getMotionThreshold()));
+                }
+            }
             if (!result.isEmpty() && !descriptors.isEmpty()
                     && getLastMotionThreshold(result) == getFirstMotionThreshold(descriptors)) {
                 descriptors.remove(0);
@@ -172,7 +187,6 @@ public final class MotionDetector {
                 try {
                     grabber.restart();
                     grabber.setTimestamp(startTimeNanos);
-
 
                     IplImage image = null;
                     IplImage prevImage = null;
@@ -261,6 +275,8 @@ public final class MotionDetector {
                                     cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class),
                                             CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
                                     if (!contour.isNull()) {
+                                        //                                        LOGGER.debug("LOW: " +
+                                        // currentTimestamp);
                                         motionThreshold = MotionThreshold.LOW;
                                     }
                                 } else {
@@ -300,6 +316,8 @@ public final class MotionDetector {
 
                     if (!currentBlockHasMovement) {
                         motionDescriptors.add(new MotionDescriptor(currentBlockStartTimestamp, MotionThreshold.NO));
+                    } else {
+                        motionDescriptors.add(new MotionDescriptor(currentBlockStartTimestamp, prevMotionThreshold));
                     }
 
                     finishedWorkerCount.incrementAndGet();
@@ -330,10 +348,10 @@ public final class MotionDetector {
                             return new GrabResult(timestampNanos, null);
                         }
                         if (frame == null) {
-                            return new GrabResult(grabber.getTimestamp(), null);
+                            return new GrabResult(timestampNanos, null);
                         }
                         if (frame.image != null) {
-                            return new GrabResult(grabber.getTimestamp(), frame.image);
+                            return new GrabResult(timestampNanos, frame.image);
                         }
                         if (frame.samples != null) {
                             continue;
@@ -349,10 +367,6 @@ public final class MotionDetector {
                 } catch (FrameGrabber.Exception e) {
                     return new GrabResult(-1, null);
                 }
-            }
-
-            private long convertToNanos(int frameNumber) {
-                return (long) (1_000_000 * frameNumber / videoDetails.getFrameRate());
             }
 
             private final class GrabResult {
@@ -372,6 +386,10 @@ public final class MotionDetector {
                     return image;
                 }
             }
+        }
+
+        private long convertToNanos(int frameNumber) {
+            return (long) (1_000_000 * frameNumber / videoDetails.getFrameRate());
         }
     }
 }
