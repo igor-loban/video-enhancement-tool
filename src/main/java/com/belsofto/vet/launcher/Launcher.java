@@ -59,30 +59,57 @@ public final class Launcher {
     private static boolean loadVLCNativeLibrary() {
         try {
             LOGGER.debug("try to load VLC library");
+
+            String vlcLibName = RuntimeUtil.getLibVlcLibraryName();
+
             String vlcHomePath = System.getenv("VLC_HOME");
             if (vlcHomePath != null) {
                 vlcHomePath = vlcHomePath.replace("\\", "\\\\");
-                NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), vlcHomePath);
+                NativeLibrary.addSearchPath(vlcLibName, vlcHomePath);
             }
-            NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), "C:\\Program Files\\VideoLAN\\VLC");
-            NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), "C:\\Program Files (x86)\\VideoLAN\\VLC");
+
+            if (RuntimeUtil.isWindows()) {
+                if (is32BitOsArch()) {
+                    NativeLibrary.addSearchPath(vlcLibName, "C:\\Program Files (x86)\\VideoLAN\\VLC");
+                } else {
+                    NativeLibrary.addSearchPath(vlcLibName, "C:\\Program Files\\VideoLAN\\VLC");
+                }
+            }
+
             String userDir = System.getProperty("user.dir");
-            if (userDir != null) {
-                userDir += "\\VLC";
-                userDir = userDir.replace("\\", "\\\\");
-                NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), userDir);
+            String separatorChar = System.getProperty("file.separator");
+            if (userDir != null && separatorChar != null) {
+                String localVlcPath = userDir + separatorChar + "lib" + separatorChar + "VLC";
+                if (RuntimeUtil.isWindows()) {
+                    localVlcPath += separatorChar + (is32BitOsArch() ? "win32" : "win64");
+                } else if (RuntimeUtil.isMac()) {
+                    localVlcPath += separatorChar + "macosx";
+                } else {
+                    localVlcPath += separatorChar + "unix";
+                }
+
+                if (separatorChar.equals("\\")) {
+                    localVlcPath = localVlcPath.replace("\\", "\\\\");
+                }
+                NativeLibrary.addSearchPath(vlcLibName, localVlcPath);
             }
-            Native.loadLibrary(RuntimeUtil.getLibVlcLibraryName(), LibVlc.class);
+
+            Native.loadLibrary(vlcLibName, LibVlc.class);
+
             LOGGER.debug("VLC library loaded successfully");
+
             return true;
         } catch (UnsatisfiedLinkError e) {
-            LOGGER.debug("VLC library loading failed");
-            String vlcLibName = RuntimeUtil.getLibVlcLibraryName();
+            LOGGER.debug("VLC library loading failed", e);
             JOptionPane.showMessageDialog(null,
                     "VLC libraries not found. Please, setup 'VLC_HOME' environment variable which specified path to "
-                            + vlcLibName + " and " + vlcLibName + "core libraries.", "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                            + "VLC directory with core libraries.", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
+    }
+
+    private static boolean is32BitOsArch() {
+        String osArch = System.getProperty("os.arch");
+        return osArch != null && !osArch.contains("64");
     }
 }
