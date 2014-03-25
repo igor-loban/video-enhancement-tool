@@ -11,8 +11,8 @@ public final class WindowUtils {
     public static void setLocationToCenter(Window window) {
         Dimension size = window.getSize();
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        if ((double) screenSize.height / size.height < 1.3) {
-            size.height = (int) (screenSize.height * 0.7);
+        if ((double) screenSize.height / size.height < 1.15) {
+            size.height = (int) (screenSize.height * 0.85);
             window.setSize(size);
         }
         window.setLocation((screenSize.width - size.width) / 2, (screenSize.height - size.height - 20) / 2);

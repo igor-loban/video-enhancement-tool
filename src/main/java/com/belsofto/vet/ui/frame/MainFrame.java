@@ -23,7 +23,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 public final class MainFrame extends JFrame {
-    private static final int MINIMUM_HEIGHT = 614;
+    private static final int MINIMUM_HEIGHT = 650;
 
     private final VideoPlayer videoPlayer = new VideoPlayer();
     private final VideoPlayerPanel videoPlayerPanel = new VideoPlayerPanel(videoPlayer);
