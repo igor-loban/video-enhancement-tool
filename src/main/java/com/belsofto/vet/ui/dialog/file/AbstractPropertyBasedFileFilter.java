@@ -33,7 +33,7 @@ abstract class AbstractPropertyBasedFileFilter extends FileFilter {
         if (file.isDirectory()) {
             return true;
         }
-        String fileName = file.getName();
+        String fileName = file.getName().toLowerCase();
         for (String extension : extensions) {
             if (fileName.endsWith(extension)) {
                 return true;
