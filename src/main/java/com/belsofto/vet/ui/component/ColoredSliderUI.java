@@ -52,6 +52,8 @@ public final class ColoredSliderUI extends BasicSliderUI {
                 if (!soundEmpty) {
                     drawSoundPart(g2d);
                     motionHeight = MOTION_HEIGHT;
+                } else {
+                    motionHeight = MOTION_HEIGHT + SOUND_HEIGHT;
                 }
                 if (!motionEmpty) {
                     drawMotionPart(g2d);

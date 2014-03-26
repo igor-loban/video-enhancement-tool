@@ -85,11 +85,6 @@ public final class MotionDetector {
             long interval = totalTimeNanos / 4;
             File file = videoDetails.getSourceFile();
 
-            //            Thread worker1 = new Thread(new Worker(motionDescriptors1, timestampMillis1, 0, interval,
-            // file));
-            //            Thread worker2 =
-            //                    new Thread(new Worker(motionDescriptors2, timestampMillis2, interval + 1,
-            // totalTimeNanos, file));
             Thread worker1 = new Thread(new Worker(motionDescriptors1, timestampMillis1, 0, interval, file));
             Thread worker2 =
                     new Thread(new Worker(motionDescriptors2, timestampMillis2, interval + 1, 2 * interval, file));
@@ -146,7 +141,8 @@ public final class MotionDetector {
                 MotionDescriptor descriptor1 = descriptors.get(0);
                 MotionDescriptor descriptor2 = descriptors.get(1);
                 if (descriptor2.getTime() - descriptor1.getTime() < convertToNanos(options.getFrameGap() + 1) / 1_000
-                        && descriptor1.getMotionThreshold() == descriptor2.getMotionThreshold()) {
+                        && descriptor1.getMotionThreshold() == MotionThreshold.NO
+                        && descriptor2.getMotionThreshold() != MotionThreshold.NO) {
                     descriptors.remove(1);
                     descriptors.remove(0);
                     descriptors.add(0,
