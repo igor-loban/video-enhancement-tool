@@ -17,11 +17,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public final class ColoredSliderUI extends BasicSliderUI {
-    private static final Color SEPARATOR_COLOR = Color.RED;
+    private static final Color SEPARATOR_COLOR = Color.BLACK;
     private static final Color FRAGMENT_COLOR = new Color(220, 180, 0, 140);
 
-    private static final int MOTION_HEIGHT = 15;
-    private static final int SOUND_HEIGHT = 5;
+    private static final int MOTION_HEIGHT = 13;
+    private static final int SOUND_HEIGHT = 7;
 
     private final VideoRecordOptions videoRecordOptions;
 
@@ -108,8 +108,8 @@ public final class ColoredSliderUI extends BasicSliderUI {
     private void drawMotionBlock(Graphics2D g2d, MotionDescriptor descriptor, int dx, int width) {
         g2d.setColor(descriptor.getMotionThreshold().color());
         g2d.fillRect(trackRect.x + dx, trackRect.y, width, motionHeight);
-        g2d.setColor(SEPARATOR_COLOR);
-        g2d.drawLine(trackRect.x + dx, trackRect.y, trackRect.x + dx, trackRect.y + motionHeight);
+//        g2d.setColor(SEPARATOR_COLOR);
+//        g2d.drawLine(trackRect.x + dx, trackRect.y, trackRect.x + dx, trackRect.y + motionHeight);
     }
 
     private void drawSoundPart(Graphics2D g2d) {
@@ -130,8 +130,8 @@ public final class ColoredSliderUI extends BasicSliderUI {
     private void drawSoundBlock(Graphics2D g2d, SoundDescriptor descriptor, int dx, int width) {
         g2d.setColor(descriptor.getSoundThreshold().color());
         g2d.fillRect(trackRect.x + dx, trackRect.y, width, soundHeight);
-        g2d.setColor(SEPARATOR_COLOR);
-        g2d.drawLine(trackRect.x + dx, trackRect.y, trackRect.x + dx, trackRect.y + soundHeight);
+//        g2d.setColor(SEPARATOR_COLOR);
+//        g2d.drawLine(trackRect.x + dx, trackRect.y, trackRect.x + dx, trackRect.y + soundHeight);
     }
 
     @Override
