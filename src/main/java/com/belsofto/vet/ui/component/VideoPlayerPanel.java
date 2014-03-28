@@ -22,7 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -71,13 +71,30 @@ public final class VideoPlayerPanel extends JPanel {
         configureComponents();
         setupControlActions();
         arrangeControlPanel();
+        arrangeComponents();
+    }
 
-        setLayout(new BorderLayout());
-        add(videoPlayer, BorderLayout.CENTER);
-        add(controlPanel, BorderLayout.SOUTH);
+    private void arrangeComponents() {
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        add(videoPlayer, gbc);
+
+        gbc.gridy = 1;
+        gbc.weighty = 0;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        add(controlPanel, gbc);
     }
 
     private void configureComponents() {
+        setBackground(Color.GRAY);
+
         positionSlider.setUI(coloredSliderUI);
 
         volumeSlider.setPaintTicks(true);
@@ -174,7 +191,7 @@ public final class VideoPlayerPanel extends JPanel {
     public void init(VideoDetails videoDetails) {
         this.videoDetails = videoDetails;
         positionSlider.setMinimum(0);
-        positionSlider.setMaximum((int) videoDetails.getTotalTimeMillis());
+        positionSlider.setMaximum(videoDetails.getTotalTimeMillis());
         updateTimeline(0);
         initColoredSlider();
     }

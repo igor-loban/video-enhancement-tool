@@ -15,6 +15,7 @@ import com.belsofto.vet.util.MessageUtils;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JToolBar;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -31,6 +32,7 @@ public final class MainFrame extends JFrame {
     private final VideoDetailsPanel videoDetailsPanel = new VideoDetailsPanel();
     private final NotesPanel notesPanel = new NotesPanel();
     private final StatusPanel statusPanel = new StatusPanel();
+    private final JToolBar toolBar = new JToolBar();
 
     /**
      * {@link ApplicationContext} can be used inside this method.
@@ -39,6 +41,7 @@ public final class MainFrame extends JFrame {
         setTitle(MessageUtils.getMessage("ui.mainFrame.title"));
         setActionOnClose();
         setupMainMenu();
+        setupToolBar();
         arrangeComponents();
         setupSizeAndLocation();
     }
@@ -90,13 +93,28 @@ public final class MainFrame extends JFrame {
         setJMenuBar(mainMenu);
     }
 
+    private void setupToolBar() {
+        toolBar.add(Actions.OPEN.get());
+        toolBar.addSeparator();
+        toolBar.add(Actions.RUN_MOTION_DETECTION.get());
+        toolBar.add(Actions.RUN_SOUND_DETECTION.get());
+    }
+
     private void arrangeComponents() {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
+        gbc.gridwidth = 3;
+        gbc.weightx = 1.0;
+        gbc.weighty = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(toolBar, gbc);
+
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
         gbc.gridwidth = 3;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
@@ -104,7 +122,7 @@ public final class MainFrame extends JFrame {
         add(videoPlayerPanel, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         gbc.gridwidth = 3;
         gbc.weightx = 1.0;
         gbc.weighty = 0;
@@ -112,7 +130,7 @@ public final class MainFrame extends JFrame {
         add(statusPanel, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.gridwidth = 1;
         gbc.weightx = 0;
         gbc.weighty = 0;
@@ -120,7 +138,7 @@ public final class MainFrame extends JFrame {
         add(controlPanel, gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.gridwidth = 1;
         gbc.weightx = 0.5;
         gbc.weighty = 0;
@@ -128,7 +146,7 @@ public final class MainFrame extends JFrame {
         add(videoDetailsPanel, gbc);
 
         gbc.gridx = 2;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.gridwidth = 1;
         gbc.weightx = 0.5;
         gbc.weighty = 0;
