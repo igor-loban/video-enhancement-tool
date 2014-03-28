@@ -17,11 +17,13 @@ abstract class AdvancedAbstractAction extends AbstractAction {
     private static final String NAME_SUFFIX = ".name";
     private static final String MNEMONIC_CHAR_SUFFIX = ".mnemonic";
     private static final String ACCELERATOR_SUFFIX = ".accelerator";
+    private static final String SHORT_DESCRIPTION_SUFFIX = ".shortDescription";
 
     protected AdvancedAbstractAction() {
         addName();
         addMnemonic();
         addAccelerator();
+        addShortDescription();
     }
 
     private void addName() {
@@ -44,6 +46,15 @@ abstract class AdvancedAbstractAction extends AbstractAction {
 
     private void addAccelerator() {
         addValue(Action.ACCELERATOR_KEY, getAccelerator());
+    }
+
+    private void addShortDescription() {
+        addValue(Action.SHORT_DESCRIPTION, getShortDescription());
+    }
+
+    private String getShortDescription() {
+        String key = getBaseKey() + SHORT_DESCRIPTION_SUFFIX;
+        return MessageUtils.contains(key) ? MessageUtils.getMessage(key) : null;
     }
 
     private Integer getMnemonic() {

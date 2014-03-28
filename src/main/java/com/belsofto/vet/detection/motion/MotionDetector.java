@@ -103,6 +103,7 @@ public final class MotionDetector {
             long intervalMillis = (long) ((double) interval / 1_000);
             long totalTimeMillis = videoDetails.getTotalTimeMillis();
             long time;
+            long gcCounter = 0;
             while (finishedWorkerCount.get() < 4) {
                 // Update UI
                 time = -6 * intervalMillis;
@@ -118,6 +119,9 @@ public final class MotionDetector {
                 context.setStatus(Status.ANALYZE, (int) ((double) time * 100.0 / totalTimeMillis));
 
                 try {
+                    if (gcCounter++ % 8 == 0) {
+                        System.gc();
+                    }
                     Thread.sleep(250);
                 } catch (InterruptedException ignored) {
                 }

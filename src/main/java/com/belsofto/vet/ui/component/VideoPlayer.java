@@ -12,11 +12,9 @@ import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.MediaPlayerEventListener;
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
 
-import javax.imageio.ImageIO;
 import javax.swing.JRootPane;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,21 +29,12 @@ public final class VideoPlayer extends JRootPane {
 
     private VideoDetails videoDetails;
 
-    private final BufferedImage demo;
-
     public VideoPlayer() {
-        try {
-            // TODO: mediaPlayerComponent.release();
-            mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
-            setContentPane(mediaPlayerComponent);
-            mediaPlayer = mediaPlayerComponent.getMediaPlayer();
-            mediaPlayer.addMediaPlayerEventListener(new MediaPlayerActionHandler());
-
-            // TODO: remove before release
-            demo = ImageIO.read(getClass().getResource("/demo.png"));
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+        // TODO: mediaPlayerComponent.release();
+        mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
+        setContentPane(mediaPlayerComponent);
+        mediaPlayer = mediaPlayerComponent.getMediaPlayer();
+        mediaPlayer.addMediaPlayerEventListener(new MediaPlayerActionHandler());
     }
 
     public void loadVideo() {
@@ -105,7 +94,6 @@ public final class VideoPlayer extends JRootPane {
         BufferedImage imageCopy = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics g = imageCopy.getGraphics();
         g.drawImage(image, 0, 0, width, height, null);
-        g.drawImage(demo, 0, 0, width, height, null);
         g.dispose();
 
         return imageCopy;
