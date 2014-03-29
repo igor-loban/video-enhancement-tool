@@ -6,8 +6,9 @@ import com.belsofto.vet.ui.dialog.DialogUtils;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Image;
-import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
@@ -15,12 +16,17 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.wml.Br;
+import org.docx4j.wml.CTBorder;
 import org.docx4j.wml.Drawing;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
-import org.docx4j.wml.STBrType;
+import org.docx4j.wml.STBorder;
+import org.docx4j.wml.Tbl;
+import org.docx4j.wml.TblBorders;
+import org.docx4j.wml.TblPr;
+import org.docx4j.wml.Tc;
+import org.docx4j.wml.Tr;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 
@@ -31,9 +37,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -122,23 +128,30 @@ public final class ReportGenerator {
                 docxObjectFactory = Context.getWmlObjectFactory();
                 MainDocumentPart mainDocumentPart = wordMLPackage.getMainDocumentPart();
 
+                Tbl table = docxObjectFactory.createTbl();
+                addBorders(table);
+
                 int frameGrabNumber = 1;
-                Iterator<Snapshot> iterator = snapshots.iterator();
-                while (iterator.hasNext()) {
-                    Snapshot snapshot = iterator.next();
+                for (Snapshot snapshot : snapshots) {
                     byte[] imageAsBytes = imagesAsBytes.get(frameGrabNumber - 1);
 
-                    mainDocumentPart.addParagraphOfText("Frame Grab: " + frameGrabNumber++);
-                    mainDocumentPart.addParagraphOfText("Time Index: " + snapshot.getTimeAsString());
-                    mainDocumentPart.addParagraphOfText(notesTitle);
-                    mainDocumentPart.addParagraphOfText(snapshot.getNotes());
-                    P imageParagraph = addInlineImageToParagraph(createInlineImage(imageAsBytes));
-                    mainDocumentPart.addObject(imageParagraph);
+                    Tr tr = docxObjectFactory.createTr();
 
-                    if (iterator.hasNext()) {
-                        addPageBreak();
-                    }
+                    P imageParagraph = addInlineImageToParagraph(createInlineImage(imageAsBytes));
+                    addTableCell(tr, imageParagraph);
+
+                    Tc tc1 = docxObjectFactory.createTc();
+                    List<Object> content = tc1.getContent();
+                    content.add(mainDocumentPart.createParagraphOfText("Frame Grab: " + frameGrabNumber++));
+                    content.add(mainDocumentPart.createParagraphOfText("Time Index: " + snapshot.getTimeAsString()));
+                    content.add(mainDocumentPart.createParagraphOfText(notesTitle));
+                    content.add(mainDocumentPart.createParagraphOfText(snapshot.getNotes()));
+                    tr.getContent().add(tc1);
+
+                    table.getContent().add(tr);
                 }
+
+                mainDocumentPart.addObject(table);
 
                 File reportDirectory = new File(getReportDirectory());
                 reportDirectory.mkdirs();
@@ -158,15 +171,10 @@ public final class ReportGenerator {
             }
         }
 
-        private void addPageBreak() {
-            MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
-
-            Br breakObj = new Br();
-            breakObj.setType(STBrType.PAGE);
-
-            P paragraph = docxObjectFactory.createP();
-            paragraph.getContent().add(breakObj);
-            documentPart.getJaxbElement().getBody().getContent().add(paragraph);
+        private void addTableCell(Tr tr, P paragraph) {
+            Tc tc1 = docxObjectFactory.createTc();
+            tc1.getContent().add(paragraph);
+            tr.getContent().add(tc1);
         }
 
         private P addInlineImageToParagraph(Inline inline) {
@@ -187,6 +195,24 @@ public final class ReportGenerator {
                 throw new ReportGenerationException(e);
             }
         }
+
+        private void addBorders(Tbl table) {
+            table.setTblPr(new TblPr());
+            CTBorder border = new CTBorder();
+            border.setColor("auto");
+            border.setSz(new BigInteger("4"));
+            border.setSpace(new BigInteger("0"));
+            border.setVal(STBorder.SINGLE);
+
+            TblBorders borders = new TblBorders();
+            borders.setBottom(border);
+            borders.setLeft(border);
+            borders.setRight(border);
+            borders.setTop(border);
+            borders.setInsideH(border);
+            borders.setInsideV(border);
+            table.getTblPr().setTblBorders(borders);
+        }
     }
 
     private final class PdfReportGenerator implements Runnable {
@@ -199,28 +225,29 @@ public final class ReportGenerator {
                 File reportDirectory = new File(getReportDirectory());
                 reportDirectory.mkdirs();
 
-                Document pdfDocument = new Document(PageSize.A4.rotate());
+                Document pdfDocument = new Document();
                 File reportFile = new File(getReportDirectory() + getFileName("pdf"));
                 PdfWriter.getInstance(pdfDocument, new FileOutputStream(reportFile));
                 pdfDocument.open();
 
+                PdfPTable table = new PdfPTable(2);
+
                 int frameGrabNumber = 1;
-                Iterator<Snapshot> iterator = snapshots.iterator();
-                while (iterator.hasNext()) {
-                    Snapshot snapshot = iterator.next();
+                for (Snapshot snapshot : snapshots) {
                     byte[] imageAsBytes = imagesAsBytes.get(frameGrabNumber - 1);
 
-                    pdfDocument.add(new Paragraph("Frame Grab: " + frameGrabNumber++));
-                    pdfDocument.add(new Paragraph("Time Index: " + snapshot.getTimeAsString()));
-                    pdfDocument.add(new Paragraph(notesTitle));
-                    pdfDocument.add(new Paragraph(snapshot.getNotes()));
-                    pdfDocument.add(Image.getInstance(imageAsBytes));
+                    table.addCell(Image.getInstance(imageAsBytes));
 
-                    if (iterator.hasNext()) {
-                        pdfDocument.newPage();
-                    }
+                    PdfPCell cell = new PdfPCell();
+                    cell.addElement(new Paragraph("Frame Grab: " + frameGrabNumber++));
+                    cell.addElement(new Paragraph("Time Index: " + snapshot.getTimeAsString()));
+                    cell.addElement(new Paragraph(notesTitle));
+                    cell.addElement(new Paragraph(snapshot.getNotes()));
+
+                    table.addCell(cell);
                 }
 
+                pdfDocument.add(table);
                 pdfDocument.close();
 
                 if (!options.isDocxPresent()) {
