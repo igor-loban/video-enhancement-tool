@@ -82,6 +82,8 @@ public final class ApplicationContext {
     }
 
     public void updateAfterLoad(VideoDetails videoDetails) {
+        UserLogger.clear();
+        UserLogger.log("video loaded from file " + videoDetails.getSourceFile().getAbsolutePath());
         setVideoDetails(videoDetails);
         mainFrame.getVideoPlayer().loadVideo();
         mainFrame.getVideoPlayerPanel().init(videoDetails);
@@ -104,7 +106,6 @@ public final class ApplicationContext {
                 mainFrame.getVideoPlayerPanel().initColoredSlider();
             }
         });
-        System.gc();
     }
 
     public void updateAfterSoundDetection() {
@@ -112,6 +113,7 @@ public final class ApplicationContext {
     }
 
     public void moveToSnapshot(Snapshot snapshot) {
+        UserLogger.log("move to snapshot in video at " + snapshot.getTimeAsString());
         mainFrame.moveToSnapshot(snapshot);
         if (frameGrabsDialog != null) {
             frameGrabsDialog.close();

@@ -1,6 +1,7 @@
 package com.belsofto.vet.ui.dialog;
 
 import com.belsofto.vet.application.ApplicationContext;
+import com.belsofto.vet.application.UserLogger;
 import com.belsofto.vet.detection.motion.MotionDetectionOptions;
 import com.belsofto.vet.ui.util.WindowUtils;
 
@@ -322,6 +323,9 @@ public final class MotionDetectionOptionsDialog extends JDialog {
             ApplicationContext context = ApplicationContext.getInstance();
             context.getMotionDetector().setMotionDetectionOptions(options);
             context.updateApplicationProperties();
+
+            UserLogger.log("motion detection options changed to " + options.toString());
+
             close();
         }
     }

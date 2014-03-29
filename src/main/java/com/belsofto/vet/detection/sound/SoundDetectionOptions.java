@@ -59,4 +59,13 @@ public class SoundDetectionOptions {
         this.soundColor = soundColor;
         SoundThreshold.SOUND.color(soundColor);
     }
+
+    @Override public String toString() {
+        return "{frameGap=" + frameGap +
+                ", soundLowerBound=" + soundLowerBound +
+                ", minNoiseBound=" + minNoiseBound +
+                ", maxNoiseBound=" + maxNoiseBound +
+                ", noiseColor=" + noiseColor +
+                ", soundColor=" + soundColor + "}";
+    }
 }

@@ -1,6 +1,7 @@
 package com.belsofto.vet.ui.dialog;
 
 import com.belsofto.vet.application.ApplicationContext;
+import com.belsofto.vet.application.UserLogger;
 import com.belsofto.vet.report.ReportOptions;
 import com.belsofto.vet.ui.util.WindowUtils;
 
@@ -155,6 +156,9 @@ public final class ReportOptionsDialog extends JDialog {
             ApplicationContext context = ApplicationContext.getInstance();
             context.getReportGenerator().setOptions(options);
             context.updateApplicationProperties();
+
+            UserLogger.log("report options changed to " + options.toString());
+
             close();
         }
     }

@@ -1,6 +1,7 @@
 package com.belsofto.vet.ui.dialog;
 
 import com.belsofto.vet.application.ApplicationContext;
+import com.belsofto.vet.application.UserLogger;
 import com.belsofto.vet.report.Snapshot;
 import com.belsofto.vet.ui.action.Actions;
 import com.belsofto.vet.ui.composite.SnapshotListPanel;
@@ -17,7 +18,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
-import static com.belsofto.vet.util.MessageUtils.format;
 import static com.belsofto.vet.util.MessageUtils.getMessage;
 
 public final class FrameGrabsDialog extends JDialog {
@@ -27,8 +27,7 @@ public final class FrameGrabsDialog extends JDialog {
 
     private final JButton deleteAllFramesButton =
             new JButton(getMessage("ui.dialog.frameGrabs.button.deleteAllFrames"));
-    private final JButton exportFramesButton =
-            new JButton(format("ui.dialog.frameGrabs.button.exportFrames", "-", "-"));
+    private final JButton exportFramesButton = new JButton(getMessage("ui.dialog.frameGrabs.button.exportFrames"));
     private final JButton generateReportButton = new JButton(getMessage("ui.dialog.frameGrabs.button.generateReport"));
     private final JButton closeButton = new JButton(getMessage("ui.dialog.frameGrabs.button.close"));
 
@@ -139,8 +138,10 @@ public final class FrameGrabsDialog extends JDialog {
                 result &= context.saveSnapshot(snapshot);
             }
             if (result) {
+                UserLogger.log(snapshots.size() + " frame(s) exported successfully");
                 DialogUtils.showInfoMessage("allSnapshotsSaved");
             } else {
+                UserLogger.log(snapshots.size() + " frame(s) exporting failed");
                 DialogUtils.showErrorMessage("snapshotsSavedFailed");
             }
         }

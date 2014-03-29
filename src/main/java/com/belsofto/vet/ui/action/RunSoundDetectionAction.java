@@ -30,6 +30,6 @@ final class RunSoundDetectionAction extends AdvancedAbstractAction {
             DialogUtils.showErrorMessage("noVideoLoaded");
             return;
         }
-        context.getSoundDetector().analyzeVideo();
+        context.getSoundDetector().analyzeSound();
     }
 }

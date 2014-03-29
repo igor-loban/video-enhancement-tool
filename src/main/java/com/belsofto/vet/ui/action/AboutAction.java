@@ -1,5 +1,6 @@
 package com.belsofto.vet.ui.action;
 
+import com.belsofto.vet.application.UserLogger;
 import com.belsofto.vet.ui.dialog.AboutDialog;
 import org.slf4j.Logger;
 
@@ -11,6 +12,7 @@ final class AboutAction extends AdvancedAbstractAction {
     private static final Logger LOGGER = getLogger(AboutAction.class);
 
     @Override public void actionPerformed(ActionEvent e) {
+        UserLogger.log("about dialog opened");
         AboutDialog dialog = new AboutDialog();
         dialog.setVisible(true);
         LOGGER.debug("about dialog opened");

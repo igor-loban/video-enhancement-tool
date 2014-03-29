@@ -1,5 +1,6 @@
 package com.belsofto.vet.ui.action;
 
+import com.belsofto.vet.application.UserLogger;
 import com.belsofto.vet.ui.dialog.ReportOptionsDialog;
 import org.slf4j.Logger;
 
@@ -11,6 +12,7 @@ final class ReportOptionsAction extends AdvancedAbstractAction {
     private static final Logger LOGGER = getLogger(ReportOptionsAction.class);
 
     @Override public void actionPerformed(ActionEvent e) {
+        UserLogger.log("report options dialog opened");
         ReportOptionsDialog dialog = new ReportOptionsDialog();
         dialog.setVisible(true);
         LOGGER.debug("report options dialog opened");

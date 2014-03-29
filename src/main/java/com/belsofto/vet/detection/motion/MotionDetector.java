@@ -2,6 +2,7 @@ package com.belsofto.vet.detection.motion;
 
 import com.belsofto.vet.application.ApplicationContext;
 import com.belsofto.vet.application.Status;
+import com.belsofto.vet.application.UserLogger;
 import com.belsofto.vet.media.VideoDetails;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacv.FFmpegFrameGrabber;
@@ -81,6 +82,8 @@ public final class MotionDetector {
         }
 
         @Override public void run() {
+            UserLogger.log("motion detection ran");
+
             long totalTimeNanos = videoDetails.getTotalTimeMillis() * 1_000;
             long interval = totalTimeNanos / 4;
             File file = videoDetails.getSourceFile();
@@ -137,6 +140,7 @@ public final class MotionDetector {
             motionDescriptors.clear();
             motionDescriptors.addAll(result);
 
+            UserLogger.log("motion detection completed");
             context.updateAfterMotionDetection();
         }
 

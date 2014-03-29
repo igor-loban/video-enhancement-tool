@@ -108,8 +108,6 @@ public final class ColoredSliderUI extends BasicSliderUI {
     private void drawMotionBlock(Graphics2D g2d, MotionDescriptor descriptor, int dx, int width) {
         g2d.setColor(descriptor.getMotionThreshold().color());
         g2d.fillRect(trackRect.x + dx, trackRect.y, width, motionHeight);
-//        g2d.setColor(SEPARATOR_COLOR);
-//        g2d.drawLine(trackRect.x + dx, trackRect.y, trackRect.x + dx, trackRect.y + motionHeight);
     }
 
     private void drawSoundPart(Graphics2D g2d) {
@@ -130,8 +128,6 @@ public final class ColoredSliderUI extends BasicSliderUI {
     private void drawSoundBlock(Graphics2D g2d, SoundDescriptor descriptor, int dx, int width) {
         g2d.setColor(descriptor.getSoundThreshold().color());
         g2d.fillRect(trackRect.x + dx, trackRect.y, width, soundHeight);
-//        g2d.setColor(SEPARATOR_COLOR);
-//        g2d.drawLine(trackRect.x + dx, trackRect.y, trackRect.x + dx, trackRect.y + soundHeight);
     }
 
     @Override

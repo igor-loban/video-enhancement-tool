@@ -1,6 +1,7 @@
 package com.belsofto.vet.report;
 
 import com.belsofto.vet.application.ApplicationContext;
+import com.belsofto.vet.application.UserLogger;
 import com.belsofto.vet.exception.ReportGenerationException;
 import com.belsofto.vet.ui.dialog.DialogUtils;
 import com.itextpdf.text.Document;
@@ -81,14 +82,17 @@ public final class ReportGenerator {
     }
 
     public void addSnapshot(Snapshot snapshot) {
+        UserLogger.log("frame at " + snapshot.getTimeAsString() + " captured");
         snapshots.add(snapshot);
     }
 
     public void remove(Snapshot snapshot) {
+        UserLogger.log("captured frame at " + snapshot.getTimeAsString() + " removed");
         snapshots.remove(snapshot);
     }
 
     public void removeAllSnapshots() {
+        UserLogger.log(snapshots.size() + " captured frame(s) removed");
         snapshots.clear();
     }
 
@@ -124,6 +128,7 @@ public final class ReportGenerator {
 
         @Override public void run() {
             try {
+                UserLogger.log("DOCX report generation started");
                 wordMLPackage = WordprocessingMLPackage.createPackage();
                 docxObjectFactory = Context.getWmlObjectFactory();
                 MainDocumentPart mainDocumentPart = wordMLPackage.getMainDocumentPart();
@@ -160,6 +165,7 @@ public final class ReportGenerator {
                 docxObjectFactory = null;
                 wordMLPackage = null;
 
+                UserLogger.log("DOCX report generation finished");
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override public void run() {
                         DialogUtils.showInfoMessage("reportsGenerated");
@@ -218,9 +224,7 @@ public final class ReportGenerator {
     private final class PdfReportGenerator implements Runnable {
         @Override public void run() {
             try {
-                if (snapshots.isEmpty()) {
-                    return;
-                }
+                UserLogger.log("PDF report generation started");
 
                 File reportDirectory = new File(getReportDirectory());
                 reportDirectory.mkdirs();
@@ -250,6 +254,7 @@ public final class ReportGenerator {
                 pdfDocument.add(table);
                 pdfDocument.close();
 
+                UserLogger.log("PDF report generation finished");
                 if (!options.isDocxPresent()) {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override public void run() {

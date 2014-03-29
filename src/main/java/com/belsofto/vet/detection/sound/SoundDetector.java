@@ -2,6 +2,7 @@ package com.belsofto.vet.detection.sound;
 
 import com.belsofto.vet.application.ApplicationContext;
 import com.belsofto.vet.application.Status;
+import com.belsofto.vet.application.UserLogger;
 import com.belsofto.vet.media.VideoDetails;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacv.FFmpegFrameGrabber;
@@ -29,7 +30,7 @@ public final class SoundDetector {
 
     private final AtomicBoolean analyzeComplete = new AtomicBoolean(true);
 
-    public void analyzeVideo() {
+    public void analyzeSound() {
         if (!analyzeComplete.get()) {
             // TODO: error?
             return;
@@ -66,6 +67,8 @@ public final class SoundDetector {
                 // TODO: Add error message?
                 return;
             }
+
+            UserLogger.log("sound detection ran");
 
             List<SoundDescriptor> soundDescriptors = videoDetails.getSoundDescriptors();
 
@@ -170,6 +173,7 @@ public final class SoundDetector {
                     }
                 }
 
+                UserLogger.log("sound detection completed");
                 ApplicationContext.getInstance().updateAfterSoundDetection();
             } catch (FrameGrabber.Exception e) {
                 LOGGER.debug("grabber exception", e);

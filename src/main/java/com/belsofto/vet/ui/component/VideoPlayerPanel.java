@@ -2,6 +2,7 @@ package com.belsofto.vet.ui.component;
 
 import com.belsofto.vet.application.ApplicationContext;
 import com.belsofto.vet.application.Status;
+import com.belsofto.vet.application.UserLogger;
 import com.belsofto.vet.detection.motion.MotionDescriptor;
 import com.belsofto.vet.detection.motion.MotionThreshold;
 import com.belsofto.vet.detection.sound.SoundDescriptor;
@@ -208,6 +209,7 @@ public final class VideoPlayerPanel extends JPanel {
     }
 
     public void playAllMovements() {
+        UserLogger.log("play all movements");
         videoPlayer.stop();
         videoPlayer.addMediaPlayerEventListener(new PlayAllMovementsAction());
         videoPlayer.play();
@@ -215,6 +217,7 @@ public final class VideoPlayerPanel extends JPanel {
     }
 
     public void playAllSounds() {
+        UserLogger.log("play all sounds");
         videoPlayer.stop();
         videoPlayer.addMediaPlayerEventListener(new PlayAllSoundsAction());
         videoPlayer.play();
@@ -229,12 +232,15 @@ public final class VideoPlayerPanel extends JPanel {
         @Override public void actionPerformed(ActionEvent e) {
             checkAndDisableForwarding();
 
+
+
             LOGGER.debug("play media");
             if (videoDetails == null) {
                 DialogUtils.showErrorMessage("noVideoLoaded");
                 return;
             }
             videoPlayer.play();
+            UserLogger.log("video playing");
         }
     }
 
@@ -248,6 +254,7 @@ public final class VideoPlayerPanel extends JPanel {
                 return;
             }
             videoPlayer.pause();
+            UserLogger.log("video paused");
         }
     }
 
@@ -261,6 +268,7 @@ public final class VideoPlayerPanel extends JPanel {
                 return;
             }
             videoPlayer.stop();
+            UserLogger.log("video stopped");
             validate();
         }
     }
@@ -308,6 +316,7 @@ public final class VideoPlayerPanel extends JPanel {
             if (result == 0) {
                 LOGGER.debug("speed increased from {} to {}", rate, newRate);
             }
+            UserLogger.log("video speed increased");
         }
     }
 
@@ -325,6 +334,7 @@ public final class VideoPlayerPanel extends JPanel {
             if (result == 0) {
                 LOGGER.debug("speed decreased from {} to {}", rate, newRate);
             }
+            UserLogger.log("video speed decreased");
         }
     }
 

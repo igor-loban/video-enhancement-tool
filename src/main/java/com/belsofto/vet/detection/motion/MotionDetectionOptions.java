@@ -115,4 +115,19 @@ public class MotionDetectionOptions {
         this.highMotionColor = highMotionColor;
         MotionThreshold.HIGH.color(highMotionColor);
     }
+
+    @Override public String toString() {
+        return "{frameGap=" + frameGap +
+                ", slideMinFrame=" + slideMinFrame +
+                ", highVideoQuality=" + highVideoQuality +
+                ", lowThreshold=" + lowThreshold +
+                ", mediumThreshold=" + mediumThreshold +
+                ", highThreshold=" + highThreshold +
+                ", usedMediumThreshold=" + usedMediumThreshold +
+                ", usedHighThreshold=" + usedHighThreshold +
+                ", noMotionColor=" + noMotionColor +
+                ", lowMotionColor=" + lowMotionColor +
+                ", mediumMotionColor=" + mediumMotionColor +
+                ", highMotionColor=" + highMotionColor + "}";
+    }
 }

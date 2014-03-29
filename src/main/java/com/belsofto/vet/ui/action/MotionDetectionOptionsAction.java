@@ -1,5 +1,6 @@
 package com.belsofto.vet.ui.action;
 
+import com.belsofto.vet.application.UserLogger;
 import com.belsofto.vet.ui.dialog.MotionDetectionOptionsDialog;
 import org.slf4j.Logger;
 
@@ -12,6 +13,7 @@ final class MotionDetectionOptionsAction extends AdvancedAbstractAction {
 
     @Override public void actionPerformed(ActionEvent e) {
         LOGGER.debug("motion detection options dialog");
+        UserLogger.log("motion detection option dialog opened");
         MotionDetectionOptionsDialog dialog = new MotionDetectionOptionsDialog();
         dialog.setVisible(true);
     }

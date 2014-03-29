@@ -84,6 +84,8 @@ public final class MainFrame extends JFrame {
         reportMenu.add(Actions.VIEW_FRAMES_CAPTURED.get());
         reportMenu.add(Actions.GENERATE_REPORT.get());
         reportMenu.add(Actions.REPORT_OPTIONS.get());
+        reportMenu.addSeparator();
+        reportMenu.add(Actions.SHOW_LOG.get());
         mainMenu.add(reportMenu);
 
         JMenu helpMenu = new JMenu(Actions.HELP.get());

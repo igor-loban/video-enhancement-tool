@@ -1,6 +1,7 @@
 package com.belsofto.vet.ui.dialog;
 
 import com.belsofto.vet.application.ApplicationContext;
+import com.belsofto.vet.application.UserLogger;
 import com.belsofto.vet.detection.sound.SoundDetectionOptions;
 import com.belsofto.vet.ui.util.WindowUtils;
 
@@ -207,6 +208,9 @@ public final class SoundDetectionOptionsDialog extends JDialog {
             ApplicationContext context = ApplicationContext.getInstance();
             context.getSoundDetector().setOptions(options);
             context.updateApplicationProperties();
+
+            UserLogger.log("sound detection options changed to " + options.toString());
+
             close();
         }
     }

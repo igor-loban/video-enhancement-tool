@@ -37,4 +37,11 @@ public class ReportOptions {
     public void setPdfPresent(boolean pdfPresent) {
         this.pdfPresent = pdfPresent;
     }
+
+    @Override public String toString() {
+        return "{snapshotWidth=" + snapshotWidth +
+                ", snapshotHeight=" + snapshotHeight +
+                ", docxPresent=" + docxPresent +
+                ", pdfPresent=" + pdfPresent + "}";
+    }
 }

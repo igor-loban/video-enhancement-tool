@@ -1,5 +1,6 @@
 package com.belsofto.vet.ui.action;
 
+import com.belsofto.vet.application.UserLogger;
 import com.belsofto.vet.ui.dialog.SoundDetectionOptionsDialog;
 import org.slf4j.Logger;
 
@@ -12,6 +13,7 @@ final class SoundDetectionOptionsAction extends AdvancedAbstractAction {
 
     @Override public void actionPerformed(ActionEvent e) {
         LOGGER.debug("sound detection options dialog");
+        UserLogger.log("sound detection option dialog opened");
         SoundDetectionOptionsDialog dialog = new SoundDetectionOptionsDialog();
         dialog.setVisible(true);
     }
