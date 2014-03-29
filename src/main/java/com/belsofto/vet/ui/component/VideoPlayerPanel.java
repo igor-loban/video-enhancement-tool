@@ -9,7 +9,6 @@ import com.belsofto.vet.detection.sound.SoundThreshold;
 import com.belsofto.vet.media.VideoDetails;
 import com.belsofto.vet.report.Snapshot;
 import com.belsofto.vet.ui.dialog.DialogUtils;
-import com.google.common.base.Strings;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
 import uk.co.caprica.vlcj.player.MediaPlayer;
@@ -22,7 +21,6 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -64,6 +62,8 @@ public final class VideoPlayerPanel extends JPanel {
 
     private VideoDetails videoDetails;
     private boolean firePositionChanged;
+    private boolean forwardEnabled;
+    private boolean rewindEnabled;
 
     public VideoPlayerPanel(VideoPlayer videoPlayer) {
         this.videoPlayer = videoPlayer;
@@ -93,7 +93,7 @@ public final class VideoPlayerPanel extends JPanel {
     }
 
     private void configureComponents() {
-        setBackground(Color.GRAY);
+        videoPlayer.setSpeedLabel(speedLabel);
 
         positionSlider.setUI(coloredSliderUI);
 
@@ -280,8 +280,18 @@ public final class VideoPlayerPanel extends JPanel {
         }
     }
 
+    private void checkAndDisableForwarding() {
+        if (forwardEnabled || rewindEnabled) {
+            videoPlayer.setRate(1.0F);
+            forwardEnabled = false;
+            rewindEnabled = false;
+        }
+    }
+
     private final class SpeedPlusAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
+            checkAndDisableForwarding();
+
             float rate = videoPlayer.getRate();
             float newRate = rate * 2.0F;
             if (rate >= 8.0F) {
@@ -291,13 +301,14 @@ public final class VideoPlayerPanel extends JPanel {
             int result = videoPlayer.setRate(newRate);
             if (result == 0) {
                 LOGGER.debug("speed increased from {} to {}", rate, newRate);
-                speedLabel.setText(Strings.padEnd("x" + newRate, 6, '0'));
             }
         }
     }
 
     private final class SpeedMinusAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
+            checkAndDisableForwarding();
+
             float rate = videoPlayer.getRate();
             float newRate = rate / 2.0F;
             if (rate <= 0.125F) {
@@ -307,7 +318,6 @@ public final class VideoPlayerPanel extends JPanel {
             int result = videoPlayer.setRate(newRate);
             if (result == 0) {
                 LOGGER.debug("speed decreased from {} to {}", rate, newRate);
-                speedLabel.setText(Strings.padEnd("x" + newRate, 6, '0'));
             }
         }
     }
@@ -344,42 +354,104 @@ public final class VideoPlayerPanel extends JPanel {
         }
     }
 
-    private final class RewindAction implements ActionListener {
+    private final class ForwardAction implements ActionListener {
+        private ForwardFactor forwardFactor = ForwardFactor.NONE;
+
         @Override public void actionPerformed(ActionEvent e) {
-            LOGGER.debug("rewind to previous block");
             if (videoDetails == null) {
                 DialogUtils.showErrorMessage("noVideoLoaded");
                 return;
             }
+            if (!videoPlayer.isPlaying()) {
+                videoPlayer.play();
+            }
+            if (rewindEnabled) {
+                rewindEnabled = false;
+            }
 
-            int currentTime = videoPlayer.getTime();
-            List<MotionDescriptor> descriptors = videoDetails.getMotionDescriptors();
-            ListIterator<MotionDescriptor> iterator = descriptors.listIterator(descriptors.size());
-            while (iterator.hasPrevious()) {
-                MotionDescriptor descriptor = iterator.previous();
-                if (descriptor.getTime() <= currentTime) {
-                    videoPlayer.setTime(descriptor.getTime() - 50);
-                    break;
+            if (!forwardEnabled) {
+                forwardFactor = ForwardFactor.X0_5;
+            } else {
+                if (forwardFactor != ForwardFactor.X10) {
+                    forwardFactor = forwardFactor.next();
                 }
             }
+
+            LOGGER.debug("forward with factor {}", forwardFactor);
+
+            videoPlayer.skip(forwardFactor.timeSkip());
+            videoPlayer.setRate(forwardFactor.rate());
+
+            forwardEnabled = true;
         }
     }
 
-    private final class ForwardAction implements ActionListener {
+    private final class RewindAction implements ActionListener {
+        private ForwardFactor forwardFactor = ForwardFactor.NONE;
+
         @Override public void actionPerformed(ActionEvent e) {
-            LOGGER.debug("forward to next block");
             if (videoDetails == null) {
                 DialogUtils.showErrorMessage("noVideoLoaded");
                 return;
             }
+            if (!videoPlayer.isPlaying()) {
+                videoPlayer.play();
+            }
+            if (forwardEnabled) {
+                forwardEnabled = false;
+            }
 
-            int currentTime = videoPlayer.getTime();
-            for (MotionDescriptor descriptor : videoDetails.getMotionDescriptors()) {
-                if (descriptor.getTime() >= currentTime) {
-                    videoPlayer.setTime(descriptor.getTime() + 1);
-                    break;
+            if (!rewindEnabled) {
+                forwardFactor = ForwardFactor.X0_5;
+            } else {
+                if (forwardFactor != ForwardFactor.X10) {
+                    forwardFactor = forwardFactor.next();
                 }
             }
+
+            LOGGER.debug("rewind with factor {}", forwardFactor);
+
+            videoPlayer.skip(-forwardFactor.timeSkip());
+            videoPlayer.setRate(1.0F);
+
+            rewindEnabled = true;
+        }
+    }
+
+    private static enum ForwardFactor {
+        X10(null, 10_000, 10F, "x10"),
+        X5(X10, 5_000, 5F, "x5"),
+        X2(X5, 2_000, 2F, "x2"),
+        X1(X2, 1_000, 1F, "x1"),
+        X0_5(X1, 500, 0.5F, "x0.5"),
+        NONE(X0_5, -1, 0, "<none>");
+
+        private final ForwardFactor next;
+        private final int timeSkipMillis;
+        private final float rate;
+        private final String label;
+
+        private ForwardFactor(ForwardFactor next, int timeSkipMillis, float rate, String label) {
+            this.next = next;
+            this.timeSkipMillis = timeSkipMillis;
+            this.rate = rate;
+            this.label = label;
+        }
+
+        public ForwardFactor next() {
+            return next;
+        }
+
+        public int timeSkip() {
+            return timeSkipMillis;
+        }
+
+        public float rate() {
+            return rate;
+        }
+
+        @Override public String toString() {
+            return label;
         }
     }
 

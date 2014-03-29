@@ -5,36 +5,37 @@ import com.belsofto.vet.application.Status;
 import com.belsofto.vet.media.VideoDetails;
 import com.belsofto.vet.report.ReportOptions;
 import com.belsofto.vet.report.Snapshot;
-import org.slf4j.Logger;
+import com.google.common.base.Strings;
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.MediaPlayer;
 import uk.co.caprica.vlcj.player.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.MediaPlayerEventListener;
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
 
+import javax.swing.JLabel;
 import javax.swing.JRootPane;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 public final class VideoPlayer extends JRootPane {
-    private static final Logger LOGGER = getLogger(VideoPlayer.class);
-
-    private final EmbeddedMediaPlayerComponent mediaPlayerComponent;
     private final EmbeddedMediaPlayer mediaPlayer;
     private final List<MediaPlayerEventListener> listeners = new ArrayList<>();
 
     private VideoDetails videoDetails;
+    private JLabel speedLabel;
 
     public VideoPlayer() {
         // TODO: mediaPlayerComponent.release();
-        mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
+        EmbeddedMediaPlayerComponent mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
         setContentPane(mediaPlayerComponent);
         mediaPlayer = mediaPlayerComponent.getMediaPlayer();
         mediaPlayer.addMediaPlayerEventListener(new MediaPlayerActionHandler());
+    }
+
+    public void setSpeedLabel(JLabel speedLabel) {
+        this.speedLabel = speedLabel;
     }
 
     public void loadVideo() {
@@ -44,6 +45,8 @@ public final class VideoPlayer extends JRootPane {
 
     public void play() {
         mediaPlayer.play();
+        setRate(1.0F);
+        mediaPlayer.setAdjustVideo(true);
         ApplicationContext.getInstance().setStatus(Status.PLAYING);
     }
 
@@ -114,7 +117,17 @@ public final class VideoPlayer extends JRootPane {
     }
 
     public int setRate(float rate) {
-        return mediaPlayer.setRate(rate);
+        int result = mediaPlayer.setRate(rate);
+        if (result == 0) {
+            updateSpeedLabel(rate);
+        }
+        return result;
+    }
+
+    private void updateSpeedLabel(float rate) {
+        if (speedLabel != null) {
+            speedLabel.setText(Strings.padEnd("x" + rate, 6, '0'));
+        }
     }
 
     public void mute(boolean muted) {
@@ -143,6 +156,14 @@ public final class VideoPlayer extends JRootPane {
             removeMediaPlayerEventListener(listener);
         }
         listeners.clear();
+    }
+
+    public boolean isPlaying() {
+        return mediaPlayer.isPlaying();
+    }
+
+    public void skip(int deltaMillis) {
+        mediaPlayer.skip(deltaMillis);
     }
 
     private final class MediaPlayerActionHandler extends MediaPlayerEventAdapter {

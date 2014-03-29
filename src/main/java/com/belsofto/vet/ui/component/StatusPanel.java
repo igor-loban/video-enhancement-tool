@@ -1,6 +1,7 @@
 package com.belsofto.vet.ui.component;
 
 import com.belsofto.vet.application.Status;
+import com.belsofto.vet.util.MessageUtils;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -14,6 +15,7 @@ public final class StatusPanel extends JPanel {
     private static final String PREFIX = "status.";
 
     private final JLabel statusLabel = new JLabel();
+    private final Color defaultTextColor = statusLabel.getForeground();
 
     public StatusPanel() {
         setBorder(BorderFactory.createEtchedBorder());
@@ -26,6 +28,15 @@ public final class StatusPanel extends JPanel {
         statusLabel.setText(format(PREFIX + key, params));
         int rgb = Integer.parseInt(getMessage(PREFIX + key + ".color"), 16);
         setBackground(new Color(rgb));
+
+        String textColorKey = PREFIX + key + ".textColor";
+        if (MessageUtils.contains(textColorKey)) {
+            rgb = Integer.parseInt(getMessage(textColorKey), 16);
+            statusLabel.setForeground(new Color(rgb));
+        } else {
+            statusLabel.setForeground(defaultTextColor);
+        }
+
         repaint();
     }
 }
