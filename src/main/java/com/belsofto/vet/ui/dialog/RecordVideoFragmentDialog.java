@@ -27,6 +27,8 @@ import static com.belsofto.vet.util.MessageUtils.getMessage;
 public final class RecordVideoFragmentDialog extends JDialog {
     private final JLabel leftBoundLabel = new JLabel(getMessage("ui.dialog.recordVideoFragment.label.leftBound"));
     private final JLabel rightBoundLabel = new JLabel(getMessage("ui.dialog.recordVideoFragment.label.rightBound"));
+    private final JLabel fragmentTimeLabel = new JLabel(getMessage("ui.dialog.recordVideoFragment.label.fragmentTime"));
+    private final JLabel fragmentTimeValueLabel = new JLabel();
 
     private final JLabel leftBoundValueLabel = new JLabel();
     private final JLabel rightBoundValueLabel = new JLabel();
@@ -112,11 +114,25 @@ public final class RecordVideoFragmentDialog extends JDialog {
         gbc.anchor = GridBagConstraints.EAST;
         add(rightBoundValueLabel, gbc);
 
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.EAST;
+        add(fragmentTimeLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+        add(fragmentTimeValueLabel, gbc);
+
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridBagLayout());
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 1.0;
+        gbc.gridwidth = 1;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.EAST;
         gbc.insets = new Insets(0, 0, 0, 2);
@@ -128,7 +144,7 @@ public final class RecordVideoFragmentDialog extends JDialog {
         buttonPanel.add(cancelButton, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.EAST;
         gbc.insets = new Insets(20, 5, 5, 5);
@@ -185,6 +201,8 @@ public final class RecordVideoFragmentDialog extends JDialog {
         VideoRecordOptions options = context.getVideoRecorder().getOptions();
         options.setLeftBoundNanos(leftBoundMillis * 1_000);
         options.setRightBoundNanos(rightBoundMillis * 1_000);
+
+        fragmentTimeValueLabel.setText(convertMillisToFormattedTime(rightBoundMillis - leftBoundMillis));
 
         context.repaintTimeline();
     }

@@ -36,7 +36,7 @@ public final class VideoRecorder {
             recorder.setFrameRate(videoDetails.getFrameRate());
 
             recorder.setAudioCodec(avcodec.AV_CODEC_ID_MP3);
-            recorder.setAudioBitrate(64000);
+            recorder.setAudioBitrate(44100);
             recorder.setAudioChannels(
                     grabber.getAudioChannels() > 0 ? grabber.getAudioChannels() : DEFAULT_AUDIO_CHANNEL);
             recorder.setSampleFormat(grabber.getSampleFormat());
@@ -47,8 +47,7 @@ public final class VideoRecorder {
             Frame frame;
             while ((frame = grabber.grabFrame()) != null) {
                 recorder.record(frame);
-                long timestamp = grabber.getTimestamp();
-                if (timestamp >= rightBound) {
+                if (grabber.getTimestamp() >= rightBound) {
                     break;
                 }
             }
