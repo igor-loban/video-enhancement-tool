@@ -227,6 +227,8 @@ public final class VideoPlayerPanel extends JPanel {
 
     private final class PlayAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
+            checkAndDisableForwarding();
+
             LOGGER.debug("play media");
             if (videoDetails == null) {
                 DialogUtils.showErrorMessage("noVideoLoaded");
@@ -238,6 +240,8 @@ public final class VideoPlayerPanel extends JPanel {
 
     private final class PauseAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
+            checkAndDisableForwarding();
+
             LOGGER.debug("pause media");
             if (videoDetails == null) {
                 DialogUtils.showErrorMessage("noVideoLoaded");
@@ -249,6 +253,8 @@ public final class VideoPlayerPanel extends JPanel {
 
     private final class StopAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
+            checkAndDisableForwarding();
+
             LOGGER.debug("stop media");
             if (videoDetails == null) {
                 DialogUtils.showErrorMessage("noVideoLoaded");
@@ -311,8 +317,8 @@ public final class VideoPlayerPanel extends JPanel {
 
             float rate = videoPlayer.getRate();
             float newRate = rate / 2.0F;
-            if (rate <= 0.125F) {
-                videoPlayer.setRate(0.125F);
+            if (rate <= 0.250F) {
+                videoPlayer.setRate(0.250F);
                 return;
             }
             int result = videoPlayer.setRate(newRate);
@@ -324,6 +330,8 @@ public final class VideoPlayerPanel extends JPanel {
 
     private final class CaptureFrameAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
+            checkAndDisableForwarding();
+
             LOGGER.debug("capture frame");
             if (videoDetails == null) {
                 DialogUtils.showErrorMessage("noVideoLoaded");
