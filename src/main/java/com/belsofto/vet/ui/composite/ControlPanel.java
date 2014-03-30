@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -26,6 +27,8 @@ public final class ControlPanel extends TitledPanel {
     private final JButton playMovementButton =
             new JButton(getMessage("ui.panel.control.button.playAllFramesWithMovement"));
     private final JButton playSoundButton = new JButton(getMessage("ui.panel.control.button.playAllFramesWithSound"));
+    private final JCheckBox toolsVisibilityChechBox =
+            new JCheckBox(getMessage("ui.panel.control.button.toolsVisibility"));
 
     public ControlPanel() {
         super(getMessage("ui.panel.control.title"));
@@ -37,6 +40,9 @@ public final class ControlPanel extends TitledPanel {
         recordVideoFragmentButton.addActionListener(new RecordVideoFragment());
         playMovementButton.addActionListener(new PlayAllMovementsAction());
         playSoundButton.addActionListener(new PlayAllSoundsAction());
+
+        toolsVisibilityChechBox.setSelected(ApplicationContext.getInstance().isAlwaysShowTools());
+        toolsVisibilityChechBox.addActionListener(new ToolVisibilityAction());
     }
 
     private void arrangeComponents() {
@@ -57,6 +63,9 @@ public final class ControlPanel extends TitledPanel {
 
         gbc.gridy = 2;
         content.add(playSoundButton, gbc);
+
+        gbc.gridy = 3;
+        content.add(toolsVisibilityChechBox, gbc);
     }
 
     private final class PlayAllMovementsAction implements ActionListener {
@@ -94,6 +103,12 @@ public final class ControlPanel extends TitledPanel {
             RecordVideoFragmentDialog dialog = new RecordVideoFragmentDialog();
             dialog.setVisible(true);
             LOGGER.debug("record video dialog opened");
+        }
+    }
+
+    private final class ToolVisibilityAction implements ActionListener {
+        @Override public void actionPerformed(ActionEvent e) {
+            ApplicationContext.getInstance().setAlwaysShowTools(toolsVisibilityChechBox.isSelected());
         }
     }
 }

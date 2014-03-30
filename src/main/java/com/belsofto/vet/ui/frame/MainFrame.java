@@ -108,6 +108,8 @@ public final class MainFrame extends JFrame {
         toolBar.add(Actions.MOTION_DETECTION_OPTIONS.get());
         toolBar.add(Actions.SOUND_DETECTION_OPTIONS.get());
         toolBar.add(Actions.REPORT_OPTIONS.get());
+        toolBar.addSeparator();
+        toolBar.add(Actions.SHOW_TOOLS.get());
     }
 
     private void arrangeComponents() {
@@ -162,6 +164,8 @@ public final class MainFrame extends JFrame {
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.BOTH;
         add(notesPanel, gbc);
+
+        setToolsVisible(false);
     }
 
     private void setupSizeAndLocation() {
@@ -185,5 +189,15 @@ public final class MainFrame extends JFrame {
 
     public VideoDetailsPanel getVideoDetailsPanel() {
         return videoDetailsPanel;
+    }
+
+    public void setToolsVisible(boolean visible) {
+        controlPanel.setVisible(visible);
+        videoDetailsPanel.setVisible(visible);
+        notesPanel.setVisible(visible);
+    }
+
+    public boolean isToolsVisible() {
+        return controlPanel.isVisible();
     }
 }

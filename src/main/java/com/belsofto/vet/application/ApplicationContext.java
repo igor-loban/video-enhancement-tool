@@ -47,7 +47,13 @@ public final class ApplicationContext {
     private VideoDetails videoDetails;
     private VideoRecorder videoRecorder;
 
+    private boolean alwaysShowTools = false;
+
     private ApplicationContext() {
+    }
+
+    public void setToolsVisible(boolean visible) {
+        mainFrame.setToolsVisible(alwaysShowTools || visible);
     }
 
     public boolean saveSnapshot(Snapshot snapshot) {
@@ -104,6 +110,7 @@ public final class ApplicationContext {
             @Override public void run() {
                 ApplicationContext.getInstance().setStatus(Status.ANALYZE_MOTION, 100);
                 mainFrame.getVideoPlayerPanel().initColoredSlider();
+                setToolsVisible(true);
             }
         });
     }
@@ -113,6 +120,7 @@ public final class ApplicationContext {
             @Override public void run() {
                 ApplicationContext.getInstance().setStatus(Status.ANALYZE_SOUND, 100);
                 mainFrame.getVideoPlayerPanel().initColoredSlider();
+                setToolsVisible(true);
             }
         });
     }
@@ -484,5 +492,13 @@ public final class ApplicationContext {
 
     public void setVideoRecorder(VideoRecorder videoRecorder) {
         this.videoRecorder = videoRecorder;
+    }
+
+    public boolean isAlwaysShowTools() {
+        return alwaysShowTools;
+    }
+
+    public void setAlwaysShowTools(boolean alwaysShowTools) {
+        this.alwaysShowTools = alwaysShowTools;
     }
 }

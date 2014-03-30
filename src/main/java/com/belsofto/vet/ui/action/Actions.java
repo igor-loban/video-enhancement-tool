@@ -21,7 +21,9 @@ public enum Actions implements ActionSource {
     SHOW_LOG(new ShowLogAction()),
 
     HELP(new HelpAction()),
-    ABOUT(new AboutAction());
+    ABOUT(new AboutAction()),
+
+    SHOW_TOOLS(new ShowToolsAction());
 
     private final Action action;
 

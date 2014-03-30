@@ -232,14 +232,13 @@ public final class VideoPlayerPanel extends JPanel {
         @Override public void actionPerformed(ActionEvent e) {
             checkAndDisableForwarding();
 
-
-
             LOGGER.debug("play media");
             if (videoDetails == null) {
                 DialogUtils.showErrorMessage("noVideoLoaded");
                 return;
             }
             videoPlayer.play();
+            ApplicationContext.getInstance().setToolsVisible(false);
             UserLogger.log("video playing");
         }
     }
@@ -350,6 +349,7 @@ public final class VideoPlayerPanel extends JPanel {
             ApplicationContext context = ApplicationContext.getInstance();
             Snapshot snapshot = videoPlayer.captureFrame();
             if (snapshot != null) {
+                context.setToolsVisible(true);
                 context.getReportGenerator().addSnapshot(snapshot);
                 context.getMainFrame().setFocusToNotes();
             }

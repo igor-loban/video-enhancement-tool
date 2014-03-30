@@ -18,7 +18,7 @@ import java.util.NoSuchElementException;
 
 public final class ColoredSliderUI extends BasicSliderUI {
     private static final Color SEPARATOR_COLOR = Color.BLACK;
-    private static final Color FRAGMENT_COLOR = new Color(220, 180, 0, 140);
+    private static final Color FRAGMENT_COLOR = new Color(0, 180, 220, 140);
 
     private static final int MOTION_HEIGHT = 13;
     private static final int SOUND_HEIGHT = 7;
