@@ -18,7 +18,7 @@ final class RunBothAction extends AdvancedAbstractAction {
     RunBothAction() {
         try {
             putValue(Action.LARGE_ICON_KEY, new ImageIcon(ImageIO.read(this.getClass()
-                    .getResourceAsStream("/com/belsofto/vet/resources/images/motion-sound-detections.png"))));
+                    .getResourceAsStream("/com/belsofto/vet/resources/images/run-motion-sound-detections.png"))));
         } catch (IOException ignored) {
         }
     }

@@ -18,8 +18,8 @@ final class RunSoundDetectionAction extends AdvancedAbstractAction {
 
     RunSoundDetectionAction() {
         try {
-            putValue(Action.LARGE_ICON_KEY, new ImageIcon(ImageIO.read(
-                    this.getClass().getResourceAsStream("/com/belsofto/vet/resources/images/sound-detection.png"))));
+            putValue(Action.LARGE_ICON_KEY, new ImageIcon(ImageIO.read(this.getClass()
+                    .getResourceAsStream("/com/belsofto/vet/resources/images/run-sound-detection.png"))));
         } catch (IOException ignored) {
         }
     }

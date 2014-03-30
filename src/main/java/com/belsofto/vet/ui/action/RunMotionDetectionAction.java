@@ -18,8 +18,8 @@ final class RunMotionDetectionAction extends AdvancedAbstractAction {
 
     RunMotionDetectionAction() {
         try {
-            putValue(Action.LARGE_ICON_KEY, new ImageIcon(ImageIO.read(
-                    this.getClass().getResourceAsStream("/com/belsofto/vet/resources/images/motion-detection.png"))));
+            putValue(Action.LARGE_ICON_KEY, new ImageIcon(ImageIO.read(this.getClass()
+                    .getResourceAsStream("/com/belsofto/vet/resources/images/run-motion-detection.png"))));
         } catch (IOException ignored) {
         }
     }
