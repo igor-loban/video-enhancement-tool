@@ -28,15 +28,13 @@ public final class SoundDetector {
 
     private SoundDetectionOptions options = new SoundDetectionOptions();
 
-    private final AtomicBoolean analyzeComplete = new AtomicBoolean(true);
+    private final AtomicBoolean inProgress = new AtomicBoolean();
+
+    public boolean isInProgress() {
+        return inProgress.get();
+    }
 
     public void analyzeSound() {
-        if (!analyzeComplete.get()) {
-            // TODO: error?
-            return;
-        }
-
-        analyzeComplete.set(false);
         VideoDetails videoDetails = ApplicationContext.getInstance().getVideoDetails();
         Thread analyzeThread = new Thread(new SoundDetectionAnalyzer(videoDetails));
         analyzeThread.start();
@@ -63,16 +61,18 @@ public final class SoundDetector {
         }
 
         @Override public void run() {
-            if (grabber == null) {
-                // TODO: Add error message?
-                return;
-            }
-
-            UserLogger.log("sound detection ran");
-
-            List<SoundDescriptor> soundDescriptors = videoDetails.getSoundDescriptors();
-
             try {
+                inProgress.set(true);
+
+                if (grabber == null) {
+                    // TODO: Add error message?
+                    return;
+                }
+
+                UserLogger.log("sound detection ran");
+
+                List<SoundDescriptor> soundDescriptors = videoDetails.getSoundDescriptors();
+
                 grabber.restart();
                 grabber.setFrameNumber(1);
                 int avSampleCode = grabber.getSampleFormat();
@@ -104,7 +104,7 @@ public final class SoundDetector {
 
                     // Update UI
                     ApplicationContext.getInstance()
-                            .setStatus(Status.ANALYZE, (int) (90 * (double) timestampNanos / totalTimeNanos));
+                            .setStatus(Status.ANALYZE_SOUND, (int) (90 * (double) timestampNanos / totalTimeNanos));
                 }
 
                 List<List<Double>> meansList = new ArrayList<>();
@@ -129,7 +129,8 @@ public final class SoundDetector {
                     }
 
                     // Update UI
-                    ApplicationContext.getInstance().setStatus(Status.ANALYZE, 90 + (int) (5 * (double) i / length));
+                    ApplicationContext.getInstance()
+                            .setStatus(Status.ANALYZE_SOUND, 90 + (int) (5 * (double) i / length));
                 }
 
                 List<Double> upperBounds = new ArrayList<>();
@@ -160,7 +161,8 @@ public final class SoundDetector {
                     soundThresholdPrev = soundThreshold;
 
                     // Update UI
-                    ApplicationContext.getInstance().setStatus(Status.ANALYZE, 95 + (int) (5 * (double) i / length));
+                    ApplicationContext.getInstance()
+                            .setStatus(Status.ANALYZE_SOUND, 95 + (int) (5 * (double) i / length));
                 }
 
                 for (int i = soundDescriptors.size() - 2; i > 0; --i) {
@@ -178,8 +180,7 @@ public final class SoundDetector {
             } catch (FrameGrabber.Exception e) {
                 LOGGER.debug("grabber exception", e);
             } finally {
-                // Release resources
-                analyzeComplete.set(true);
+                inProgress.set(false);
             }
         }
 

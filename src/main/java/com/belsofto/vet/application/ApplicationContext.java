@@ -102,14 +102,19 @@ public final class ApplicationContext {
     public void updateAfterMotionDetection() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
-                ApplicationContext.getInstance().setStatus(Status.ANALYZE, 100);
+                ApplicationContext.getInstance().setStatus(Status.ANALYZE_MOTION, 100);
                 mainFrame.getVideoPlayerPanel().initColoredSlider();
             }
         });
     }
 
     public void updateAfterSoundDetection() {
-        updateAfterMotionDetection();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override public void run() {
+                ApplicationContext.getInstance().setStatus(Status.ANALYZE_SOUND, 100);
+                mainFrame.getVideoPlayerPanel().initColoredSlider();
+            }
+        });
     }
 
     public void moveToSnapshot(Snapshot snapshot) {
@@ -118,6 +123,22 @@ public final class ApplicationContext {
         if (frameGrabsDialog != null) {
             frameGrabsDialog.close();
         }
+    }
+
+    public void analyzeVideoAndSound() {
+        Thread analyzer = new Thread(new Runnable() {
+            @Override public void run() {
+                motionDetector.analyzeVideo();
+                do {
+                    try {
+                        Thread.sleep(300);
+                    } catch (InterruptedException ignored) {
+                    }
+                } while (motionDetector.isInProgress());
+                soundDetector.analyzeSound();
+            }
+        });
+        analyzer.start();
     }
 
     public void playAllMovements() {

@@ -73,10 +73,11 @@ public final class MainFrame extends JFrame {
         mainMenu.add(fileMenu);
 
         JMenu analyzeMenu = new JMenu(Actions.ANALYZE.get());
+        analyzeMenu.add(Actions.RUN_BOTH.get());
         analyzeMenu.add(Actions.RUN_MOTION_DETECTION.get());
-        analyzeMenu.add(Actions.MOTION_DETECTION_OPTIONS.get());
-        analyzeMenu.addSeparator();
         analyzeMenu.add(Actions.RUN_SOUND_DETECTION.get());
+        analyzeMenu.addSeparator();
+        analyzeMenu.add(Actions.MOTION_DETECTION_OPTIONS.get());
         analyzeMenu.add(Actions.SOUND_DETECTION_OPTIONS.get());
         mainMenu.add(analyzeMenu);
 
@@ -98,8 +99,15 @@ public final class MainFrame extends JFrame {
     private void setupToolBar() {
         toolBar.add(Actions.OPEN.get());
         toolBar.addSeparator();
+        toolBar.add(Actions.RUN_BOTH.get());
         toolBar.add(Actions.RUN_MOTION_DETECTION.get());
         toolBar.add(Actions.RUN_SOUND_DETECTION.get());
+        toolBar.addSeparator();
+        toolBar.add(Actions.SHOW_LOG.get());
+        toolBar.addSeparator();
+        toolBar.add(Actions.MOTION_DETECTION_OPTIONS.get());
+        toolBar.add(Actions.SOUND_DETECTION_OPTIONS.get());
+        toolBar.add(Actions.REPORT_OPTIONS.get());
     }
 
     private void arrangeComponents() {

@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.googlecode.javacv.cpp.opencv_core.CvContour;
@@ -42,6 +43,12 @@ public final class MotionDetector {
     private static final Logger LOGGER = getLogger(MotionDetector.class);
 
     private MotionDetectionOptions options = new MotionDetectionOptions();
+
+    private final AtomicBoolean inProgress = new AtomicBoolean();
+
+    public boolean isInProgress() {
+        return inProgress.get();
+    }
 
     public void analyzeVideo() {
         ApplicationContext context = ApplicationContext.getInstance();
@@ -82,66 +89,71 @@ public final class MotionDetector {
         }
 
         @Override public void run() {
-            UserLogger.log("motion detection ran");
+            try {
+                inProgress.set(true);
+                UserLogger.log("motion detection ran");
 
-            long totalTimeNanos = videoDetails.getTotalTimeMillis() * 1_000;
-            long interval = totalTimeNanos / 4;
-            File file = videoDetails.getSourceFile();
+                long totalTimeNanos = videoDetails.getTotalTimeMillis() * 1_000;
+                long interval = totalTimeNanos / 4;
+                File file = videoDetails.getSourceFile();
 
-            Thread worker1 = new Thread(new Worker(motionDescriptors1, timestampMillis1, 0, interval, file));
-            Thread worker2 =
-                    new Thread(new Worker(motionDescriptors2, timestampMillis2, interval + 1, 2 * interval, file));
-            Thread worker3 =
-                    new Thread(new Worker(motionDescriptors3, timestampMillis3, 2 * interval + 1, 3 * interval, file));
-            Thread worker4 = new Thread(
-                    new Worker(motionDescriptors4, timestampMillis4, 3 * interval + 1, totalTimeNanos, file));
+                Thread worker1 = new Thread(new Worker(motionDescriptors1, timestampMillis1, 0, interval, file));
+                Thread worker2 =
+                        new Thread(new Worker(motionDescriptors2, timestampMillis2, interval + 1, 2 * interval, file));
+                Thread worker3 = new Thread(
+                        new Worker(motionDescriptors3, timestampMillis3, 2 * interval + 1, 3 * interval, file));
+                Thread worker4 = new Thread(
+                        new Worker(motionDescriptors4, timestampMillis4, 3 * interval + 1, totalTimeNanos, file));
 
-            worker1.start();
-            worker2.start();
-            worker3.start();
-            worker4.start();
+                worker1.start();
+                worker2.start();
+                worker3.start();
+                worker4.start();
 
-            ApplicationContext context = ApplicationContext.getInstance();
+                ApplicationContext context = ApplicationContext.getInstance();
 
-            long intervalMillis = (long) ((double) interval / 1_000);
-            long totalTimeMillis = videoDetails.getTotalTimeMillis();
-            long time;
-            long gcCounter = 0;
-            while (finishedWorkerCount.get() < 4) {
-                // Update UI
-                time = -6 * intervalMillis;
-                time += timestampMillis1.get();
-                time += timestampMillis2.get();
-                time += timestampMillis3.get();
-                time += timestampMillis4.get();
+                long intervalMillis = (long) ((double) interval / 1_000);
+                long totalTimeMillis = videoDetails.getTotalTimeMillis();
+                long time;
+                long gcCounter = 0;
+                while (finishedWorkerCount.get() < 4) {
+                    // Update UI
+                    time = -6 * intervalMillis;
+                    time += timestampMillis1.get();
+                    time += timestampMillis2.get();
+                    time += timestampMillis3.get();
+                    time += timestampMillis4.get();
 
-                if (time < 0) {
-                    time = 0;
-                }
-
-                context.setStatus(Status.ANALYZE, (int) ((double) time * 100.0 / totalTimeMillis));
-
-                try {
-                    if (gcCounter++ % 8 == 0) {
-                        System.gc();
+                    if (time < 0) {
+                        time = 0;
                     }
-                    Thread.sleep(250);
-                } catch (InterruptedException ignored) {
+
+                    context.setStatus(Status.ANALYZE_MOTION, (int) ((double) time * 100.0 / totalTimeMillis));
+
+                    try {
+                        if (gcCounter++ % 8 == 0) {
+                            System.gc();
+                        }
+                        Thread.sleep(250);
+                    } catch (InterruptedException ignored) {
+                    }
                 }
+
+                List<MotionDescriptor> result = new ArrayList<>();
+                appendMotionDescriptors(result, motionDescriptors1);
+                appendMotionDescriptors(result, motionDescriptors2);
+                appendMotionDescriptors(result, motionDescriptors3);
+                appendMotionDescriptors(result, motionDescriptors4);
+
+                List<MotionDescriptor> motionDescriptors = videoDetails.getMotionDescriptors();
+                motionDescriptors.clear();
+                motionDescriptors.addAll(result);
+
+                UserLogger.log("motion detection completed");
+                context.updateAfterMotionDetection();
+            } finally {
+                inProgress.set(false);
             }
-
-            List<MotionDescriptor> result = new ArrayList<>();
-            appendMotionDescriptors(result, motionDescriptors1);
-            appendMotionDescriptors(result, motionDescriptors2);
-            appendMotionDescriptors(result, motionDescriptors3);
-            appendMotionDescriptors(result, motionDescriptors4);
-
-            List<MotionDescriptor> motionDescriptors = videoDetails.getMotionDescriptors();
-            motionDescriptors.clear();
-            motionDescriptors.addAll(result);
-
-            UserLogger.log("motion detection completed");
-            context.updateAfterMotionDetection();
         }
 
         private void appendMotionDescriptors(List<MotionDescriptor> result, List<MotionDescriptor> descriptors) {

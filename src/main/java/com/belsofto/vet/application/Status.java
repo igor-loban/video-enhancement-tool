@@ -12,5 +12,6 @@ public enum Status {
     PLAYING_ALL_MOVEMENT,
     PLAYING_ALL_SOUND,
 
-    ANALYZE
+    ANALYZE_MOTION,
+    ANALYZE_SOUND
 }

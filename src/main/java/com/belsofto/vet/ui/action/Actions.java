@@ -8,9 +8,10 @@ public enum Actions implements ActionSource {
     EXIT(new ExitAction()),
 
     ANALYZE(new AnalyzeAction()),
+    RUN_BOTH(new RunBothAction()),
     RUN_MOTION_DETECTION(new RunMotionDetectionAction()),
-    MOTION_DETECTION_OPTIONS(new MotionDetectionOptionsAction()),
     RUN_SOUND_DETECTION(new RunSoundDetectionAction()),
+    MOTION_DETECTION_OPTIONS(new MotionDetectionOptionsAction()),
     SOUND_DETECTION_OPTIONS(new SoundDetectionOptionsAction()),
 
     REPORT(new ReportAction()),

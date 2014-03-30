@@ -1,6 +1,7 @@
 package com.belsofto.vet.ui.action;
 
 import com.belsofto.vet.application.ApplicationContext;
+import com.belsofto.vet.detection.sound.SoundDetector;
 import com.belsofto.vet.ui.dialog.DialogUtils;
 import org.slf4j.Logger;
 
@@ -30,6 +31,15 @@ final class RunSoundDetectionAction extends AdvancedAbstractAction {
             DialogUtils.showErrorMessage("noVideoLoaded");
             return;
         }
-        context.getSoundDetector().analyzeSound();
+        SoundDetector soundDetector = context.getSoundDetector();
+        if (soundDetector.isInProgress()) {
+            DialogUtils.showErrorMessage("soundDetectionInProgress");
+            return;
+        }
+        if (context.getMotionDetector().isInProgress()) {
+            DialogUtils.showErrorMessage("motionDetectionInProgress");
+            return;
+        }
+        soundDetector.analyzeSound();
     }
 }

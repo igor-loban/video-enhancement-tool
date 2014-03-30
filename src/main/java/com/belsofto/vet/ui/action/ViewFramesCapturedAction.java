@@ -16,7 +16,9 @@ final class ViewFramesCapturedAction extends AdvancedAbstractAction {
         LOGGER.debug("view frame captured dialog");
         UserLogger.log("frame grabs dialog opened");
         FrameGrabsDialog dialog = new FrameGrabsDialog();
-        ApplicationContext.getInstance().setFrameGrabsDialog(dialog);
+        ApplicationContext context = ApplicationContext.getInstance();
+        context.setFrameGrabsDialog(dialog);
+        context.getMainFrame().getVideoPlayer().pause();
         dialog.setVisible(true);
     }
 }

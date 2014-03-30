@@ -22,6 +22,7 @@ import static com.belsofto.vet.util.MessageUtils.getMessage;
 
 public final class FrameGrabsDialog extends JDialog {
     private static final int MINIMUM_HEIGHT = 320;
+    private static final int MINIMUM_WIDTH = 820;
 
     private final SnapshotListPanel snapshotListPanel = new SnapshotListPanel();
 
@@ -102,8 +103,8 @@ public final class FrameGrabsDialog extends JDialog {
     }
 
     private void setupSizeAndLocation() {
+        setMinimumSize(new Dimension(MINIMUM_WIDTH, MINIMUM_HEIGHT));
         pack();
-        setMinimumSize(new Dimension(getWidth(), MINIMUM_HEIGHT));
         WindowUtils.setLocationToCenter(this);
     }
 
