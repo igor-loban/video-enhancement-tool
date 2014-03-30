@@ -138,8 +138,8 @@ public final class SoundDetector {
                 for (List<Double> means : meansList) {
                     Collections.sort(means);
                     int size = means.size();
-                    upperBounds.add(means.get((int) (options.getMaxNoiseBound() * size)));
-                    lowerBounds.add(means.get((int) (options.getMinNoiseBound() * size)));
+                    upperBounds.add(means.get(toIndex(options.getMaxNoiseBound(), size)));
+                    lowerBounds.add(means.get(toIndex(options.getMinNoiseBound(), size)));
                 }
 
 
@@ -168,7 +168,19 @@ public final class SoundDetector {
                 for (int i = soundDescriptors.size() - 2; i > 0; --i) {
                     SoundDescriptor rightDescriptor = soundDescriptors.get(i + 1);
                     SoundDescriptor leftDescriptor = soundDescriptors.get(i);
-                    if (rightDescriptor.getTime() - leftDescriptor.getTime() < options.getSoundLowerBound()) {
+                    if (leftDescriptor.getSoundThreshold() == SoundThreshold.NOISE
+                            && rightDescriptor.getTime() - leftDescriptor.getTime() < options.getNoiseMinLength()) {
+                        soundDescriptors.remove(i + 1);
+                        soundDescriptors.remove(i);
+                        i--;
+                    }
+                }
+
+                for (int i = soundDescriptors.size() - 2; i > 0; --i) {
+                    SoundDescriptor rightDescriptor = soundDescriptors.get(i + 1);
+                    SoundDescriptor leftDescriptor = soundDescriptors.get(i);
+                    if (leftDescriptor.getSoundThreshold() == SoundThreshold.SOUND
+                            && rightDescriptor.getTime() - leftDescriptor.getTime() < options.getSoundMinLength()) {
                         soundDescriptors.remove(i + 1);
                         soundDescriptors.remove(i);
                         i--;
@@ -182,6 +194,16 @@ public final class SoundDetector {
             } finally {
                 inProgress.set(false);
             }
+        }
+
+        private int toIndex(double noiseBound, int size) {
+            int result = (int) (noiseBound * size);
+            if (result >= size) {
+                result = size - 1;
+            } else if (result < 0) {
+                result = 0;
+            }
+            return result;
         }
 
         private SoundThreshold hasNoise(AudioFrameDescriptor descriptor, List<Double> upperBounds,

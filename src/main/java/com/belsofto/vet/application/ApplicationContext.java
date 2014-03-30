@@ -180,7 +180,7 @@ public final class ApplicationContext {
         SoundDetectionOptions options = soundDetector.getOptions();
 
         properties.put("sdo.frameGap", String.valueOf(options.getFrameGap()));
-        properties.put("sdo.soundLowerBound", String.valueOf(options.getSoundLowerBound()));
+        properties.put("sdo.soundLowerBound", String.valueOf(options.getSoundMinLength()));
 
         properties.put("sdo.minNoiseBound", String.valueOf(options.getMinNoiseBound()));
         properties.put("sdo.maxNoiseBound", String.valueOf(options.getMaxNoiseBound()));
@@ -262,7 +262,7 @@ public final class ApplicationContext {
         }
         intValue = getIntegerValue(properties, "sdo.soundLowerBound");
         if (intValue != null) {
-            options.setSoundLowerBound(intValue);
+            options.setSoundMinLength(intValue);
         }
 
         Double doubleValue = getDoubleValue(properties, "sdo.minNoiseBound");

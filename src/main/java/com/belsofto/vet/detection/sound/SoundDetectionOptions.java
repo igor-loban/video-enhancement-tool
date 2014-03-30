@@ -4,7 +4,8 @@ import java.awt.Color;
 
 public class SoundDetectionOptions {
     private int frameGap = 5;
-    private int soundLowerBound = 500;
+    private int noiseMinLength = 500;
+    private int soundMinLength = 2000;
     private double minNoiseBound = 0.05;
     private double maxNoiseBound = 0.95;
     private Color noiseColor = SoundThreshold.NOISE.color();
@@ -18,12 +19,12 @@ public class SoundDetectionOptions {
         this.frameGap = frameGap;
     }
 
-    public int getSoundLowerBound() {
-        return soundLowerBound;
+    public int getSoundMinLength() {
+        return soundMinLength;
     }
 
-    public void setSoundLowerBound(int soundLowerBound) {
-        this.soundLowerBound = soundLowerBound;
+    public void setSoundMinLength(int soundMinLength) {
+        this.soundMinLength = soundMinLength;
     }
 
     public double getMinNoiseBound() {
@@ -60,9 +61,18 @@ public class SoundDetectionOptions {
         SoundThreshold.SOUND.color(soundColor);
     }
 
+    public int getNoiseMinLength() {
+        return noiseMinLength;
+    }
+
+    public void setNoiseMinLength(int noiseMinLength) {
+        this.noiseMinLength = noiseMinLength;
+    }
+
     @Override public String toString() {
         return "{frameGap=" + frameGap +
-                ", soundLowerBound=" + soundLowerBound +
+                ", noiseMinLength=" + noiseMinLength +
+                ", soundMinLength=" + soundMinLength +
                 ", minNoiseBound=" + minNoiseBound +
                 ", maxNoiseBound=" + maxNoiseBound +
                 ", noiseColor=" + noiseColor +

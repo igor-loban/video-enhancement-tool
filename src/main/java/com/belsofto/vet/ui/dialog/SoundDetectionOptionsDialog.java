@@ -27,12 +27,11 @@ import static com.belsofto.vet.util.MessageUtils.getMessage;
 
 public final class SoundDetectionOptionsDialog extends JDialog {
     private final JLabel frameGapLabel = new JLabel(getMessage("ui.dialog.soundDetectionOptions.label.frameGap"));
-    private final JLabel soundLowerBoundLabel =
-            new JLabel(getMessage("ui.dialog.soundDetectionOptions.label.soundLowerBound"));
-    private final JLabel minNoiseBoundLabel =
-            new JLabel(getMessage("ui.dialog.soundDetectionOptions.label.minNoiseBound"));
-    private final JLabel maxNoiseBoundLabel =
-            new JLabel(getMessage("ui.dialog.soundDetectionOptions.label.maxNoiseBound"));
+    private final JLabel noiseMinLengthLabel =
+            new JLabel(getMessage("ui.dialog.soundDetectionOptions.label.noiseMinLength"));
+    private final JLabel soundMinLengthLabel =
+            new JLabel(getMessage("ui.dialog.soundDetectionOptions.label.soundMinLength"));
+    private final JLabel soundBoundLabel = new JLabel(getMessage("ui.dialog.soundDetectionOptions.label.soundBound"));
     private final JLabel noiseColorLabel = new JLabel(getMessage("ui.dialog.soundDetectionOptions.label.noiseColor"));
     private final JLabel soundColorLabel = new JLabel(getMessage("ui.dialog.soundDetectionOptions.label.soundColor"));
 
@@ -40,10 +39,11 @@ public final class SoundDetectionOptionsDialog extends JDialog {
     private final JLabel soundColorValueLabel = new JLabel("                    ");
 
     private final JSpinner frameGapSpinner = new JSpinner(new SpinnerNumberModel(5, 1, 10, 1));
-    private final JSpinner soundLowerBoundSpinner = new JSpinner(new SpinnerNumberModel(500, 0, 10000, 100));
-    private final JSpinner minNoiseBoundSpinner = new JSpinner(new SpinnerNumberModel(0.05, 0, 1.0, 0.01));
-    private final JSpinner maxNoiseBoundSpinner = new JSpinner(new SpinnerNumberModel(0.95, 0, 1.0, 0.01));
+    private final JSpinner noiseMinLengthSpinner = new JSpinner(new SpinnerNumberModel(250, 0, 10000, 100));
+    private final JSpinner soundMinLengthSpinner = new JSpinner(new SpinnerNumberModel(500, 0, 10000, 100));
+    private final JSpinner soundBoundSpinner = new JSpinner(new SpinnerNumberModel(5, 0, 100, 1));
 
+    private final JButton resetButton = new JButton(getMessage("ui.dialog.soundDetectionOptions.button.reset"));
     private final JButton saveButton = new JButton(getMessage("ui.dialog.soundDetectionOptions.button.save"));
     private final JButton cancelButton = new JButton(getMessage("ui.dialog.soundDetectionOptions.button.cancel"));
 
@@ -59,28 +59,52 @@ public final class SoundDetectionOptionsDialog extends JDialog {
     private void configureComponents() {
         setResizable(false);
 
-        SoundDetectionOptions options = ApplicationContext.getInstance().getSoundDetector().getOptions();
-
-        frameGapSpinner.setValue(options.getFrameGap());
-        soundLowerBoundSpinner.setValue(options.getSoundLowerBound());
-
-        minNoiseBoundSpinner.setValue(options.getMinNoiseBound());
-        maxNoiseBoundSpinner.setValue(options.getMaxNoiseBound());
-
         CursorHandModeAction cursorHandModeAction = new CursorHandModeAction();
         LabelColorChooseAction labelColorChooseAction = new LabelColorChooseAction();
         noiseColorValueLabel.setOpaque(true);
-        noiseColorValueLabel.setBackground(options.getNoiseColor());
         noiseColorValueLabel.addMouseListener(cursorHandModeAction);
         noiseColorValueLabel.addMouseListener(labelColorChooseAction);
 
         soundColorValueLabel.setOpaque(true);
-        soundColorValueLabel.setBackground(options.getSoundColor());
         soundColorValueLabel.addMouseListener(cursorHandModeAction);
         soundColorValueLabel.addMouseListener(labelColorChooseAction);
 
+        initValues();
+
+        resetButton.addActionListener(new ResetAction());
         saveButton.addActionListener(new SaveAction());
         cancelButton.addActionListener(new CloseAction());
+    }
+
+    private void initValues() {
+        SoundDetectionOptions options = ApplicationContext.getInstance().getSoundDetector().getOptions();
+
+        frameGapSpinner.setValue(options.getFrameGap());
+        noiseMinLengthSpinner.setValue(options.getNoiseMinLength());
+        soundMinLengthSpinner.setValue(options.getSoundMinLength());
+
+        soundBoundSpinner.setValue(toSoundBound(options.getMinNoiseBound()));
+
+        noiseColorValueLabel.setBackground(options.getNoiseColor());
+        soundColorValueLabel.setBackground(options.getSoundColor());
+    }
+
+    private int toSoundBound(double minNoiseBound) {
+        if (minNoiseBound >= 0.5) {
+            return 100;
+        } else if (minNoiseBound <= 0) {
+            return 0;
+        }
+        return (int) (minNoiseBound * 200);
+    }
+
+    private double toMinNoiseBound(int value) {
+        if (value >= 100) {
+            return 0.51;
+        } else if (value <= 0) {
+            return 0.0;
+        }
+        return (double) value / 200;
     }
 
     private void arrangeComponents() {
@@ -103,34 +127,34 @@ public final class SoundDetectionOptionsDialog extends JDialog {
         gbc.gridy = 1;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.EAST;
-        add(soundLowerBoundLabel, gbc);
+        add(noiseMinLengthLabel, gbc);
 
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
-        add(soundLowerBoundSpinner, gbc);
+        add(noiseMinLengthSpinner, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.EAST;
-        add(minNoiseBoundLabel, gbc);
+        add(soundMinLengthLabel, gbc);
 
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
-        add(minNoiseBoundSpinner, gbc);
+        add(soundMinLengthSpinner, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.EAST;
-        add(maxNoiseBoundLabel, gbc);
+        add(soundBoundLabel, gbc);
 
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
-        add(maxNoiseBoundSpinner, gbc);
+        add(soundBoundSpinner, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 4;
@@ -160,11 +184,20 @@ public final class SoundDetectionOptionsDialog extends JDialog {
         gbc.gridy = 0;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.EAST;
+        gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(0, 0, 0, 2);
-        buttonPanel.add(saveButton, gbc);
+        buttonPanel.add(resetButton, gbc);
 
         gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.insets = new Insets(0, 2, 0, 2);
+        buttonPanel.add(saveButton, gbc);
+
+        gbc.gridx = 2;
+        gbc.gridy = 0;
         gbc.weightx = 0;
         gbc.insets = new Insets(0, 2, 0, 0);
         buttonPanel.add(cancelButton, gbc);
@@ -172,7 +205,8 @@ public final class SoundDetectionOptionsDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy = 6;
         gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.EAST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
         gbc.insets = new Insets(20, 10, 5, 5);
         add(buttonPanel, gbc);
     }
@@ -191,15 +225,17 @@ public final class SoundDetectionOptionsDialog extends JDialog {
     private final class SaveAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
             int frameGap = (int) frameGapSpinner.getValue();
-            int soundLowerBound = (int) soundLowerBoundSpinner.getValue();
-            double minNoiseBound = (double) minNoiseBoundSpinner.getValue();
-            double maxNoiseBound = (double) maxNoiseBoundSpinner.getValue();
+            int noiseMinLength = (int) noiseMinLengthSpinner.getValue();
+            int soundMinLength = (int) soundMinLengthSpinner.getValue();
+            double minNoiseBound = toMinNoiseBound((int) soundBoundSpinner.getValue());
+            double maxNoiseBound = 1.0 - minNoiseBound;
             Color noiseColor = noiseColorValueLabel.getBackground();
             Color soundColor = soundColorValueLabel.getBackground();
 
             SoundDetectionOptions options = new SoundDetectionOptions();
             options.setFrameGap(frameGap);
-            options.setSoundLowerBound(soundLowerBound);
+            options.setNoiseMinLength(noiseMinLength);
+            options.setSoundMinLength(soundMinLength);
             options.setMinNoiseBound(minNoiseBound);
             options.setMaxNoiseBound(maxNoiseBound);
             options.setNoiseColor(noiseColor);
@@ -244,5 +280,18 @@ public final class SoundDetectionOptionsDialog extends JDialog {
 
     private Color chooseColor(Color initialColor) {
         return JColorChooser.showDialog(this, getMessage("ui.dialog.colorChooser.title"), initialColor);
+    }
+
+    private final class ResetAction implements ActionListener {
+        @Override public void actionPerformed(ActionEvent e) {
+            SoundDetectionOptions options = new SoundDetectionOptions();
+            ApplicationContext context = ApplicationContext.getInstance();
+            context.getSoundDetector().setOptions(options);
+            context.updateApplicationProperties();
+
+            initValues();
+
+            UserLogger.log("sound detection options changed to " + options.toString());
+        }
     }
 }
