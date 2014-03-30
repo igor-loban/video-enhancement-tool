@@ -180,7 +180,8 @@ public final class ApplicationContext {
         SoundDetectionOptions options = soundDetector.getOptions();
 
         properties.put("sdo.frameGap", String.valueOf(options.getFrameGap()));
-        properties.put("sdo.soundLowerBound", String.valueOf(options.getSoundMinLength()));
+        properties.put("sdo.noiseMinLength", String.valueOf(options.getNoiseMinLength()));
+        properties.put("sdo.soundMinLength", String.valueOf(options.getSoundMinLength()));
 
         properties.put("sdo.minNoiseBound", String.valueOf(options.getMinNoiseBound()));
         properties.put("sdo.maxNoiseBound", String.valueOf(options.getMaxNoiseBound()));
@@ -198,17 +199,23 @@ public final class ApplicationContext {
         properties.put("mdo.slideMinFrame", String.valueOf(options.getSlideMinFrame()));
         properties.put("mdo.highVideoQuality", String.valueOf(options.isHighVideoQuality()));
 
+        properties.put("mdo.tinyThreshold", String.valueOf(options.getTinyThreshold()));
         properties.put("mdo.lowThreshold", String.valueOf(options.getLowThreshold()));
         properties.put("mdo.mediumThreshold", String.valueOf(options.getMediumThreshold()));
         properties.put("mdo.highThreshold", String.valueOf(options.getHighThreshold()));
+        properties.put("mdo.veryHighThreshold", String.valueOf(options.getVeryHighThreshold()));
 
+        properties.put("mdo.usedLowThreshold", String.valueOf(options.isUsedLowThreshold()));
         properties.put("mdo.usedMediumThreshold", String.valueOf(options.isUsedMediumThreshold()));
         properties.put("mdo.usedHighThreshold", String.valueOf(options.isUsedHighThreshold()));
+        properties.put("mdo.usedVeryThreshold", String.valueOf(options.isUsedVeryHighThreshold()));
 
         properties.put("mdo.noMotionColor", Integer.toHexString(options.getNoMotionColor().getRGB()));
+        properties.put("mdo.tinyMotionColor", Integer.toHexString(options.getTinyMotionColor().getRGB()));
         properties.put("mdo.lowMotionColor", Integer.toHexString(options.getLowMotionColor().getRGB()));
         properties.put("mdo.mediumMotionColor", Integer.toHexString(options.getMediumMotionColor().getRGB()));
         properties.put("mdo.highMotionColor", Integer.toHexString(options.getHighMotionColor().getRGB()));
+        properties.put("mdo.veryHighMotionColor", Integer.toHexString(options.getVeryHighMotionColor().getRGB()));
 
         properties.store(outputStream, "Motion Detection Options");
     }
@@ -260,7 +267,11 @@ public final class ApplicationContext {
         if (intValue != null) {
             options.setFrameGap(intValue);
         }
-        intValue = getIntegerValue(properties, "sdo.soundLowerBound");
+        intValue = getIntegerValue(properties, "sdo.noiseMinLength");
+        if (intValue != null) {
+            options.setNoiseMinLength(intValue);
+        }
+        intValue = getIntegerValue(properties, "sdo.soundMinLength");
         if (intValue != null) {
             options.setSoundMinLength(intValue);
         }
@@ -300,6 +311,10 @@ public final class ApplicationContext {
             options.setHighVideoQuality(boolValue);
         }
 
+        intValue = getIntegerValue(properties, "mdo.tinyThreshold");
+        if (intValue != null) {
+            options.setTinyThreshold(intValue);
+        }
         intValue = getIntegerValue(properties, "mdo.lowThreshold");
         if (intValue != null) {
             options.setLowThreshold(intValue);
@@ -312,7 +327,15 @@ public final class ApplicationContext {
         if (intValue != null) {
             options.setHighThreshold(intValue);
         }
+        intValue = getIntegerValue(properties, "mdo.veryHighThreshold");
+        if (intValue != null) {
+            options.setVeryHighThreshold(intValue);
+        }
 
+        boolValue = getBooleanValue(properties, "mdo.usedLowThreshold");
+        if (boolValue != null) {
+            options.setUsedLowThreshold(boolValue);
+        }
         boolValue = getBooleanValue(properties, "mdo.usedMediumThreshold");
         if (boolValue != null) {
             options.setUsedMediumThreshold(boolValue);
@@ -321,10 +344,18 @@ public final class ApplicationContext {
         if (boolValue != null) {
             options.setUsedHighThreshold(boolValue);
         }
+        boolValue = getBooleanValue(properties, "mdo.usedVeryHighThreshold");
+        if (boolValue != null) {
+            options.setUsedVeryHighThreshold(boolValue);
+        }
 
         Color color = getColorValue(properties, "mdo.noMotionColor");
         if (color != null) {
             options.setNoMotionColor(color);
+        }
+        color = getColorValue(properties, "mdo.tinyMotionColor");
+        if (color != null) {
+            options.setTinyMotionColor(color);
         }
         color = getColorValue(properties, "mdo.lowMotionColor");
         if (color != null) {
@@ -337,6 +368,10 @@ public final class ApplicationContext {
         color = getColorValue(properties, "mdo.highMotionColor");
         if (color != null) {
             options.setHighMotionColor(color);
+        }
+        color = getColorValue(properties, "mdo.veryHighMotionColor");
+        if (color != null) {
+            options.setVeryHighMotionColor(color);
         }
     }
 

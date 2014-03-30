@@ -271,35 +271,59 @@ public final class MotionDetector {
 
                             CvSeq contour = new CvSeq(null);
                             IplImage diffCopy;
-                            if (options.isUsedHighThreshold()) {
+                            if (options.isUsedVeryHighThreshold()) {
                                 diffCopy = diff.clone();
-                                cvThreshold(diffCopy, diffCopy, options.getHighThreshold(), 255, CV_THRESH_BINARY);
+                                cvThreshold(diffCopy, diffCopy, options.getVeryHighThreshold(), 255, CV_THRESH_BINARY);
                                 cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class), CV_RETR_LIST,
                                         CV_CHAIN_APPROX_SIMPLE);
                             }
                             if (contour.isNull()) {
-                                if (options.isUsedMediumThreshold()) {
+                                if (options.isUsedHighThreshold()) {
                                     diffCopy = diff.clone();
-                                    cvThreshold(diffCopy, diffCopy, options.getMediumThreshold(), 255,
-                                            CV_THRESH_BINARY);
+                                    cvThreshold(diffCopy, diffCopy, options.getHighThreshold(), 255, CV_THRESH_BINARY);
                                     contour = new CvSeq(null);
                                     cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class),
                                             CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
                                 }
                                 if (contour.isNull()) {
-                                    diffCopy = diff.clone();
-                                    cvThreshold(diffCopy, diffCopy, options.getLowThreshold(), 255, CV_THRESH_BINARY);
-                                    contour = new CvSeq(null);
-                                    cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class),
-                                            CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
-                                    if (!contour.isNull()) {
-                                        motionThreshold = MotionThreshold.LOW;
+                                    if (options.isUsedMediumThreshold()) {
+                                        diffCopy = diff.clone();
+                                        cvThreshold(diffCopy, diffCopy, options.getMediumThreshold(), 255,
+                                                CV_THRESH_BINARY);
+                                        contour = new CvSeq(null);
+                                        cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class),
+                                                CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
+                                    }
+                                    if (contour.isNull()) {
+                                        if (options.isUsedLowThreshold()) {
+                                            diffCopy = diff.clone();
+                                            cvThreshold(diffCopy, diffCopy, options.getLowThreshold(), 255,
+                                                    CV_THRESH_BINARY);
+                                            contour = new CvSeq(null);
+                                            cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class),
+                                                    CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
+                                        }
+                                        if (contour.isNull()) {
+                                            diffCopy = diff.clone();
+                                            cvThreshold(diffCopy, diffCopy, options.getTinyThreshold(), 255,
+                                                    CV_THRESH_BINARY);
+                                            contour = new CvSeq(null);
+                                            cvFindContours(diffCopy, storage, contour, Loader.sizeof(CvContour.class),
+                                                    CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
+                                            if (!contour.isNull()) {
+                                                motionThreshold = MotionThreshold.TINY;
+                                            }
+                                        } else {
+                                            motionThreshold = MotionThreshold.LOW;
+                                        }
+                                    } else {
+                                        motionThreshold = MotionThreshold.MEDIUM;
                                     }
                                 } else {
-                                    motionThreshold = MotionThreshold.MEDIUM;
+                                    motionThreshold = MotionThreshold.HIGH;
                                 }
                             } else {
-                                motionThreshold = MotionThreshold.HIGH;
+                                motionThreshold = MotionThreshold.VERY_HIGH;
                             }
 
                             if (motionThreshold == MotionThreshold.NO) { // If no movement detected

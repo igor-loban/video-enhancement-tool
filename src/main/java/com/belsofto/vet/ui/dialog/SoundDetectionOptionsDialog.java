@@ -5,6 +5,7 @@ import com.belsofto.vet.application.UserLogger;
 import com.belsofto.vet.detection.sound.SoundDetectionOptions;
 import com.belsofto.vet.ui.util.WindowUtils;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
@@ -62,10 +63,12 @@ public final class SoundDetectionOptionsDialog extends JDialog {
         CursorHandModeAction cursorHandModeAction = new CursorHandModeAction();
         LabelColorChooseAction labelColorChooseAction = new LabelColorChooseAction();
         noiseColorValueLabel.setOpaque(true);
+        noiseColorValueLabel.setBorder(BorderFactory.createEtchedBorder());
         noiseColorValueLabel.addMouseListener(cursorHandModeAction);
         noiseColorValueLabel.addMouseListener(labelColorChooseAction);
 
         soundColorValueLabel.setOpaque(true);
+        soundColorValueLabel.setBorder(BorderFactory.createEtchedBorder());
         soundColorValueLabel.addMouseListener(cursorHandModeAction);
         soundColorValueLabel.addMouseListener(labelColorChooseAction);
 

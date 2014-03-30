@@ -6,15 +6,21 @@ public class MotionDetectionOptions {
     private int frameGap = 5;
     private int slideMinFrame = 30;
     private boolean highVideoQuality = false;
-    private int lowThreshold = 20;
-    private int mediumThreshold = 70;
-    private int highThreshold = 150;
+    private int tinyThreshold = 30;
+    private int lowThreshold = 100;
+    private int mediumThreshold = 170;
+    private int highThreshold = 210;
+    private int veryHighThreshold = 250;
+    private boolean usedLowThreshold = true;
     private boolean usedMediumThreshold = true;
-    private boolean usedHighThreshold = true;
+    private boolean usedHighThreshold = false;
+    private boolean usedVeryHighThreshold = false;
     private Color noMotionColor = MotionThreshold.NO.color();
+    private Color tinyMotionColor = MotionThreshold.TINY.color();
     private Color lowMotionColor = MotionThreshold.LOW.color();
     private Color mediumMotionColor = MotionThreshold.MEDIUM.color();
     private Color highMotionColor = MotionThreshold.HIGH.color();
+    private Color veryHighMotionColor = MotionThreshold.VERY_HIGH.color();
 
     public int getFrameGap() {
         return frameGap;
@@ -116,18 +122,70 @@ public class MotionDetectionOptions {
         MotionThreshold.HIGH.color(highMotionColor);
     }
 
+    public boolean isUsedLowThreshold() {
+        return usedLowThreshold;
+    }
+
+    public void setUsedLowThreshold(boolean usedLowThreshold) {
+        this.usedLowThreshold = usedLowThreshold;
+    }
+
+    public boolean isUsedVeryHighThreshold() {
+        return usedVeryHighThreshold;
+    }
+
+    public void setUsedVeryHighThreshold(boolean usedVeryHighThreshold) {
+        this.usedVeryHighThreshold = usedVeryHighThreshold;
+    }
+
+    public int getTinyThreshold() {
+        return tinyThreshold;
+    }
+
+    public void setTinyThreshold(int tinyThreshold) {
+        this.tinyThreshold = tinyThreshold;
+    }
+
+    public int getVeryHighThreshold() {
+        return veryHighThreshold;
+    }
+
+    public void setVeryHighThreshold(int veryHighThreshold) {
+        this.veryHighThreshold = veryHighThreshold;
+    }
+
+    public Color getTinyMotionColor() {
+        return tinyMotionColor;
+    }
+
+    public void setTinyMotionColor(Color tinyMotionColor) {
+        this.tinyMotionColor = tinyMotionColor;
+    }
+
+    public Color getVeryHighMotionColor() {
+        return veryHighMotionColor;
+    }
+
+    public void setVeryHighMotionColor(Color veryHighMotionColor) {
+        this.veryHighMotionColor = veryHighMotionColor;
+    }
+
     @Override public String toString() {
         return "{frameGap=" + frameGap +
                 ", slideMinFrame=" + slideMinFrame +
                 ", highVideoQuality=" + highVideoQuality +
+                ", tinyThreshold=" + tinyThreshold +
                 ", lowThreshold=" + lowThreshold +
                 ", mediumThreshold=" + mediumThreshold +
                 ", highThreshold=" + highThreshold +
+                ", veryHighThreshold=" + veryHighThreshold +
                 ", usedMediumThreshold=" + usedMediumThreshold +
                 ", usedHighThreshold=" + usedHighThreshold +
                 ", noMotionColor=" + noMotionColor +
+                ", tinyMotionColor=" + tinyMotionColor +
                 ", lowMotionColor=" + lowMotionColor +
                 ", mediumMotionColor=" + mediumMotionColor +
-                ", highMotionColor=" + highMotionColor + "}";
+                ", highMotionColor=" + highMotionColor +
+                ", veryHighMotionColor=" + veryHighMotionColor + "}";
     }
 }
